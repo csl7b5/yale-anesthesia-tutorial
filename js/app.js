@@ -37,6 +37,33 @@
       .replace(/"/g, "&quot;");
   }
 
+  function getMedBadge(medClass) {
+    const c = (medClass || "").toLowerCase();
+    if (/general anesthetic|imidazole hypnotic|dissociative anesthetic/.test(c))
+      return { label: "Induction",        cls: "induction" };
+    if (/benzodiazepine antagonist/.test(c))
+      return { label: "Reversal",         cls: "reversal" };
+    if (/benzodiazepine/.test(c))
+      return { label: "Benzodiazepine",   cls: "benzo" };
+    if (/non-depolarizing|depolarizing|nmb|neuromuscular block/.test(c))
+      return { label: "NMB",              cls: "nmb" };
+    if (/catecholamine|vasopressor|alpha.*agonist|sympathomimetic/.test(c))
+      return { label: "Vasopressor",      cls: "vasopressor" };
+    if (/opioid antagonist|relaxant binding|acetylcholinesterase/.test(c))
+      return { label: "Reversal",         cls: "reversal" };
+    if (/anticholinergic/.test(c))
+      return { label: "Anticholinergic",  cls: "anticholinergic" };
+    if (/opioid|opiate|narcotic/.test(c))
+      return { label: "Opioid",           cls: "opioid" };
+    if (/local anesthetic|antiarrhythmic/.test(c))
+      return { label: "Local Anesthetic", cls: "local" };
+    if (/5-ht3|corticosteroid/.test(c))
+      return { label: "Antiemetic",       cls: "antiemetic" };
+    if (/volatile|inhaled|inhalation/.test(c))
+      return { label: "Volatile",         cls: "volatile" };
+    return { label: "Supportive",         cls: "other" };
+  }
+
   // ── Modal helpers ──────────────────────────────────────────────────────
   function openContentsModal(title, bodyHtml, hasFooter, detailHandler) {
     contentsTitle.textContent = title;
@@ -65,12 +92,16 @@
              onerror="this.parentElement.style.display='none'">
       </div>`;
 
+    const badge = getMedBadge(med.class);
     const html = `
       ${imgHtml}
+      <div class="detail-meta">
+        <span class="med-badge med-badge--${badge.cls}">${badge.label}</span>
+        ${med.controlled ? `<span class="chip chip--controlled">${escapeHtml(med.schedule || "Controlled")}</span>` : ""}
+      </div>
       <dl class="detail-list">
         <dt>Class</dt>
         <dd>${escapeHtml(med.class || "")}</dd>
-        ${med.controlled ? `<dt>Controlled</dt><dd>${escapeHtml(med.schedule || "Controlled substance")}</dd>` : ""}
         <dt>Mechanism</dt>
         <dd>${escapeHtml(med.mechanism || "")}</dd>
         <dt>Common use</dt>
@@ -86,7 +117,7 @@
         <dt>Cautions</dt>
         <dd>${escapeHtml(med.cautions || "")}</dd>
       </dl>
-      ${med.pearl ? `<div class="detail-pearl"><strong>Pearl:</strong> ${escapeHtml(med.pearl)}</div>` : ""}`;
+      ${med.pearl ? `<div class="detail-pearl"><span class="detail-pearl__label">Attending Pearl</span>${escapeHtml(med.pearl)}</div>` : ""}`;
 
     openDetailModal(med.name, html);
   }
@@ -110,14 +141,16 @@
     const drawer = drawers.find(d => d.id === drawerId);
     if (!drawer) return;
 
-    const tilesHtml = (drawer.medicationIds || []).map(medId => {
+    const rawTiles = (drawer.medicationIds || []).map(medId => {
       const med = meds[medId];
       if (!med) return "";
+      const badge = getMedBadge(med.class);
       return `<button type="button" class="med-tile" data-med-id="${escapeHtml(medId)}">
         <span class="med-tile__name">${escapeHtml(med.name)}</span>
-        <span class="med-tile__class">${escapeHtml(med.class || "")}</span>
+        <span class="med-badge med-badge--${badge.cls}">${badge.label}</span>
       </button>`;
     }).join("");
+    const tilesHtml = rawTiles ? `<div class="tile-grid">${rawTiles}</div>` : "";
 
     openContentsModal(
       drawer.label,
@@ -138,12 +171,13 @@
     const drawer = leftDrawers.find(d => d.id === drawerId);
     if (!drawer) return;
 
-    const tilesHtml = (drawer.items || []).map(item => {
+    const rawTiles = (drawer.items || []).map(item => {
       return `<button type="button" class="equip-tile" data-item-id="${escapeHtml(item.id)}">
         <span class="equip-tile__name">${escapeHtml(item.name)}</span>
         <span class="equip-tile__cat">${escapeHtml(item.category || "")}</span>
       </button>`;
     }).join("");
+    const tilesHtml = rawTiles ? `<div class="tile-grid">${rawTiles}</div>` : "";
 
     openContentsModal(
       drawer.label,
