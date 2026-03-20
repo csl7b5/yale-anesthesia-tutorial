@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Interactive educational prototype of an anesthesia Pyxis-style station for Yale Anesthesia Tutorial." />
+    <title>Anesthesia station — Pyxis explorer (prototype)</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+
+      <!-- ── Navigation bar ──────────────────────────────────────────────── -->
+      <nav class="site-nav" aria-label="Site navigation">
+        <div class="site-nav__inner">
+          <span class="site-nav__brand">Yale Anesthesiology Clerkship</span>
+          <div class="site-nav__tabs" role="tablist">
+            <button class="site-nav__tab site-nav__tab--active" role="tab"
+                    aria-selected="true" data-page="tour">Interactive Pyxis</button>
+            <button class="site-nav__tab" role="tab"
+                    aria-selected="false" data-page="about">Meet Your Team</button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- ── Page: Anesthesia Tour ────────────────────────────────────────── -->
+      <section id="page-tour" class="page-section page-section--active" role="tabpanel">
+
+      <header class="site-header">
+        <div class="site-header__card">
+          <h1>Anesthesia Guide to Meds and Supplies</h1>
+          <p>
+            A Pyxis-inspired cheatsheet for clerkship students learning <strong>where</strong> medications and supplies live,
+            <strong>what</strong> they are, and <strong>why</strong> they matter.
+            Click a drawer or supply bin to open focused pop-up windows.
+          </p>
+        </div>
+      </header>
+
+      <div class="main-layout">
+        <div class="cabinet-stage" aria-label="Stylized anesthesia cabinet">
+          <div class="cabinet-scale" style="--cx-left:39.25%;--cx-width:36%;--rack-left:39.25%;--rack-width:36%;">
+
+            <!-- ── Supply rack (2 rows × 5 columns) ──────────────────── -->
+            <div class="supply-rack" aria-label="Top supply bins">
+              <div class="supply-rack__row">
+                <button type="button" class="supply-bin" data-supply-id="tube-caps">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Tube caps</span></div>
+                </button>
+                <button type="button" class="supply-bin" data-supply-id="tourniquets">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Tourniquets</span></div>
+                </button>
+                <button type="button" class="supply-bin" data-supply-id="alcohol-wipes">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Alcohol wipes</span></div>
+                </button>
+                <button type="button" class="supply-bin" data-supply-id="gauze">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Gauze</span></div>
+                </button>
+                <button type="button" class="supply-bin" data-supply-id="tape">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Tape</span></div>
+                </button>
+              </div>
+              <div class="supply-rack__row">
+                <button type="button" class="supply-bin" data-supply-id="ecg-stickers">
+                  <div class="supply-bin__face"><span class="supply-bin__label">ECG stickers</span></div>
+                </button>
+                <button type="button" class="supply-bin" data-supply-id="oral-airways">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Oral airways</span></div>
+                </button>
+                <button type="button" class="supply-bin" data-supply-id="lab-tubes">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Lab tubes</span></div>
+                </button>
+                <button type="button" class="supply-bin" data-supply-id="tegaderms">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Tegaderms</span></div>
+                </button>
+                <button type="button" class="supply-bin" data-supply-id="nasal-supplies">
+                  <div class="supply-bin__face"><span class="supply-bin__label">Nasal / oral adj.</span></div>
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Monitor ───────────────────────────────────────────── -->
+            <div class="monitor-arm" aria-hidden="true"></div>
+            <div class="monitor" aria-label="Station monitor">
+              <div class="monitor__screen">
+                <div class="monitor__title">Anesthesia station</div>
+                <div class="monitor__hint">Click any drawer to explore</div>
+                <button type="button" class="monitor__ai-btn" id="monitor-ai-btn"
+                        aria-label="Open AI assistant" aria-expanded="false">
+                  <span class="monitor__ai-dot" aria-hidden="true"></span>Ask AI
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Left cabinet body ─────────────────────────────────── -->
+            <div class="cabinet-left" aria-hidden="true">
+              <a href="https://medicine.yale.edu/anesthesiology/" target="_blank" rel="noopener noreferrer"
+                 class="cabinet-logo" aria-label="Yale Department of Anesthesiology">
+                <img src="images/yaleanesthesiologylogo.jpg" alt="Yale Anesthesiology"
+                     class="cabinet-logo__img">
+              </a>
+            </div>
+
+            <!-- ── Left-cabinet specialty drawers ────────────────────── -->
+            <button type="button" class="left-drawer left-drawer--airway" id="left-drawer-airway"
+                    aria-label="Airway drawer">
+              <span class="left-drawer__handle" aria-hidden="true"></span>
+              <span class="left-drawer__label">Airway</span>
+            </button>
+            <button type="button" class="left-drawer left-drawer--lines" id="left-drawer-lines"
+                    aria-label="Lines &amp; Infusion drawer">
+              <span class="left-drawer__handle" aria-hidden="true"></span>
+              <span class="left-drawer__label">Lines &amp; Infusion</span>
+            </button>
+
+            <!-- ── Center top cap ─────────────────────────────────────── -->
+            <div class="cabinet-center-top" aria-hidden="true"></div>
+
+            <!-- ── Controlled grid (3 rows × 5 columns) ──────────────── -->
+            <div class="drawer-grid-wrap" aria-label="Controlled medication cells">
+              <div class="drawer-grid" id="controlled-grid"></div>
+            </div>
+
+            <!-- ── Main drawers (5 stacked, contiguous) ──────────────── -->
+            <div class="main-drawers" aria-label="Main medication drawers">
+              <button type="button" class="main-drawer main-drawer--short"></button>
+              <button type="button" class="main-drawer main-drawer--short"></button>
+              <button type="button" class="main-drawer main-drawer--tall"></button>
+              <button type="button" class="main-drawer main-drawer--medium"></button>
+              <button type="button" class="main-drawer main-drawer--short"></button>
+            </div>
+
+            <!-- ── Side auxiliary ─────────────────────────────────────── -->
+            <div class="side-aux" id="side-aux" role="button" tabindex="0"
+                 aria-label="Auxiliary and sharps compartment">
+              <div class="side-aux__handle" aria-hidden="true"></div>
+              <div class="side-aux__slot"   aria-hidden="true"></div>
+              <div class="side-aux__rule side-aux__rule--1" aria-hidden="true"></div>
+              <div class="side-aux__rule side-aux__rule--2" aria-hidden="true"></div>
+            </div>
+
+            <!-- ── Cabinet base & wheels ──────────────────────────────── -->
+            <div class="cabinet-base" aria-hidden="true"></div>
+            <div class="wheel wheel--a"  aria-hidden="true"></div>
+            <div class="wheel wheel--b"  aria-hidden="true"></div>
+
+            <!-- ── Callout labels (pointer-events: none) ─────────────── -->
+            <span class="callout callout--supply">Supply Bins</span>
+            <span class="callout callout--controlled">Controlled Substances</span>
+            <span class="callout callout--main">Main Drawers</span>
+
+          </div><!-- /cabinet-scale -->
+        </div><!-- /cabinet-stage -->
+      </div><!-- /main-layout -->
+
+      <!-- ── Modal: Drawer / bin contents ──────────────────────────────── -->
+      <dialog class="modal modal--contents" id="modal-contents" aria-labelledby="modal-contents-title">
+        <div class="modal__inner">
+          <header class="modal__head">
+            <div class="modal__head-text">
+              <p class="modal__eyebrow">Drawer contents</p>
+              <h2 class="modal__title" id="modal-contents-title">—</h2>
+            </div>
+            <button type="button" class="modal__close" id="modal-contents-close" aria-label="Close">×</button>
+          </header>
+          <div class="modal__body" id="modal-contents-body">
+            <p class="empty-hint">Select a drawer, bin, or slot on the cabinet.</p>
+          </div>
+          <footer class="modal__footer" id="modal-contents-footer" hidden>
+            <button type="button" class="modal__btn modal__btn--primary" id="modal-contents-open-detail">
+              View learning details
+            </button>
+          </footer>
+        </div>
+      </dialog>
+
+      <!-- ── Modal: Learning detail ─────────────────────────────────────── -->
+      <dialog class="modal modal--detail" id="modal-detail" aria-labelledby="modal-detail-title">
+        <div class="modal__inner">
+          <header class="modal__head">
+            <div class="modal__head-text">
+              <p class="modal__eyebrow">Learning detail</p>
+              <h2 class="modal__title" id="modal-detail-title">Details</h2>
+            </div>
+            <button type="button" class="modal__close" id="modal-detail-close" aria-label="Close">×</button>
+          </header>
+          <div class="modal__body modal__body--detail" id="modal-detail-body">
+            <p class="empty-hint">Choose an item in the drawer to see clinical orientation and pearls.</p>
+          </div>
+        </div>
+      </dialog>
+
+      <footer class="site-footer">
+        <p>Educational prototype — not a medical device and not institutional software. Drug information is for teaching orientation only; always follow local protocols and formularies.</p>
+      </footer>
+
+      </section><!-- /page-tour -->
+
+      <!-- ── Page: Meet Your Team ─────────────────────────────────────────── -->
+      <section id="page-about" class="page-section" role="tabpanel">
+        <div class="about-page">
+          <div class="about-page__header">
+            <h2>Meet Your Team</h2>
+            <p>The faculty and residents working with you during the clerkship. Click to learn more and reach out directly.</p>
+          </div>
+          <div class="about-page__group">
+            <h3 class="about-page__group-title">Attendings</h3>
+            <div class="attending-bubbles" id="attending-bubbles" aria-label="Attending physicians"></div>
+          </div>
+          <div class="about-page__group">
+            <h3 class="about-page__group-title">Residents</h3>
+            <div class="attending-bubbles" id="resident-bubbles" aria-label="Anesthesiology residents"></div>
+          </div>
+        </div>
+      </section><!-- /page-about -->
+
+      <!-- ── Modal: Attending card (shared by attendings and residents) ─────── -->
+      <dialog class="modal modal--attending" id="modal-attending" aria-labelledby="modal-attending-name">
+        <div class="modal__inner attending-card">
+          <button type="button" class="modal__close attending-card__close" id="modal-attending-close" aria-label="Close">×</button>
+          <div id="attending-card-content"></div>
+        </div>
+      </dialog>
+
+      <!-- ── Chat panel ──────────────────────────────────────────────────── -->
+      <div class="chat-panel" id="chat-panel" aria-hidden="true" role="complementary"
+           aria-label="Anesthesia AI assistant">
+        <header class="chat-panel__header">
+          <div class="chat-panel__title-group">
+            <span class="chat-panel__online-dot" aria-hidden="true"></span>
+            <span class="chat-panel__title">Your Attending (Available)</span>
+          </div>
+          <button type="button" class="chat-panel__header-btn" id="chat-key-btn"
+                  title="Change API key" aria-label="Change API key">⚙</button>
+          <button type="button" class="chat-panel__header-btn chat-panel__close"
+                  id="chat-close" aria-label="Close AI assistant">×</button>
+        </header>
+        <div class="chat-panel__messages" id="chat-messages"
+             role="log" aria-live="polite" aria-label="Chat messages"></div>
+        <footer class="chat-panel__footer">
+          <input type="text" id="chat-input" class="chat-panel__input"
+                 placeholder="Ask about any drug or equipment…"
+                 autocomplete="off" maxlength="500" aria-label="Chat message input">
+          <button type="button" class="chat-panel__send" id="chat-send" aria-label="Send">↑</button>
+        </footer>
+      </div>
+
+    </div><!-- /app -->
+
+    <!-- Inline: build controlled-grid cells -->
+    <script>
+      (function () {
+        var grid = document.getElementById("controlled-grid");
+        if (!grid) return;
+        for (var i = 0; i < 15; i++) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "drawer-cell";
+          b.dataset.controlledIndex = String(i);
+          b.setAttribute("aria-label", "Controlled medication slot " + (i + 1));
+          b.setAttribute("tabindex", "0");
+          grid.appendChild(b);
+        }
+      })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

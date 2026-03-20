@@ -1,0 +1,37 @@
+:root {
+  /* Page neutrals — cool white/grey */
+  --bg-page: #eef0f4;
+  --bg-elevated: #f8fafc;
+
+  /* Pyxis cabinet — steel grey */
+  --cabinet-base: #b5bec8;
+  --cabinet-mid:  #9aa5b0;
+  --cabinet-dark: #6e7d8a;
+  --cabinet-shadow: rgba(18, 30, 45, 0.18);
+  --supply-rack: #c6cdd5;
+  --bin-inner: rgba(255, 255, 255, 0.72);
+
+  /* Accent — Yale blue */
+  --accent: #286dc0;
+  --accent-soft: rgba(40, 109, 192, 0.12);
+
+  /* Text */
+  --text-primary: #1c2738;
+  --text-muted:   #58687a;
+
+  /* Borders */
+  --border-subtle: rgba(18, 30, 45, 0.12);
+  --panel-border:  rgba(18, 30, 45, 0.08);
+
+  /* Monitor */
+  --monitor-bezel: #1e293b;
+  --screen-glow: rgba(148, 197, 255, 0.18);
+
+  --radius-lg: 18px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --shadow-soft:   0 4px 24px var(--cabinet-shadow);
+  --shadow-drawer: 0 2px 8px rgba(18, 30, 45, 0.12);
+  --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
