@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Ventilator · Yale Anesthesiology Clerkship</title>
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/ventilator.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+</head>
+<body class="vent-page">
+<div class="app">
+
+  <!-- ── Navigation ──────────────────────────────────────────────────────── -->
+  <nav class="site-nav" aria-label="Site navigation">
+    <div class="site-nav__inner">
+      <span class="site-nav__brand">Yale Anesthesiology Clerkship</span>
+      <div class="site-nav__tabs" role="tablist">
+        <a href="index.html" class="site-nav__tab" role="tab" aria-selected="false">Interactive Pyxis</a>
+        <a href="ventilator.html" class="site-nav__tab site-nav__tab--active" role="tab" aria-selected="true">Interactive Ventilator</a>
+        <a href="index.html#about" class="site-nav__tab" role="tab" aria-selected="false">Meet Your Team</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Workstation ─────────────────────────────────────────────────────── -->
+  <main class="vent-workstation" aria-label="Anesthesia workstation simulation">
+
+    <!-- Intro card -->
+    <div class="vent-intro-card">
+      <h1>Interactive Ventilator Simulator</h1>
+      <p>
+        A real-time anesthesia workstation simulation for clerkship students. Observe how the
+        <strong style="color:#a8c8e8">vitals monitor</strong>, <strong style="color:#a8c8e8">ventilator</strong>,
+        and <strong style="color:#a8c8e8">BIS monitor</strong> behave together during a general anesthetic.
+        Use the controls below to adjust ventilator settings and patient physiology — changes propagate
+        immediately to waveforms, pressures, and gas values. Watch the alarm panel to learn
+        clinically meaningful thresholds.
+      </p>
+    </div>
+
+    <!-- Alarm banner -->
+    <div class="vent-alarm-banner" id="alarm-banner" aria-live="polite"></div>
+
+    <!-- Workstation grid: Vitals | BIS+Vent | Controls -->
+    <div class="workstation-grid">
+
+      <!-- ════════════════════════════════════════════════════════════════════
+           VITALS MONITOR  (left, large)
+           ════════════════════════════════════════════════════════════════════ -->
+      <section class="mon-shell mon-shell--vitals" aria-label="Patient vitals monitor">
+        <div class="mon-bezel">
+          <div class="mon-brand">GE Datex-Ohmeda · Patient Monitor</div>
+          <div class="mon-screen" id="vitals-screen">
+
+            <!-- ECG row -->
+            <div class="wave-row" data-color="#00e676">
+              <div class="wave-tag" style="color:#00e676">II</div>
+              <canvas class="wave-canvas" id="canvas-ecg"></canvas>
+              <div class="wave-num" style="color:#00e676">
+                <div class="wn-big" id="num-hr">72</div>
+                <div class="wn-unit">HR bpm</div>
+                <div class="wn-st">
+                  <span id="st-ii">II: 0.0</span>
+                  <span id="st-v5">V5: 0.0</span>
+                  <span id="st-avf">aVF: 0.1</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ABP row -->
+            <div class="wave-row" data-color="#ff4c4c">
+              <div class="wave-tag" style="color:#ff4c4c">ABP</div>
+              <canvas class="wave-canvas" id="canvas-abp"></canvas>
+              <div class="wave-num" style="color:#ff4c4c">
+                <div class="wn-big" id="num-abp-sys">118</div>
+                <div class="wn-sub" id="num-abp-map">/ 72 (88)</div>
+                <div class="wn-unit">mmHg</div>
+              </div>
+            </div>
+
+            <!-- SpO2 row -->
+            <div class="wave-row" data-color="#00e5ff">
+              <div class="wave-tag" style="color:#00e5ff">SpO₂</div>
+              <canvas class="wave-canvas" id="canvas-spo2"></canvas>
+              <div class="wave-num" style="color:#00e5ff">
+                <div class="wn-big" id="num-spo2">99</div>
+                <div class="wn-unit">SpO₂ %</div>
+              </div>
+            </div>
+
+            <!-- EtCO2 row -->
+            <div class="wave-row" data-color="#ffee00">
+              <div class="wave-tag" style="color:#ffee00">CO₂</div>
+              <canvas class="wave-canvas" id="canvas-etco2"></canvas>
+              <div class="wave-num" style="color:#ffee00">
+                <div class="wn-big" id="num-etco2">36</div>
+                <div class="wn-unit">EtCO₂ mmHg</div>
+                <div class="wn-rr" id="num-rr">RR 12</div>
+              </div>
+            </div>
+
+            <!-- Bottom bar: NIBP · Temp · Gas -->
+            <div class="vitals-bar">
+              <div class="vb-cell">
+                <div class="vb-label">NIBP</div>
+                <div class="vb-val vb-val--red">
+                  <span id="nibp-sys">118</span>/<span id="nibp-dia">72</span>
+                </div>
+                <div class="vb-map">(<span id="nibp-map">88</span>)</div>
+                <div class="vb-unit">mmHg</div>
+              </div>
+              <div class="vb-cell">
+                <div class="vb-label">TEMP</div>
+                <div class="vb-val"><span id="num-temp">36.8</span></div>
+                <div class="vb-unit">°C</div>
+              </div>
+              <div class="vb-cell vb-cell--gas">
+                <div class="vb-label">GAS / AGENT</div>
+                <div class="vb-gas-row"><span class="vbg-k">MAC</span><span class="vbg-v" id="num-mac">0.95</span></div>
+                <div class="vb-gas-row"><span class="vbg-k">EtO₂</span><span class="vbg-v" id="num-eto2">52%</span></div>
+                <div class="vb-gas-row"><span class="vbg-k">Sevo</span><span class="vbg-v" id="num-sevo">2.1%</span></div>
+              </div>
+            </div>
+
+          </div><!-- /mon-screen -->
+        </div><!-- /mon-bezel -->
+      </section>
+
+      <!-- ════════════════════════════════════════════════════════════════════
+           MIDDLE COLUMN  (BIS + Ventilator)
+           ════════════════════════════════════════════════════════════════════ -->
+      <div class="mid-col">
+
+        <!-- ── BIS Monitor ────────────────────────────────────────────────── -->
+        <section class="mon-shell mon-shell--bis" aria-label="BIS monitor">
+          <div class="mon-bezel">
+            <div class="mon-brand">Aspect Medical · BIS Monitor</div>
+            <div class="mon-screen" id="bis-screen">
+              <div class="bis-top">
+                <div class="bis-left">
+                  <div class="bis-num" id="num-bis">46</div>
+                  <div class="bis-label">BIS</div>
+                  <div class="bis-meta">
+                    <span id="bis-sr">SR 0%</span> · <span id="bis-emg">EMG 42dB</span>
+                  </div>
+                </div>
+                <div class="bis-right">
+                  <div class="bis-eeg-tag">EEG</div>
+                  <canvas id="canvas-eeg"></canvas>
+                </div>
+              </div>
+              <div class="bis-spectral-wrap">
+                <canvas id="canvas-spectral"></canvas>
+                <div class="spectral-axis">
+                  <span>δ 1–4 Hz</span><span>θ 4–8 Hz</span><span>α 8–13 Hz</span><span>β 13–30 Hz</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Ventilator Monitor ─────────────────────────────────────────── -->
+        <section class="mon-shell mon-shell--vent" aria-label="Ventilator monitor">
+          <div class="mon-bezel">
+            <div class="mon-brand">Dräger Zeus · Ventilator</div>
+            <div class="mon-screen" id="vent-screen">
+
+              <div class="vent-top">
+
+                <!-- Waveforms -->
+                <div class="vent-waves">
+                  <div class="vent-wave-row">
+                    <div class="vent-wave-lbl" style="color:#ffcc00">Paw<br><small>cmH₂O</small></div>
+                    <canvas id="canvas-pressure"></canvas>
+                  </div>
+                  <div class="vent-wave-row">
+                    <div class="vent-wave-lbl" style="color:#00ccff">Flow<br><small>L/min</small></div>
+                    <canvas id="canvas-flow"></canvas>
+                  </div>
+                  <div class="vent-wave-row">
+                    <div class="vent-wave-lbl" style="color:#00ff99">Vol<br><small>mL</small></div>
+                    <canvas id="canvas-volume"></canvas>
+                  </div>
+                </div>
+
+                <!-- Numeric panel -->
+                <div class="vent-nums">
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">TVset</div><div class="vn-val" id="vn-tv-set">480</div><div class="vn-unit">mL</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">TVexp</div><div class="vn-val" id="vn-tv-exp">478</div><div class="vn-unit">mL</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">RR</div><div class="vn-val" id="vn-rr">12</div><div class="vn-unit">br/min</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">MV</div><div class="vn-val" id="vn-mv">5.8</div><div class="vn-unit">L/min</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">PIP</div><div class="vn-val" id="vn-pip">22</div><div class="vn-unit">cmH₂O</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">Pplat</div><div class="vn-val" id="vn-plat">18</div><div class="vn-unit">cmH₂O</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">PEEP</div><div class="vn-val" id="vn-peep">5</div><div class="vn-unit">cmH₂O</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">Pmean</div><div class="vn-val" id="vn-pmean">10</div><div class="vn-unit">cmH₂O</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">FiO₂</div><div class="vn-val" id="vn-fio2">50%</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">EtCO₂</div><div class="vn-val" id="vn-etco2-vent">36</div><div class="vn-unit">mmHg</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell" title="Auto-PEEP: air trapping when expiratory time is too short">
+                      <div class="vn-lbl">autoPEEP</div><div class="vn-val vn-val--warn" id="vn-autoPEEP">0</div><div class="vn-unit">cmH₂O</div>
+                    </div>
+                    <div class="vn-cell" title="RC expiratory time constant = Resistance × Compliance">
+                      <div class="vn-lbl">τ exp</div><div class="vn-val" id="vn-tau">0.25</div><div class="vn-unit">s</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- P-V Loop -->
+              <div class="vent-pv-row">
+                <div class="vent-pv-label">
+                  <span>P-V</span><span class="vent-pv-sublabel">Loop</span>
+                </div>
+                <canvas id="canvas-pv"></canvas>
+                <div class="pv-legend">
+                  <span class="pv-leg-item" style="color:#ffcc00">▸ Insp</span>
+                  <span class="pv-leg-item" style="color:#00ccff">◂ Exp</span>
+                </div>
+              </div>
+
+              <!-- Mode bar -->
+              <div class="vent-mode-bar">
+                <span class="mode-chip" id="mode-chip">VC-CMV</span>
+                <span class="mode-detail" id="mode-detail">TV 480 mL · RR 12 · PEEP 5 · FiO₂ 50%</span>
+              </div>
+
+            </div><!-- /mon-screen -->
+          </div>
+        </section>
+
+      </div><!-- /mid-col -->
+
+      <!-- ════════════════════════════════════════════════════════════════════
+           RIGHT COLUMN  (Controls)
+           ════════════════════════════════════════════════════════════════════ -->
+      <div class="ctrl-col">
+
+      <!-- Ventilator Settings -->
+      <div class="ctrl-card">
+        <div class="ctrl-card__title">Ventilator Settings</div>
+
+        <div class="mode-toggle">
+          <button class="mode-btn mode-btn--on" id="btn-vc" type="button">Volume Control</button>
+          <button class="mode-btn" id="btn-pc" type="button">Pressure Control</button>
+        </div>
+
+        <!-- VC-only -->
+        <div id="vc-only">
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Tidal Volume (mL)</label>
+            <input type="range" class="ctrl-range" id="sl-tv" min="200" max="800" step="10" value="480" />
+            <span class="ctrl-val" id="lbl-tv">480</span>
+          </div>
+        </div>
+
+        <!-- PC-only -->
+        <div id="pc-only" hidden>
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Insp. Pressure above PEEP (cmH₂O)</label>
+            <input type="range" class="ctrl-range" id="sl-pip" min="5" max="40" step="1" value="10" />
+            <span class="ctrl-val" id="lbl-pip">10</span>
+          </div>
+        </div>
+
+        <!-- Shared sliders -->
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Resp. Rate (br/min)</label>
+          <input type="range" class="ctrl-range" id="sl-rr" min="4" max="30" step="1" value="12" />
+          <span class="ctrl-val" id="lbl-rr">12</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">PEEP (cmH₂O)</label>
+          <input type="range" class="ctrl-range" id="sl-peep" min="0" max="20" step="1" value="5" />
+          <span class="ctrl-val" id="lbl-peep">5</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">FiO₂ (%)</label>
+          <input type="range" class="ctrl-range" id="sl-fio2" min="21" max="100" step="1" value="50" />
+          <span class="ctrl-val" id="lbl-fio2">50</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Inspiratory Time (s)</label>
+          <input type="range" class="ctrl-range" id="sl-ti" min="0.4" max="2.5" step="0.1" value="1.0" />
+          <span class="ctrl-val" id="lbl-ti">1.0</span>
+        </div>
+      </div>
+
+      <!-- Patient Physiology -->
+      <div class="ctrl-card">
+        <div class="ctrl-card__title">Patient Physiology</div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Compliance (mL/cmH₂O)</label>
+          <input type="range" class="ctrl-range" id="sl-compliance" min="10" max="100" step="5" value="50" />
+          <span class="ctrl-val" id="lbl-compliance">50</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Resistance (cmH₂O/L/s)</label>
+          <input type="range" class="ctrl-range" id="sl-resistance" min="2" max="30" step="1" value="5" />
+          <span class="ctrl-val" id="lbl-resistance">5</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">CO₂ Production (mL/min)</label>
+          <input type="range" class="ctrl-range" id="sl-co2prod" min="50" max="500" step="10" value="200" />
+          <span class="ctrl-val" id="lbl-co2prod">200</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Circuit Leak (%)</label>
+          <input type="range" class="ctrl-range" id="sl-leak" min="0" max="50" step="1" value="0" />
+          <span class="ctrl-val" id="lbl-leak">0</span>
+        </div>
+      </div>
+
+      <!-- Alarms -->
+      <div class="ctrl-card ctrl-card--alarms">
+        <div class="ctrl-card__title">Active Alarms</div>
+        <div class="alarm-list" id="alarm-list">
+          <div class="alarm-none">No active alarms</div>
+        </div>
+      </div>
+
+      </div><!-- /ctrl-col -->
+
+    </div><!-- /workstation-grid -->
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         CLINICAL SCENARIOS
+         ══════════════════════════════════════════════════════════════════════ -->
+    <div class="scenario-trigger-row">
+      <button id="scenario-open-btn" class="scenario-trigger-btn" type="button">
+        ▶ Clinical Scenarios — Test Your Knowledge
+      </button>
+    </div>
+
+    <div class="scenario-panel" id="scenario-panel" hidden>
+
+      <!-- Scenario selection view -->
+      <div id="scen-select">
+        <div class="scen-select__header">
+          <h2>Clinical Scenarios</h2>
+          <p>Each scenario initializes the monitors to reflect a real clinical situation.
+             Answer the questions to guide management — the monitors will respond to your choices.</p>
+          <button class="scen-close-btn" id="scen-panel-close-btn" type="button">✕</button>
+        </div>
+        <div class="scen-cards" id="scen-cards"><!-- injected by JS --></div>
+      </div>
+
+      <!-- Active scenario view -->
+      <div id="scen-active" hidden>
+        <div class="scen-active__header">
+          <div class="scen-active__left">
+            <span class="scen-badge" id="scen-badge">Emergency</span>
+            <span class="scen-title" id="scen-title">Scenario</span>
+          </div>
+          <div class="scen-active__right">
+            <span class="scen-step-label" id="scen-step">Step 1 of 2</span>
+            <button class="scen-exit-btn" id="scen-exit-btn" type="button">✕ Exit</button>
+          </div>
+        </div>
+        <div class="scen-active__body">
+          <div class="scen-context" id="scen-context"></div>
+          <div class="scen-qa" id="scen-qa"><!-- question + choices injected here --></div>
+        </div>
+      </div>
+
+      <!-- Resolution view -->
+      <div id="scen-resolution" hidden>
+        <div class="scen-resolution__icon">✓</div>
+        <h3 id="scen-resolution-title"></h3>
+        <p id="scen-resolution-text"></p>
+        <button class="mode-btn mode-btn--on" id="scen-restart-btn" type="button">Try Another Scenario</button>
+      </div>
+
+    </div><!-- /scenario-panel -->
+
+  </main><!-- /workstation -->
+</div><!-- /app -->
+
+<!-- ── AI Chat (floating) ──────────────────────────────────────────────── -->
+<button id="vent-ai-btn" class="vent-ai-btn" type="button" aria-expanded="false">
+  <span class="vent-ai-dot" aria-hidden="true"></span>Ask AI
+</button>
+
+<div class="chat-panel" id="chat-panel" aria-hidden="true" role="complementary"
+     aria-label="Anesthesia AI assistant">
+  <header class="chat-panel__header">
+    <div class="chat-panel__title-group">
+      <span class="chat-panel__online-dot" aria-hidden="true"></span>
+      <span class="chat-panel__title">Ventilator Assistant (AI)</span>
+    </div>
+    <button type="button" class="chat-panel__header-btn" id="chat-key-btn"
+            title="Change API key" aria-label="Change API key">⚙</button>
+    <button type="button" class="chat-panel__header-btn chat-panel__close"
+            id="chat-close" aria-label="Close AI assistant">×</button>
+  </header>
+  <div class="chat-panel__messages" id="chat-messages"
+       role="log" aria-live="polite" aria-label="Chat messages"></div>
+  <footer class="chat-panel__footer">
+    <input type="text" id="chat-input" class="chat-panel__input"
+           placeholder="Ask about ventilation, physiology, scenarios…"
+           autocomplete="off" maxlength="500" aria-label="Chat message input">
+    <button type="button" class="chat-panel__send" id="chat-send" aria-label="Send">↑</button>
+  </footer>
+</div>
+
+<script src="js/ventilator.js"></script>
+</body>
+</html>

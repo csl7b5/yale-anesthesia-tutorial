@@ -1569,18 +1569,18 @@ body {
 .monitor__ai-btn {
   appearance: none;
   margin-top: 4px;
-  padding: 2px 6px;
+  padding: 4px 10px;
   background: rgba(40, 109, 192, 0.2);
   border: 1px solid rgba(40, 109, 192, 0.35);
   border-radius: 8px;
-  color: #a8d0f8;
-  font-size: 7px;
+  color: #000;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.06em;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   transition: background 0.18s, border-color 0.18s;
 }
 

@@ -12,22 +12,18 @@
   }
 
   // ── DOM handles ────────────────────────────────────────────────────────
-  const modalContents      = document.getElementById("modal-contents");
-  const modalDetail        = document.getElementById("modal-detail");
-  const contentsTitle      = document.getElementById("modal-contents-title");
-  const contentsBody       = document.getElementById("modal-contents-body");
-  const contentsFooter     = document.getElementById("modal-contents-footer");
-  const contentsOpenDetail = document.getElementById("modal-contents-open-detail");
-  const contentsClose      = document.getElementById("modal-contents-close");
-  const detailTitle        = document.getElementById("modal-detail-title");
-  const detailBody         = document.getElementById("modal-detail-body");
-  const detailClose        = document.getElementById("modal-detail-close");
-  const mainDrawerEls      = document.querySelectorAll(".main-drawer");
-  const leftDrawerEls      = document.querySelectorAll(".left-drawer");
-  const cellEls            = document.querySelectorAll(".drawer-cell");
-  const supplyBinEls       = document.querySelectorAll(".supply-bin");
-
-  let pendingDetailHandler = null;
+  const modalContents = document.getElementById("modal-contents");
+  const modalDetail   = document.getElementById("modal-detail");
+  const contentsTitle = document.getElementById("modal-contents-title");
+  const contentsBody  = document.getElementById("modal-contents-body");
+  const contentsClose = document.getElementById("modal-contents-close");
+  const detailTitle   = document.getElementById("modal-detail-title");
+  const detailBody    = document.getElementById("modal-detail-body");
+  const detailClose   = document.getElementById("modal-detail-close");
+  const mainDrawerEls = document.querySelectorAll(".main-drawer");
+  const leftDrawerEls = document.querySelectorAll(".left-drawer");
+  const cellEls       = document.querySelectorAll(".drawer-cell");
+  const supplyBinEls  = document.querySelectorAll(".supply-bin");
 
   function escapeHtml(str) {
     return String(str)
@@ -65,11 +61,9 @@
   }
 
   // ── Modal helpers ──────────────────────────────────────────────────────
-  function openContentsModal(title, bodyHtml, hasFooter, detailHandler) {
+  function openContentsModal(title, bodyHtml) {
     contentsTitle.textContent = title;
     contentsBody.innerHTML    = bodyHtml;
-    contentsFooter.hidden     = !hasFooter;
-    pendingDetailHandler      = detailHandler || null;
     modalContents.showModal();
   }
 
@@ -154,15 +148,13 @@
 
     openContentsModal(
       drawer.label,
-      tilesHtml || "<p class='empty-hint'>No items in this drawer.</p>",
-      (drawer.medicationIds || []).length > 0,
-      null
+      tilesHtml || "<p class='empty-hint'>No items in this drawer.</p>"
     );
 
     contentsBody.querySelectorAll(".med-tile").forEach(tile => {
       tile.addEventListener("click", () => {
-        pendingDetailHandler = () => renderMedicationDetail(tile.dataset.medId);
-        contentsOpenDetail.click();
+        modalContents.close();
+        renderMedicationDetail(tile.dataset.medId);
       });
     });
   }
@@ -181,16 +173,14 @@
 
     openContentsModal(
       drawer.label,
-      tilesHtml || "<p class='empty-hint'>No items in this drawer.</p>",
-      (drawer.items || []).length > 0,
-      null
+      tilesHtml || "<p class='empty-hint'>No items in this drawer.</p>"
     );
 
     contentsBody.querySelectorAll(".equip-tile").forEach(tile => {
       const item = (drawer.items || []).find(i => i.id === tile.dataset.itemId);
       tile.addEventListener("click", () => {
-        pendingDetailHandler = () => renderEquipmentDetail(item);
-        contentsOpenDetail.click();
+        modalContents.close();
+        renderEquipmentDetail(item);
       });
     });
   }
@@ -207,15 +197,23 @@
     const bin = (supplyBins || []).find(b => b.id === supplyId);
     if (!bin) return;
     const html = `<p class="detail-body">${escapeHtml(bin.description || bin.label || "")}</p>`;
-    openContentsModal(bin.label, html, false, null);
+    openContentsModal(bin.label, html);
   }
 
   // ── Wire up controls ───────────────────────────────────────────────────
   contentsClose?.addEventListener("click", () => modalContents?.close());
-  detailClose?.addEventListener("click",   () => modalDetail?.close());
-  contentsOpenDetail?.addEventListener("click", () => {
-    if (typeof pendingDetailHandler === "function") pendingDetailHandler();
-  });
+  detailClose?.addEventListener("click", () => modalDetail?.close());
+
+  const sideAuxEl = document.getElementById("side-aux");
+  if (sideAuxEl) {
+    bindHover(sideAuxEl);
+    const openAux = () => openContentsModal(
+      "Auxiliary & Sharps",
+      `<p class="detail-body">This side compartment holds the <strong>sharps container</strong> for safe disposal of needles, blades, and other sharps after procedures. It also provides quick access to auxiliary supplies such as extra labels, alcohol swabs, and miscellaneous items needed at the bedside.</p>`
+    );
+    sideAuxEl.addEventListener("click",   e => { e.currentTarget.blur(); openAux(); });
+    sideAuxEl.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openAux(); } });
+  }
 
   mainDrawerEls.forEach((el, i) => {
     const d = drawers[i];
@@ -315,21 +313,34 @@
   modalAttending?.addEventListener("click", function (e) { if (e.target === modalAttending) modalAttending.close(); });
 
   // ── Nav tab switching ────────────────────────────────────────────────────
+  function activatePage(pageKey) {
+    document.querySelectorAll(".site-nav__tab").forEach(function (t) {
+      t.classList.remove("site-nav__tab--active");
+      t.setAttribute("aria-selected", "false");
+    });
+    document.querySelectorAll(".page-section").forEach(function (s) {
+      s.classList.remove("page-section--active");
+    });
+    var matchingTab = document.querySelector("[data-page='" + pageKey + "']");
+    if (matchingTab) {
+      matchingTab.classList.add("site-nav__tab--active");
+      matchingTab.setAttribute("aria-selected", "true");
+    }
+    var target = document.getElementById("page-" + pageKey);
+    if (target) target.classList.add("page-section--active");
+  }
+
   document.querySelectorAll(".site-nav__tab").forEach(function (tab) {
     tab.addEventListener("click", function () {
-      document.querySelectorAll(".site-nav__tab").forEach(function (t) {
-        t.classList.remove("site-nav__tab--active");
-        t.setAttribute("aria-selected", "false");
-      });
-      document.querySelectorAll(".page-section").forEach(function (s) {
-        s.classList.remove("page-section--active");
-      });
-      tab.classList.add("site-nav__tab--active");
-      tab.setAttribute("aria-selected", "true");
-      var target = document.getElementById("page-" + tab.dataset.page);
-      if (target) target.classList.add("page-section--active");
+      if (tab.dataset.page) activatePage(tab.dataset.page);
     });
   });
+
+  // Support deep-linking from other pages (e.g. ventilator.html → index.html#about)
+  if (window.location.hash === "#about") {
+    activatePage("about");
+    history.replaceState(null, "", window.location.pathname);
+  }
 
   // ── Responsive cabinet scaling ───────────────────────────────────────────
   (function scaleCabinet() {
