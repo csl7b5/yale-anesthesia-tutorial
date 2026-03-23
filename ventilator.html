@@ -32,8 +32,8 @@
       <h1>Interactive Ventilator Simulator</h1>
       <p>
         A real-time anesthesia workstation simulation for clerkship students. Observe how the
-        <strong style="color:#a8c8e8">vitals monitor</strong>, <strong style="color:#a8c8e8">ventilator</strong>,
-        and <strong style="color:#a8c8e8">BIS monitor</strong> behave together during a general anesthetic.
+        <strong style="color:#a8c8e8">vitals monitor</strong>, <strong style="color:#a8c8e8">ventilator</strong>, <strong style="color:#a8c8e8">Train-of-Four (TOF)</strong>
+        and <strong style="color:#a8c8e8">Bispectral Index (BIS) monitor</strong> behave together during a general anesthetic.
         Use the controls below to adjust ventilator settings and patient physiology — changes propagate
         immediately to waveforms, pressures, and gas values. Watch the alarm panel to learn
         clinically meaningful thresholds. This is an <strong>experimental prototype</strong> aimed to guide learning.
@@ -330,7 +330,90 @@
         </div>
       </div>
 
+      <!-- Train-of-Four mini card -->
+      <div class="ctrl-card ctrl-card--tof" id="tof-card" tabindex="0" role="button" aria-label="Open Train-of-Four tutorial monitor">
+        <div class="ctrl-card__title tof-card-title">
+          Train-of-Four
+          <span class="tof-mini-badge" id="tof-mini-badge">4/4</span>
+        </div>
+        <canvas class="tof-mini-canvas" id="tof-mini-canvas" height="40"></canvas>
+        <div class="tof-mini-footer">
+          <span class="tof-mini-depth tof-depth--ok" id="tof-mini-depth">No Block</span>
+          <span class="tof-mini-hint">↗ Open tutorial</span>
+        </div>
+      </div>
+
       </div><!-- /ctrl-col -->
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         TRAIN-OF-FOUR MODAL
+         ══════════════════════════════════════════════════════════════════════ -->
+    <dialog class="tof-modal" id="tof-modal">
+      <div class="tof-modal-inner">
+        <div class="tof-modal-header">
+          <div class="tof-modal-title-block">
+            <span class="tof-device-brand">NMT Monitor · Train-of-Four</span>
+            <span class="tof-device-sub">Peripheral Nerve Stimulator — Educational Tutorial</span>
+          </div>
+          <button class="tof-close-btn" id="tof-close-btn" type="button">✕</button>
+        </div>
+
+        <div class="tof-modal-body">
+
+          <!-- LEFT: trace + numerics + interpretation -->
+          <div class="tof-left">
+            <div class="tof-screen">
+              <canvas id="tof-canvas" height="130"></canvas>
+            </div>
+            <div class="tof-numerics">
+              <div class="tof-num-cell">
+                <div class="tof-num-label">TOF Count</div>
+                <div class="tof-num-value" id="tof-count">4/4</div>
+              </div>
+              <div class="tof-num-cell">
+                <div class="tof-num-label">TOF Ratio</div>
+                <div class="tof-num-value" id="tof-ratio">1.00</div>
+              </div>
+              <div class="tof-num-cell tof-num-cell--depth">
+                <div class="tof-num-label">Block Depth</div>
+                <div class="tof-depth-badge tof-depth--ok" id="tof-depth">No Block</div>
+              </div>
+            </div>
+            <div class="tof-interp" id="tof-interp">
+              No meaningful neuromuscular blockade. Normal response.
+            </div>
+          </div>
+
+          <!-- RIGHT: controls + explainer + quiz -->
+          <div class="tof-right">
+
+            <div class="tof-controls-section">
+              <div class="tof-section-title">Block State</div>
+              <div class="tof-btns" id="tof-preset-btns"><!-- injected by JS --></div>
+            </div>
+
+            <div class="tof-controls-section">
+              <div class="tof-section-title">Drug Demonstration</div>
+              <div class="tof-btns" id="tof-drug-btns"><!-- injected by JS --></div>
+            </div>
+
+            <div class="tof-explainer">
+              <div class="tof-explainer-title">What is Train-of-Four?</div>
+              <div class="tof-explainer-text">
+                Four supramaximal stimuli at 2 Hz are applied to a peripheral nerve (usually the ulnar nerve at the wrist).
+                The resulting muscle twitches are measured. <strong>Fade</strong> — where later twitches are progressively weaker — is the hallmark of nondepolarizing blockade.
+                The <strong>TOF ratio</strong> (T4 ÷ T1) below 0.9 indicates residual paralysis even when all four twitches are visible.
+              </div>
+            </div>
+
+            <div class="tof-quiz-wrap">
+              <div class="tof-quiz" id="tof-quiz"><!-- injected by JS --></div>
+            </div>
+
+          </div><!-- /tof-right -->
+        </div><!-- /tof-modal-body -->
+      </div><!-- /tof-modal-inner -->
+    </dialog>
 
     </div><!-- /workstation-grid -->
 
@@ -364,12 +447,17 @@
             <span class="scen-title" id="scen-title">Scenario</span>
           </div>
           <div class="scen-active__right">
+            <span class="scen-phase scen-phase--deterioration" id="scen-phase">Deterioration</span>
             <span class="scen-step-label" id="scen-step">Step 1 of 2</span>
             <button class="scen-exit-btn" id="scen-exit-btn" type="button">✕ Exit</button>
           </div>
         </div>
         <div class="scen-active__body">
           <div class="scen-context" id="scen-context"></div>
+          <div class="scen-monitor-clue" id="scen-monitor-clue" hidden>
+            <span class="scen-clue-icon">⬡</span>
+            <span id="scen-clue-text"></span>
+          </div>
           <div class="scen-qa" id="scen-qa"><!-- question + choices injected here --></div>
         </div>
       </div>
@@ -397,7 +485,7 @@
   <header class="chat-panel__header">
     <div class="chat-panel__title-group">
       <span class="chat-panel__online-dot" aria-hidden="true"></span>
-      <span class="chat-panel__title">Ventilator Assistant (AI)</span>
+      <span class="chat-panel__title">Your Attending (Available)</span>
     </div>
     <button type="button" class="chat-panel__header-btn" id="chat-key-btn"
             title="Change API key" aria-label="Change API key">⚙</button>

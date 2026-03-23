@@ -200,6 +200,133 @@
     openContentsModal(bin.label, html);
   }
 
+  // ── Gas canister / volatile anesthetics ───────────────────────────────
+  function openGasCanister() {
+    const html = `
+      <div class="detail-meta">
+        <span class="med-badge med-badge--volatile">Volatile</span>
+        <span class="chip" style="background:#f5d04022;color:#8a6000;border:1px solid #d4a01055;">Inhaled Agents</span>
+      </div>
+
+      <p class="volatile-overview">
+        Volatile anesthetics are halogenated hydrocarbons administered as gases via the breathing circuit.
+        They provide <strong>hypnosis, amnesia, and immobility</strong> in a dose-dependent fashion and are the most
+        common method of anesthesia maintenance worldwide. Understanding how they work — both
+        pharmacokinetically (how they get in and out of the body) and pharmacodynamically
+        (what they do once there) — is fundamental to safe anesthetic practice.
+      </p>
+
+      <div class="volatile-concept-box">
+        <p class="volatile-concept-box__title">MAC — Minimum Alveolar Concentration</p>
+        <p class="volatile-concept-box__body">
+          <strong>MAC is the key unit of volatile anesthetic dosing.</strong> It is the alveolar concentration
+          (at 1 atm, steady state, in 100% O₂) at which 50% of patients do not move in response to
+          a surgical skin incision. One MAC = 50% effective dose for immobility.
+          <br><br>
+          <strong>1.3 MAC</strong> is typically used clinically (prevents movement in ~95% of patients).
+          <strong>MAC-awake</strong> (the concentration at which 50% of patients open their eyes to command)
+          is approximately <strong>0.3–0.4 MAC</strong> — far below surgical MAC, which is why
+          patients can be deeply anesthetized yet have rapid return of consciousness when the agent is stopped.
+          <br><br>
+          MAC is <strong>reduced</strong> by: age (↓ with age), hypothermia, opioids, nitrous oxide,
+          pregnancy, hypotension, acute alcohol intoxication, and sedatives.
+          MAC is <strong>increased</strong> by: hyperthermia, chronic alcohol use, and stimulant drugs.
+        </p>
+      </div>
+
+      <p class="volatile-section-title">Agent Comparison at a Glance</p>
+      <div class="agent-table-wrap">
+        <table class="agent-table">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Sevoflurane</th>
+              <th>Isoflurane</th>
+              <th>Desflurane</th>
+              <th>Nitrous Oxide</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>MAC in O₂ (%)</th>
+              <td>2.0</td><td>1.15</td><td>6.0–6.6</td><td>~104 (adjunct only)</td>
+            </tr>
+            <tr>
+              <th>Blood:Gas coeff.</th>
+              <td>0.65</td><td>1.4</td><td>0.42</td><td>0.46</td>
+            </tr>
+            <tr>
+              <th>Onset / offset</th>
+              <td>Moderate-fast</td><td>Moderate</td><td>Fastest of all</td><td>Fast</td>
+            </tr>
+            <tr>
+              <th>Odor / mask induction</th>
+              <td><span class="agent-check">✓</span> Sweet, fruity — ideal for peds mask induction</td>
+              <td><span class="agent-cross">✗</span> Pungent and irritating</td>
+              <td><span class="agent-cross">✗</span> Very pungent; airway irritant</td>
+              <td><span class="agent-check">✓</span> Sweet; used as adjunct</td>
+            </tr>
+            <tr>
+              <th>Cardiovascular</th>
+              <td>Mild ↓ SVR, ↓ BP</td><td>↓ SVR, compensatory ↑ HR</td><td>↑ HR, ↑ BP at high concentrations</td><td>Mild sympathomimetic</td>
+            </tr>
+            <tr>
+              <th>Key caveat</th>
+              <td><span class="agent-caution">⚠</span> Compound A at low flows (&lt;2 L/min)</td>
+              <td>Rarely used today; pungent odor limits use</td>
+              <td><span class="agent-caution">⚠</span> Requires heated vaporizer (Tec 6)</td>
+              <td><span class="agent-caution">⚠</span> Expands air-filled cavities; PONV</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="volatile-section-title">Pharmacokinetics: Getting In and Out</p>
+      <div class="pk-stats">
+        <span class="pk-stat"><span class="pk-stat__key">Low B:G coeff.</span> = faster onset &amp; offset (less soluble in blood → equilibrates quickly)</span>
+        <span class="pk-stat"><span class="pk-stat__key">High cardiac output</span> = slower induction (more agent carried away from alveoli)</span>
+        <span class="pk-stat"><span class="pk-stat__key">↑ Ventilation</span> = faster induction (more agent delivered to alveoli per minute)</span>
+      </div>
+      <ul class="volatile-mech-list">
+        <li><strong>Step 1 — Delivery:</strong> The vaporizer adds volatile agent to the fresh gas flow at a set concentration (FI). The agent travels through the circuit to the alveoli.</li>
+        <li><strong>Step 2 — Uptake:</strong> Volatile agent diffuses from the alveoli into the blood. The <em>blood:gas partition coefficient</em> governs how much dissolves: a low coefficient (desflurane 0.42, sevoflurane 0.65) means the blood holds little agent → alveolar concentration (FA) rapidly equals inspired concentration (FI). A high coefficient (isoflurane 1.4) means blood holds more → FA rises slowly.</li>
+        <li><strong>Step 3 — Distribution:</strong> Blood delivers agent to the brain (highly perfused). Brain:blood equilibration determines onset of effect. At steady state, brain concentration ≈ alveolar concentration.</li>
+        <li><strong>Step 4 — Elimination:</strong> When agent is turned off, the same gradients run in reverse. Low B:G agents (desflurane, sevoflurane) wash out rapidly, giving faster emergence.</li>
+      </ul>
+
+      <p class="volatile-section-title">Pharmacodynamics: Mechanisms of Action</p>
+      <ul class="volatile-mech-list">
+        <li><strong>GABA-A potentiation (primary):</strong> Volatile agents bind transmembrane domains of GABA-A receptors, prolonging chloride channel opening → neuronal hyperpolarization → loss of consciousness and immobility.</li>
+        <li><strong>Glycine receptor potentiation:</strong> Enhancement of inhibitory glycinergic transmission contributes to immobility (spinal cord effect).</li>
+        <li><strong>NMDA receptor inhibition:</strong> Weak glutamate blockade contributes to amnesia and analgesia.</li>
+        <li><strong>HCN channel (Ih) inhibition:</strong> Hyperpolarization-activated cation channels are inhibited, suppressing thalamo-cortical oscillations — part of how consciousness is lost.</li>
+        <li><strong>Two-pore domain K⁺ channels (TREK):</strong> Enhanced background K⁺ leak → neuronal hyperpolarization → reduced excitability.</li>
+        <li><strong>Dose-dependent system effects:</strong> As MAC increases: 0.5 MAC = sedation; 1 MAC = immobility (50%); 1.3 MAC = surgical anesthesia; &gt;2 MAC = cardiovascular and respiratory depression. All volatiles cause dose-dependent ↓ tidal volume, ↑ RR, bronchodilation, ↓ SVR, and ↓ cardiac contractility.</li>
+      </ul>
+
+      <div class="volatile-pearl">
+        <span class="volatile-pearl__label">Attending Pearls</span>
+        <p class="volatile-pearl__body">
+          <strong>Malignant Hyperthermia (MH):</strong> All volatile halogenated agents (sevoflurane, isoflurane, desflurane) are MH triggers. In an MH-susceptible patient, triggered episodes cause massive skeletal muscle hypermetabolism — rapidly rising EtCO₂ is often the earliest sign. Treatment: stop all triggers immediately, dantrolene 2.5 mg/kg IV, supportive care. MH hotline: 1-800-644-9737.
+          <br><br>
+          <strong>Sevoflurane + Compound A:</strong> At fresh gas flows &lt;2 L/min, sevoflurane reacts with CO₂ absorbent (particularly older barium hydroxide lime) to form Compound A, a nephrotoxic vinyl ether. Modern absorbents (e.g., Amsorb Plus) minimize production. Clinical renal injury from compound A has not been conclusively demonstrated in humans, but maintaining flows ≥2 L/min remains a common practice.
+          <br><br>
+          <strong>Desflurane ≠ mask induction:</strong> Despite its pharmacokinetic advantages, desflurane's pungent odor causes significant airway irritation — coughing, laryngospasm, and breath-holding — making it unsuitable for inhalational induction. It is typically switched in after IV induction once the airway is secured.
+          <br><br>
+          <strong>Environmental impact:</strong> Desflurane has the highest global warming potential of the volatiles (~2,540× CO₂ over 100 years) and is being phased out at many institutions. Sevoflurane (~130× CO₂) and isoflurane (~510× CO₂) are less impactful. Nitrous oxide is also a potent greenhouse gas and depletes stratospheric ozone.
+        </p>
+      </div>`;
+
+    openDetailModal("Volatile Anesthetic Agents", html);
+  }
+
+  const gasCaniBtn = document.getElementById("gas-canister-btn");
+  if (gasCaniBtn) {
+    bindHover(gasCaniBtn);
+    gasCaniBtn.addEventListener("click",   e => { e.currentTarget.blur(); openGasCanister(); });
+    gasCaniBtn.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openGasCanister(); } });
+  }
+
   // ── Wire up controls ───────────────────────────────────────────────────
   contentsClose?.addEventListener("click", () => modalContents?.close());
   detailClose?.addEventListener("click", () => modalDetail?.close());
@@ -378,7 +505,7 @@
   var SYSTEM_PROMPT =
     "You are an expert anesthesia attending physician helping a 3rd–4th year medical student on their " +
     "anesthesia clerkship. Answer questions about anesthesia medications, airway management, " +
-    "IV access, lines, monitoring, equipment, and perioperative concepts. Be concise and " +
+    "IV access, lines, monitoring, equipment, ventilator settings and waveforms, vitals, and perioperative concepts. Be concise and " +
     "practical — like a knowledgeable senior resident explaining things at the bedside. " +
     "Keep answers to 3–5 sentences unless asked to elaborate. Always note that responses are " +
     "for educational purposes only and that clinical decisions must follow institutional protocols.";
