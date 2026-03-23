@@ -476,15 +476,15 @@ window.PYXIS_MEDICATIONS = {
 window.PYXIS_SUPPLY_BINS = [
   // Row 1
   { id: "tube-caps",     label: "Tube caps",    row: 1, description: "Red and green tube caps for IV ports and stopcocks. Red = no additive (blood draws), Green = heparinized flush. Know your institution's color coding." },
-  { id: "tourniquets",   label: "Tourniquets",  row: 1, description: "Used for IV placement — tighten proximal to intended IV site to engorge veins. Release as soon as flashback is seen." },
+  { id: "tourniquets",   label: "Tourniquets",  row: 1, description: "Used for IV placement — tighten proximal to intended IV site to engorge veins. Release as soon as flashback is seen. PIV placement tutorial coming soon." },
   { id: "alcohol-wipes", label: "Alcohol wipes", row: 1, description: "70% isopropyl pads for IV site prep, needle prep, and general antisepsis. Allow to dry before insertion for best effect." },
-  { id: "gauze",         label: "Gauze",         row: 1, description: "4×4 gauze pads — field prep, bleeding control, airway work, and general OR use." },
+  { id: "gauze",         label: "Gauze + Saline Flushes",         row: 1, description: "You may find it useful to have a bunch of 4×4 gauze pads for field prep, bleeding control, airway work, and general OR use. Saline flushes are also often useful for pushing/mixing drugs or cleaning things. One way to be helpful in the OR is to help the team apply gauze to patients' wounds and incisions to control bleeding, or use saline flushes with gauze to clean up blood, spills, saliva, tears, or other bodily fluids. Remember, the saline inside the flush is sterile but the syringe itself is NOT!" },
   { id: "tape",          label: "Tape",          row: 1, description: "Multiple types: silk tape for ETT securing, paper tape for wound wrapping, clear Tegaderm-style for A-lines and IVs. Know which tape for which use." },
   // Row 2
-  { id: "ecg-stickers",  label: "ECG stickers",  row: 2, description: "5-lead ECG electrode pads (RA, LA, RL, LL, V lead). Check lead contact and skin prep before draping; poor contact = artifact, poor diagnosis." },
-  { id: "oral-airways",  label: "Oral airways",  row: 2, description: "OPAs (Guedel) for maintaining airway in unconscious patients. Size by measuring corner of mouth to earlobe. Do not use in conscious patients — triggers gag reflex." },
+  { id: "ecg-stickers",  label: "ECG stickers",  row: 2, description: "5-lead ECG electrode pads (RA, LA, RL, LL, V lead). One of the easiest ways you can help out in both the OR and postop is to help the team place ECG lead stickers and monitors on patients. Make sure you place them with full contact and correctly to minimize artifacts! Remember the mnemonic: clouds over grass, smoke over fire, dirt in between." },
+  { id: "oral-airways",  label: "Oral airways",  row: 2, description: "OPAs for maintaining airway in unconscious patients. Size by measuring corner of mouth to earlobe. Do not use in conscious patients as it triggers gag reflex. For patients with difficult airways to unresposive to normal masking, these may be super helpful to keep in mind." },
   { id: "lab-tubes",     label: "Lab tubes",     row: 2, description: "Blood collection tubes: purple top (EDTA → CBC), green top (lithium heparin → BMP), blue top (citrate → coag/PT/INR), gold top (serum separator → type & screen)." },
-  { id: "tegaderms",     label: "Tegaderms",     row: 2, description: "Transparent polyurethane film dressing — standard for securing peripheral IVs and central line sites while maintaining visualization of the insertion site." },
+  { id: "tegaderms",     label: "Tegaderms",     row: 2, description: "Transparent polyurethane film dressing, standard for securing peripheral IVs and central line sites while maintaining visualization of the insertion site. One useful thing you can do in the morning is to help prepare PIV kits, which require TWO tegaderms, one 18G, one 20G needles, alcohol wipes, tourniquets, gauze, saline flush, and IV extension connectors." },
   { id: "nasal-supplies", label: "Nasal / oral adj.", row: 2, description: "Nasal cannulas (2–6 L/min O2), nasal trumpets (lubricate well; relative contraindication in suspected basilar skull fracture), tongue depressors. Know what you're reaching for." },
 ];
 
@@ -551,33 +551,43 @@ window.ABOUT_RESIDENTS = [
   },
   {
     id: "resident-2",
-    name: "Dr. Aiden Rossi",
-    initials: "AR",
+    name: "Dr. Shriya Tanti",
+    initials: "ST",
     color: "#1a7a8a",
     title: "CA-2 Resident (PGY-3)",
-    photo: "images/dr-rossi.jpg",
-    bio: "Dr. Rossi is a CA-2 resident with a strong interest in cardiac and thoracic anesthesia. He completed his intern year in general surgery and has been recognized for his teaching of medical students on the anesthesia clerkship. He attended Tufts University School of Medicine.",
-    email: "aiden.rossi@yale.edu"
+    photo: "images/shriyatanti.jpg",
+    bio: "Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
+    email: "shriya.tanti@yale.edu"
   },
   {
     id: "resident-3",
-    name: "Dr. Sofia Reyes",
-    initials: "SR",
+    name: "Dr. Kenneth Hanton",
+    initials: "KH",
     color: "#8a5a1a",
     title: "CA-2 Resident (PGY-3)",
-    photo: "images/dr-reyes.jpg",
-    bio: "Dr. Reyes has a particular interest in obstetric anesthesia and global health. She has participated in medical mission trips to expand access to safe surgical care. She graduated from the University of Michigan Medical School and completed her internship at Yale-New Haven Hospital.",
-    email: "sofia.reyes@yale.edu"
+    photo: "images/kennethhanton.jpg",
+    bio: "Hometown: Napa, CA. Interests: traveling around the east coast, cocktail mixology, going to the zoo, pet cat, Mexican food enthusiast",
+    email: "kenneth.hanton@yale.edu"
   },
   {
     id: "resident-4",
-    name: "Dr. Marcus Kim",
-    initials: "MK",
+    name: "Dr. Adriana Perez",
+    initials: "AP",
     color: "#4a6b1a",
-    title: "CA-3 Resident (PGY-4)",
-    photo: "images/dr-kim.jpg",
-    bio: "Dr. Kim is a senior resident in his final clinical anesthesia year. He has served as a chief resident and plans to pursue a fellowship in critical care medicine. He is especially interested in the pharmacology of induction agents and the neuroscience of consciousness during anesthesia.",
-    email: "marcus.kim@yale.edu"
+    title: "CA-2 Resident (PGY-3)",
+    photo: "images/adrianaperez.jpg",
+    bio: "Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
+    email: "adriana.perez@yale.edu"
+  },
+  {
+    id: "resident-5",
+    name: "Dr. Kendra Brown",
+    initials: "KB",
+    color: "#730000",
+    title: "CA-2 Resident (PGY-3)",
+    photo: "images/kendrabrown.jpg",
+    bio: "Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
+    email: "kendra.brown@yale.edu"
   },
 ];
 

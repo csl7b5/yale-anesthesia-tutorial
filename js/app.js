@@ -196,8 +196,16 @@
   function selectSupply(supplyId) {
     const bin = (supplyBins || []).find(b => b.id === supplyId);
     if (!bin) return;
-    const html = `<p class="detail-body">${escapeHtml(bin.description || bin.label || "")}</p>`;
-    openContentsModal(bin.label, html);
+    const html = `
+      <div class="detail-image-area">
+        <img class="detail-image-display"
+             src="images/${escapeHtml(bin.id)}.jpg"
+             alt="${escapeHtml(bin.label)}"
+             onerror="this.parentElement.style.display='none'">
+      </div>
+      <p class="detail-category">Supply item</p>
+      <p class="detail-body">${escapeHtml(bin.description || bin.label || "")}</p>`;
+    openDetailModal(bin.label, html);
   }
 
   // ── Gas canister / volatile anesthetics ───────────────────────────────
@@ -209,11 +217,8 @@
       </div>
 
       <p class="volatile-overview">
-        Volatile anesthetics are halogenated hydrocarbons administered as gases via the breathing circuit.
-        They provide <strong>hypnosis, amnesia, and immobility</strong> in a dose-dependent fashion and are the most
-        common method of anesthesia maintenance worldwide. Understanding how they work — both
-        pharmacokinetically (how they get in and out of the body) and pharmacodynamically
-        (what they do once there) — is fundamental to safe anesthetic practice.
+        Volatile anesthetics are halogenated hydrocarbons administered as vaporized liquids (not gases) via the breathing circuit. They provide <strong>hypnosis, amnesia, and immobility</strong> in a dose-dependent fashion and remain one of the most common methods of anesthesia maintenance worldwide, though total intravenous anesthesia is also widely used (JACC, Thompson et al, 2024). Understanding how they work, both pharmacokinetically (how they get in and out of the body) and pharmacodynamically (what they do once there) is useful to learn for when 
+        you rotate in the OR with your residents and attending, as well as your Step 1 and 2.
       </p>
 
       <div class="volatile-concept-box">
@@ -221,20 +226,22 @@
         <p class="volatile-concept-box__body">
           <strong>MAC is the key unit of volatile anesthetic dosing.</strong> It is the alveolar concentration
           (at 1 atm, steady state, in 100% O₂) at which 50% of patients do not move in response to
-          a surgical skin incision. One MAC = 50% effective dose for immobility.
+          a surgical skin incision (Anaesthesia, Aranake et al, 2013). One MAC represents the median effective dose 
+          (ED50) for immobility, not necessarily 50% effective dose, as the term has evolved to reflect the median 
+          value for a population under controlled conditions (NEJM, Campagna et al, 2003).
           <br><br>
-          <strong>1.3 MAC</strong> is typically used clinically (prevents movement in ~95% of patients).
-          <strong>MAC-awake</strong> (the concentration at which 50% of patients open their eyes to command)
-          is approximately <strong>0.3–0.4 MAC</strong> — far below surgical MAC, which is why
-          patients can be deeply anesthetized yet have rapid return of consciousness when the agent is stopped.
-          <br><br>
+          <strong>1.3 MAC</strong> is typically used clinically as the threshold that prevents movement in ~95% of patients 
+          (Anaesthesia, Aranake et al, 2013).
           MAC is <strong>reduced</strong> by: age (↓ with age), hypothermia, opioids, nitrous oxide,
           pregnancy, hypotension, acute alcohol intoxication, and sedatives.
           MAC is <strong>increased</strong> by: hyperthermia, chronic alcohol use, and stimulant drugs.
+          Recent evidence suggests that mean arterial pressure is also associated with clinically delivered MAC, 
+          and female sex is associated with lower delivered MAC in practice, though females may actually have higher 
+          anesthetic requirements (Anesthesiology, Douller et al, 2025).
         </p>
       </div>
 
-      <p class="volatile-section-title">Agent Comparison at a Glance</p>
+      <p class="volatile-section-title">Volatiles You May See in the OR</p>
       <div class="agent-table-wrap">
         <table class="agent-table">
           <thead>
@@ -249,7 +256,7 @@
           <tbody>
             <tr>
               <th>MAC in O₂ (%)</th>
-              <td>2.0</td><td>1.15</td><td>6.0–6.6</td><td>~104 (adjunct only)</td>
+              <td>2.0</td><td>1.15</td><td>6.0</td><td>104 (adjunct only)</td>
             </tr>
             <tr>
               <th>Blood:Gas coeff.</th>
@@ -272,7 +279,7 @@
             </tr>
             <tr>
               <th>Key caveat</th>
-              <td><span class="agent-caution">⚠</span> Compound A at low flows (&lt;2 L/min)</td>
+              <td><span class="agent-caution">⚠</span> Compound A at low flows (&lt;2 L/min) depending on absorbent.</td>
               <td>Rarely used today; pungent odor limits use</td>
               <td><span class="agent-caution">⚠</span> Requires heated vaporizer (Tec 6)</td>
               <td><span class="agent-caution">⚠</span> Expands air-filled cavities; PONV</td>
@@ -280,6 +287,8 @@
           </tbody>
         </table>
       </div>
+
+      <p class = "volatile-overview"><strong>Note:</strong> MAC in O₂ (%) was derived from the FDA labels for a 40-year-old adult.</p>
 
       <p class="volatile-section-title">Pharmacokinetics: Getting In and Out</p>
       <div class="pk-stats">
@@ -289,7 +298,7 @@
       </div>
       <ul class="volatile-mech-list">
         <li><strong>Step 1 — Delivery:</strong> The vaporizer adds volatile agent to the fresh gas flow at a set concentration (FI). The agent travels through the circuit to the alveoli.</li>
-        <li><strong>Step 2 — Uptake:</strong> Volatile agent diffuses from the alveoli into the blood. The <em>blood:gas partition coefficient</em> governs how much dissolves: a low coefficient (desflurane 0.42, sevoflurane 0.65) means the blood holds little agent → alveolar concentration (FA) rapidly equals inspired concentration (FI). A high coefficient (isoflurane 1.4) means blood holds more → FA rises slowly.</li>
+        <li><strong>Step 2 — Uptake:</strong> Volatile agent diffuses from the alveoli into the blood. The <em>blood:gas partition coefficient</em> governs how much dissolves: a low coefficient (desflurane, sevoflurane) means the blood holds little agent → alveolar concentration (FA) rapidly equals inspired concentration (FI). A high coefficient (isoflurane, nitrous oxide) means blood holds more → FA rises slowly.</li>
         <li><strong>Step 3 — Distribution:</strong> Blood delivers agent to the brain (highly perfused). Brain:blood equilibration determines onset of effect. At steady state, brain concentration ≈ alveolar concentration.</li>
         <li><strong>Step 4 — Elimination:</strong> When agent is turned off, the same gradients run in reverse. Low B:G agents (desflurane, sevoflurane) wash out rapidly, giving faster emergence.</li>
       </ul>
@@ -301,19 +310,19 @@
         <li><strong>NMDA receptor inhibition:</strong> Weak glutamate blockade contributes to amnesia and analgesia.</li>
         <li><strong>HCN channel (Ih) inhibition:</strong> Hyperpolarization-activated cation channels are inhibited, suppressing thalamo-cortical oscillations — part of how consciousness is lost.</li>
         <li><strong>Two-pore domain K⁺ channels (TREK):</strong> Enhanced background K⁺ leak → neuronal hyperpolarization → reduced excitability.</li>
-        <li><strong>Dose-dependent system effects:</strong> As MAC increases: 0.5 MAC = sedation; 1 MAC = immobility (50%); 1.3 MAC = surgical anesthesia; &gt;2 MAC = cardiovascular and respiratory depression. All volatiles cause dose-dependent ↓ tidal volume, ↑ RR, bronchodilation, ↓ SVR, and ↓ cardiac contractility.</li>
+        <li><strong>Dose-dependent system effects:</strong> As MAC increases: >0.25 MAC = memory loss and sedation (Anaesthesia, Aranake et al, 2013); 1 MAC = immobility (50%); 1.3 MAC = surgical anesthesia; &gt;2 MAC = cardiovascular and respiratory depression. All volatiles cause dose-dependent ↓ minute ventilation (typically ↓ tidal volume, ↑ RR) (Anesthesia and Analgesia, Doi et al, 1987), bronchodilation, ↓ SVR, and ↓ cardiac contractility (Circulation, Page et al, 2016).</li>
       </ul>
 
       <div class="volatile-pearl">
         <span class="volatile-pearl__label">Attending Pearls</span>
         <p class="volatile-pearl__body">
-          <strong>Malignant Hyperthermia (MH):</strong> All volatile halogenated agents (sevoflurane, isoflurane, desflurane) are MH triggers. In an MH-susceptible patient, triggered episodes cause massive skeletal muscle hypermetabolism — rapidly rising EtCO₂ is often the earliest sign. Treatment: stop all triggers immediately, dantrolene 2.5 mg/kg IV, supportive care. MH hotline: 1-800-644-9737.
+          <strong>Malignant Hyperthermia (MH):</strong> All volatile halogenated agents (sevoflurane, isoflurane, desflurane) could be MH triggers. In an MH-susceptible patient, triggered episodes cause massive skeletal muscle hypermetabolism — an unexplained, rapidly rising EtCO₂ is often the earliest sign (JAMA, Litman et al, 2005). Treatment: stop all triggers immediately, begin dantrolene at minimum dose of 1.0 mg/kg IV, supportive care.
           <br><br>
-          <strong>Sevoflurane + Compound A:</strong> At fresh gas flows &lt;2 L/min, sevoflurane reacts with CO₂ absorbent (particularly older barium hydroxide lime) to form Compound A, a nephrotoxic vinyl ether. Modern absorbents (e.g., Amsorb Plus) minimize production. Clinical renal injury from compound A has not been conclusively demonstrated in humans, but maintaining flows ≥2 L/min remains a common practice.
+          <strong>Sevoflurane + Compound A:</strong> At fresh gas flows &lt;2 L/min, sevoflurane reacts with CO₂ absorbent (particularly older barium hydroxide lime) to form Compound A, a nephrotoxic vinyl ether. Modern absorbents (e.g., Amsorb Plus) minimize production. However, it is important to note that clinical renal injury from compound A has not been conclusively demonstrated in humans (British Journal of Anaesthesia, Park et al, 2022).
           <br><br>
-          <strong>Desflurane ≠ mask induction:</strong> Despite its pharmacokinetic advantages, desflurane's pungent odor causes significant airway irritation — coughing, laryngospasm, and breath-holding — making it unsuitable for inhalational induction. It is typically switched in after IV induction once the airway is secured.
+          <strong>Desflurane ≠ mask induction:</strong> Despite its pharmacokinetic advantages, desflurane's pungent odor causes significant airway irritation — coughing, laryngospasm, and breath-holding — making it unsuitable for inhalational induction, especially contraindicated in pediatric populations. In fact, desaturation below 90% occurred in 6% of adult patients during induction.
           <br><br>
-          <strong>Environmental impact:</strong> Desflurane has the highest global warming potential of the volatiles (~2,540× CO₂ over 100 years) and is being phased out at many institutions. Sevoflurane (~130× CO₂) and isoflurane (~510× CO₂) are less impactful. Nitrous oxide is also a potent greenhouse gas and depletes stratospheric ozone.
+          <strong>Environmental impact:</strong> Desflurane has the highest global warming potential of the volatiles (~2,540× CO₂ over 100 years) and is being phased out at many institutions (The Lancet, Talbot et al, 2025). Sevoflurane (~130× CO₂) and isoflurane (~510× CO₂) are less impactful. Nitrous oxide is also a potent greenhouse gas and depletes stratospheric ozone.
         </p>
       </div>`;
 
