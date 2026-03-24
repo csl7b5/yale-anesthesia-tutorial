@@ -143,11 +143,9 @@
       12, 82
     );
 
-    // Auto-PEEP: non-zero when expiratory time is too short to empty lungs
-    // Rule: auto-PEEP ≈ volume remaining at breath start = (pip-peep)·e^(-te/tau)
-    const autoPEEP = te < 2 * tau
-      ? Math.round(Math.max(0, (pip_cmH2O - peep) * Math.exp(-te / Math.max(tau, 0.05)) * 0.5))
-      : 0;
+    // Auto-PEEP: volume trapped when te is too short for full exhalation (needs ~3τ to empty 95%)
+    // Use continuous formula — rounds to 0 naturally when tau is small (normal lungs)
+    const autoPEEP = Math.round(Math.max(0, (pip_cmH2O - peep) * Math.exp(-te / Math.max(tau, 0.05)) * 0.5));
 
     return {
       tv_mL, tv_exhaled, pip: pip_cmH2O, plat: plat_cmH2O, peep,
