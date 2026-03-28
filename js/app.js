@@ -442,8 +442,16 @@
     });
   }
 
-  buildBubbles("attending-bubbles", window.ABOUT_ATTENDINGS || []);
+  buildBubbles("attending-bubbles", (window.ABOUT_ATTENDINGS || []).concat(window.ABOUT_FACULTY || []));
   buildBubbles("resident-bubbles",  window.ABOUT_RESIDENTS  || []);
+  buildBubbles("student-bubbles",   window.ABOUT_STUDENTS   || []);
+
+  // Show "none listed" hint for students when empty
+  var studentContainer = document.getElementById("student-bubbles");
+  var studentHint      = document.getElementById("students-empty");
+  if (studentHint && studentContainer && !studentContainer.hasChildNodes()) {
+    studentHint.removeAttribute("hidden");
+  }
 
   document.getElementById("modal-attending-close")?.addEventListener("click", function () { modalAttending?.close(); });
   modalAttending?.addEventListener("click", function (e) { if (e.target === modalAttending) modalAttending.close(); });

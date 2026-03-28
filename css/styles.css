@@ -1206,25 +1206,20 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3.5rem 2rem 5rem;
+  padding: 1.5rem 2rem 5rem;
   background:
     radial-gradient(ellipse at 20% 15%, rgba(40, 109, 192, 0.09) 0%, transparent 55%),
     radial-gradient(ellipse at 80% 85%, rgba(40, 109, 192, 0.07) 0%, transparent 55%),
     var(--bg-page);
 }
 
-.about-page__header {
-  text-align: center;
-  max-width: 540px;
-  margin-bottom: 3rem;
-}
 
 .about-page__group {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 860px;
+  max-width: 920px;
   margin-bottom: 3.5rem;
 }
 
@@ -1241,28 +1236,25 @@ body {
   text-align: center;
 }
 
-.about-page__header h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 0.6rem;
+.about-page__empty-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 1rem 0 0.5rem;
+  opacity: 0.65;
 }
 
-.about-page__header p {
-  font-size: 1rem;
-  color: var(--text-muted);
-  line-height: 1.65;
-  margin: 0;
-}
 
 /* ── Floating bubbles ── */
 
 .attending-bubbles {
   display: flex;
   flex-wrap: wrap;
-  gap: 2.5rem 3.5rem;
+  gap: 2.5rem 2rem;
   justify-content: center;
-  max-width: 860px;
+  width: 100%;
+  max-width: 900px;
 }
 
 @keyframes attending-float {
@@ -1280,6 +1272,8 @@ body {
   align-items: center;
   gap: 0.8rem;
   padding: 0.5rem;
+  width: 152px;
+  box-sizing: border-box;
   animation: attending-float 5.2s ease-in-out infinite;
 }
 
@@ -1558,57 +1552,86 @@ body {
   width: 100%;
 }
 
-.disclaimer-card {
+/* ── Fixed disclaimer widget ────────────────────────────────────────────── */
+.disclaimer-widget {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 900;
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  background: linear-gradient(135deg, #fdf8f2 0%, #faf4ec 100%);
-  border: 1px solid rgba(180, 130, 60, 0.22);
-  border-left: 4px solid rgba(180, 130, 60, 0.55);
-  border-radius: var(--radius-md);
-  padding: 1rem 1.25rem;
-  box-shadow: 0 2px 12px rgba(18, 30, 45, 0.07);
+  flex-direction: row;
+  align-items: stretch;
+  filter: drop-shadow(2px 2px 8px rgba(0,0,0,0.18));
 }
 
-.disclaimer-card__icon {
-  font-size: 1.4rem;
-  line-height: 1;
+.disclaimer-widget__tab {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  background: linear-gradient(180deg, #b8722a 0%, #9a5c1a 100%);
+  color: #fff;
+  padding: 1rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: default;
+  /* rotate(180deg) visually mirrors border-radius, so swap: left=rounded, right=flat */
+  border-radius: 7px 0 0 7px;
+  user-select: none;
   flex-shrink: 0;
-  opacity: 0.55;
-  margin-top: 1px;
 }
 
-.disclaimer-card__body {
-  min-width: 0;
+.disclaimer-widget__panel {
+  width: 0;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #fdf8f2 0%, #faf4ec 100%);
+  border-top: 1px solid rgba(180, 130, 60, 0.25);
+  border-bottom: 1px solid rgba(180, 130, 60, 0.25);
+  border-right: 1px solid rgba(180, 130, 60, 0.25);
+  border-radius: 0 8px 8px 0;
+}
+
+.disclaimer-widget:hover .disclaimer-widget__panel {
+  width: 330px;
+}
+
+/* Fixed-width inner so overflow:hidden clips cleanly */
+.disclaimer-widget__inner {
+  width: 330px;
+  box-sizing: border-box;
+  padding: 1rem 1.1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 
-.disclaimer-card__heading {
+.disclaimer-widget__heading {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: rgba(140, 90, 20, 0.85);
+  color: rgba(140, 90, 20, 0.9);
 }
 
-.disclaimer-card__text {
+.disclaimer-widget__text {
   margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.65;
+  font-size: 0.775rem;
+  line-height: 1.6;
   color: var(--text-muted);
 }
 
-.disclaimer-card__text strong {
+.disclaimer-widget__text strong {
   color: var(--text-primary);
   font-weight: 600;
 }
 
-.disclaimer-card__source {
+.disclaimer-widget__source {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: rgba(88, 104, 122, 0.65);
   font-style: italic;
 }

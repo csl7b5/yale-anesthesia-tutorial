@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Interactive educational prototype of an anesthesia Pyxis-style station for Yale Anesthesia Tutorial." />
-    <title>Yale Anesthesiology Clerkship - Interactive Tutorials</title>
+    <title>Anesthesia Playground - Yale School of Medicine</title>
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
@@ -13,7 +13,7 @@
       <!-- ── Navigation bar ──────────────────────────────────────────────── -->
       <nav class="site-nav" aria-label="Site navigation">
         <div class="site-nav__inner">
-          <span class="site-nav__brand">Yale Anesthesiology Clerkship</span>
+          <span class="site-nav__brand">Anesthesia Playground</span>
           <div class="site-nav__tabs" role="tablist">
             <button class="site-nav__tab site-nav__tab--active" role="tab"
                     aria-selected="true" data-page="tour">Interactive Pyxis</button>
@@ -207,39 +207,29 @@
         </div>
       </dialog>
 
-      <footer class="site-footer">
-        <div class="disclaimer-card">
-          <div class="disclaimer-card__icon" aria-hidden="true">⚕</div>
-          <div class="disclaimer-card__body">
-            <p class="disclaimer-card__heading">Educational Resource — Not for Clinical Decision-Making</p>
-            <p class="disclaimer-card__text">
-              This tool is designed exclusively for medical students on anesthesiology clerkships to build context around what they observe in the OR.
-              The information presented here — including drug doses, mechanisms, and clinical pearls — is meant to supplement direct clinical teaching,
-              not replace it. It should <strong>never be relied upon as the sole basis for patient care decisions.</strong>
-              Always conduct your own research, defer to your supervising attendings, follow your institution's local protocols and formularies,
-              and exercise clinical judgment adapted to each patient's unique circumstances.
-            </p>
-            <p class="disclaimer-card__source">Content informed by attending faculty, ASA/AHA/ACC guidelines, FDA-approved labeling, peer-reviewed literature from reputable journals, and OpenEvidence.</p>
-          </div>
-        </div>
-      </footer>
-
       </section><!-- /page-tour -->
 
       <!-- ── Page: Meet Your Team ─────────────────────────────────────────── -->
       <section id="page-about" class="page-section" role="tabpanel">
-        <div class="about-page">
-          <div class="about-page__header">
-            <h2>Meet Your Team</h2>
-            <p>The faculty and residents working with you during the clerkship. Click to learn more and reach out directly.</p>
+        <header class="site-header">
+          <div class="site-header__card">
+            <h1>Meet Your Team</h1>
+            <p>The faculty and residents working with you on the clerkship, subinternships, electives, and this interactive playground website for eager anesthesiology learners. <br> Click a bubble to learn more and reach out directly.</p>
           </div>
+        </header>
+        <div class="about-page">
           <div class="about-page__group">
-            <h3 class="about-page__group-title">Attendings</h3>
-            <div class="attending-bubbles" id="attending-bubbles" aria-label="Attending physicians"></div>
+            <h3 class="about-page__group-title">Attendings &amp; Faculty</h3>
+            <div class="attending-bubbles" id="attending-bubbles" aria-label="Attending physicians and advising faculty"></div>
           </div>
           <div class="about-page__group">
             <h3 class="about-page__group-title">Residents</h3>
             <div class="attending-bubbles" id="resident-bubbles" aria-label="Anesthesiology residents"></div>
+          </div>
+          <div class="about-page__group" id="students-group">
+            <h3 class="about-page__group-title">Students</h3>
+            <div class="attending-bubbles" id="student-bubbles" aria-label="Medical students"></div>
+            <p class="about-page__empty-hint" id="students-empty" hidden>No students listed yet.</p>
           </div>
         </div>
       </section><!-- /page-about -->
@@ -274,6 +264,25 @@
           <button type="button" class="chat-panel__send" id="chat-send" aria-label="Send">↑</button>
         </footer>
       </div>
+
+    <!-- ── Fixed disclaimer widget ─────────────────────────────────────── -->
+    <div class="disclaimer-widget" role="complementary" aria-label="Educational disclaimer">
+      <div class="disclaimer-widget__tab" aria-hidden="true">⚕ Educational Disclaimer</div>
+      <div class="disclaimer-widget__panel">
+        <div class="disclaimer-widget__inner">
+          <p class="disclaimer-widget__heading">Educational Resource — Not for Clinical Decision-Making</p>
+          <p class="disclaimer-widget__text">
+            This tool is designed exclusively for medical students on anesthesiology clerkships to build context around
+            what they observe in the OR. The information presented, including drug doses, mechanisms, and clinical pearls
+            , is meant to supplement direct teaching, not replace it.
+            It should <strong>never be relied upon as the sole basis for patient care decisions.</strong>
+            Always conduct your own research, defer to your supervising attendings, follow local protocols and formularies,
+            and exercise clinical judgment adapted to each patient's unique circumstances.
+          </p>
+          <p class="disclaimer-widget__source">Informed by attending faculty, ASA/AHA/ACC guidelines, FDA labeling, peer-reviewed literature, and OpenEvidence.</p>
+        </div>
+      </div>
+    </div>
 
     </div><!-- /app -->
 

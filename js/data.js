@@ -537,6 +537,59 @@ window.PYXIS_LEFT_DRAWERS = [
   },
 ];
 
+/** Advising faculty for the clerkship project */
+window.ABOUT_FACULTY = [
+  // Add advising faculty entries here following the same format:
+  // {
+  //   id: "faculty-1",
+  //   name: "Dr. First Last",
+  //   initials: "FL",
+  //   color: "#2a5c8a",
+  //   title: "Title / Role",
+  //   photo: "images/firstname-last.jpg",
+  //   bio: "Bio text here.",
+  //   email: "email@yale.edu"
+  // },
+
+  {
+    id: "faculty-1",
+    name: "Dr. Viji Kurup",
+    initials: "VK",
+    color: "#2a5c8a",
+    title: "Professor of Anesthesiology",
+    photo: "images/vijikurup_thumb.jpg",
+    photo_high: "images/vijikurup_high.jpg",
+    bio: "Viji Kurup MD is Professor in the Department of Anesthesiology at Yale. Viji completed her Residency in Anesthesiology and Fellowship in Cardiothoracic Anesthesia at Yale. She has been on faculty in the department since 2005 where she has developed a career as a medical educator. She has completed her fellowship in Medical Education and is currently Vice Chair for Medical Education as well as Director of the Yale Anesthesia Media Lab and the Course Director for the Anesthesia Resident Simulations. She has led the integration of the Flipped Classroom model for Anesthesia Resident Training at Yale. Viji's academic interests include participating in Global Health projects and exploring innovative ways of integrating technology in medical education. She is also the Co-Chair for the Global health and outreach committee in the Society for Education in Anesthesia (SEA). She has volunteered with the Health Volunteer Overseas Program (www.hvousa.org) in Vietnam. She enjoys teaching and was awarded the Faculty Award for Excellence in Education and Leadership for the Department of Anesthesiology. She is a firm believer in the importance of physician wellness and has introduced a comprehensive wellness curriculum within her department. She is the Past President of the CT State Society of Anesthesiologists and is actively involved in advocacy efforts both at the State and Federal level. She also volunteers in the community and is a regular speaker at career day for inner city schools in New Haven. She lives in Trumbull CT with her husband and two kids, and because that was clearly not keeping her busy enough, a high-maintenance cat! In her free time, she enjoys cooking, painting (acrylic on canvas), reading and meditating. Dr. Kurup is a key faculty advisor for the Anesthesia Playground website.",
+    email: "viji.kurup@yale.edu",
+  },
+];
+
+/** Medical students on rotation */
+window.ABOUT_STUDENTS = [
+  // Add student entries here following the same format:
+  // {
+  //   id: "student-1",
+  //   name: "First Last",
+  //   initials: "FL",
+  //   color: "#286dc0",
+  //   title: "MS3 / MS4 — Yale School of Medicine",
+  //   photo: "images/firstname-last.jpg",
+  //   bio: "Bio text here.",
+  //   email: "email@yale.edu"
+  // },
+  {
+
+    id: "student-1",
+    name: "Chanseo (CS) Lee",
+    initials: "CL",
+    color: "#286dc0",
+    title: "MS3 (Tech Lead)",
+    photo: "images/chanseolee.jpg",
+    bio: "Chanseo (CS) is a third-year medical student at the Yale School of Medicine. Previously, he studied at the Massachusetts Institute of Technology. His interests lie in the intersection of perioperative medicine, precision biotechnology, and artificial intelligence. He engages in biotech venture capital (Civilization Ventures, San Francisco, CA), language models in data mining/clincal workflows (Sporo Health, Boston, MA), and AI product and strategy (Deerfield Management, New York, NY). He is also involved in research at the Yale Cardiothoracic Surgery Outcomes Group and at Harvard/MGH Center for Systems Biology. He works with Dr. Szabo, Dr. Guzzi, and Dr. Kurup to first develop the interactive Anesthesia Playground for the Department of Anesthesiology with the aims of furthering personalized medical education. In his free time, he plays guitar and enjoys breakdancing.",
+    email: "chanseo.lee@yale.edu"
+  },
+];
+
 /** Attendings for About Us page */
 window.ABOUT_RESIDENTS = [
   {
@@ -600,7 +653,7 @@ window.ABOUT_ATTENDINGS = [
     title: "Associate Professor of Anesthesiology",
     photo: "images/christopherszabo_thumb.jpg",
     photo_high: "images/christopherszabo_high.jpg",
-    bio: "Dr. Christopher Szabo is Associate Professor of Anesthesiology at Yale New Haven Hospital. He received his medical degree from the University of Connecticut School of Medicine in 2008. Following his Anesthesia residency at Yale University, Dr. Szabo went on to complete both a Critical Care fellowship and a Postdoctoral Fellowship at Columbia University. In 2017, Dr. Szabo joined the Yale University School of Medicine faculty, providing clinical care to patients in the General Section, Cardiothoracic ICU. Dr. Szabo first conceptualized the interactive anesthesia OR guide based on J.K. Rowling's old websites.",
+    bio: "Dr. Christopher Szabo is Associate Professor of Anesthesiology at Yale New Haven Hospital. He received his medical degree from the University of Connecticut School of Medicine in 2008. Following his Anesthesia residency at Yale University, Dr. Szabo went on to complete both a Critical Care fellowship and a Postdoctoral Fellowship at Columbia University. In 2017, Dr. Szabo joined the Yale University School of Medicine faculty, providing clinical care to patients in the General Section, Cardiothoracic ICU. Dr. Szabo was the first conceptualizer of this interactive anesthesia playground website - he derived inspiration from J.K. Rowling's old websites.",
     email: "christopher.szabo@yale.edu"
   },
   {
@@ -611,7 +664,7 @@ window.ABOUT_ATTENDINGS = [
     title: "Assistant Professor of Anesthesiology",
     photo: "images/johnguzzi_thumb.jpg",
     photo_high: "images/johnguzzi_high.jpg",
-    bio: "Dr. John Guzzi is an Assistant Professor of Anesthesiology at Yale. He is also the Rotation Director for the Advanced Training Period (ATP) Subinternship and Clerkship Site Director for York Street Campus.",
+    bio: "Dr. John Guzzi is an anesthesiologist based in New Haven, CT, with a subspecialty in Critical Care Medicine. He completed his residency and served as Chief Resident in Anesthesiology at Yale-New Haven Medical Center, where he also pursued a fellowship in Critical Care Medicine. Dr. Guzzi graduated from Georgetown University School of Medicine in 2019. His publications include articles in The New England Journal of Medicine, Journal of Clinical Anesthesia, and Anesthesiology. His research interests range from liver transplantation, medical education, to cardiac anesthesia. He is also the Rotation Director for the Advanced Training Period (ATP) Subinternship and Clerkship Site Director for York Street Campus. Dr. Guzzi was the first developer behind the 30-day Anesthesia Curriculum wheel and is currently working on the 20-day curriculum for medical students, CA-1s, and CA-3s.",
     email: "john.guzzi@yale.edu"
   },
 ];
