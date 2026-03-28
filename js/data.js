@@ -583,9 +583,9 @@ window.ABOUT_STUDENTS = [
     name: "Chanseo (CS) Lee",
     initials: "CL",
     color: "#286dc0",
-    title: "MS3 (Tech Lead)",
+    title: "Founding Tech Lead (MS3)",
     photo: "images/chanseolee.jpg",
-    bio: "Chanseo (CS) is a third-year medical student at the Yale School of Medicine. Previously, he studied at the Massachusetts Institute of Technology. His interests lie in the intersection of perioperative medicine, precision biotechnology, and artificial intelligence. He engages in biotech venture capital (Civilization Ventures, San Francisco, CA), language models in data mining/clincal workflows (Sporo Health, Boston, MA), and AI product and strategy (Deerfield Management, New York, NY). He is also involved in research at the Yale Cardiothoracic Surgery Outcomes Group and at Harvard/MGH Center for Systems Biology. Now, he is building out the interactive Anesthesia Playground with visionary, academic, and strategic support from Dr. Szabo, Dr. Guzzi, and Dr. Kurup,with the aims of furthering personalized medical education. In his free time, he plays guitar and enjoys breakdancing.",
+    bio: "Chanseo (CS) is a third-year medical student at the Yale School of Medicine interested in anesthesiology. Previously, he studied at the Massachusetts Institute of Technology. His interests lie in the intersection of perioperative medicine, precision biotechnology, and artificial intelligence. He engages in biotech venture capital (Civilization Ventures, San Francisco, CA), language models in data mining/clincal workflows (Sporo Health, Boston, MA), and AI product and strategy (Deerfield Management, New York, NY). He is also involved in research at the Yale Cardiothoracic Surgery Outcomes Group and at Harvard/MGH Center for Systems Biology. Now, he is building out the interactive Anesthesia Playground with visionary, academic, and strategic support from Dr. Szabo, Dr. Guzzi, and Dr. Kurup, with the aims of furthering personalized medical education. In his free time, he plays guitar and enjoys breakdancing.",
     email: "chanseo.lee@yale.edu"
   },
 ];
