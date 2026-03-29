@@ -20,6 +20,8 @@
   const detailTitle   = document.getElementById("modal-detail-title");
   const detailBody    = document.getElementById("modal-detail-body");
   const detailClose   = document.getElementById("modal-detail-close");
+  const detailBack    = document.getElementById("modal-detail-back");
+  const detailFooter  = document.getElementById("modal-detail-footer");
   const mainDrawerEls = document.querySelectorAll(".main-drawer");
   const leftDrawerEls = document.querySelectorAll(".left-drawer");
   const cellEls       = document.querySelectorAll(".drawer-cell");
@@ -67,14 +69,15 @@
     modalContents.showModal();
   }
 
-  function openDetailModal(title, bodyHtml) {
-    detailTitle.textContent = title;
-    detailBody.innerHTML    = bodyHtml;
+  function openDetailModal(title, bodyHtml, fromDrawer = false) {
+    detailTitle.textContent  = title;
+    detailBody.innerHTML     = bodyHtml;
+    detailFooter.hidden      = !fromDrawer;
     modalDetail.showModal();
   }
 
   // ── Render helpers ─────────────────────────────────────────────────────
-  function renderMedicationDetail(medId) {
+  function renderMedicationDetail(medId, fromDrawer = false) {
     const med = meds[medId];
     if (!med) return;
 
@@ -113,10 +116,10 @@
       </dl>
       ${med.pearl ? `<div class="detail-pearl"><span class="detail-pearl__label">Attending Pearl</span>${escapeHtml(med.pearl)}</div>` : ""}`;
 
-    openDetailModal(med.name, html);
+    openDetailModal(med.name, html, fromDrawer);
   }
 
-  function renderEquipmentDetail(item) {
+  function renderEquipmentDetail(item, fromDrawer = false) {
     if (!item) return;
     const html = `
       <div class="detail-image-area">
@@ -127,7 +130,7 @@
       </div>
       <p class="detail-category">${escapeHtml(item.category || "")}</p>
       <p class="detail-body">${escapeHtml(item.description || "")}</p>`;
-    openDetailModal(item.name, html);
+    openDetailModal(item.name, html, fromDrawer);
   }
 
   // ── Selection handlers ─────────────────────────────────────────────────
@@ -152,10 +155,7 @@
     );
 
     contentsBody.querySelectorAll(".med-tile").forEach(tile => {
-      tile.addEventListener("click", () => {
-        modalContents.close();
-        renderMedicationDetail(tile.dataset.medId);
-      });
+      tile.addEventListener("click", () => renderMedicationDetail(tile.dataset.medId, true));
     });
   }
 
@@ -178,10 +178,7 @@
 
     contentsBody.querySelectorAll(".equip-tile").forEach(tile => {
       const item = (drawer.items || []).find(i => i.id === tile.dataset.itemId);
-      tile.addEventListener("click", () => {
-        modalContents.close();
-        renderEquipmentDetail(item);
-      });
+      tile.addEventListener("click", () => renderEquipmentDetail(item, true));
     });
   }
 
@@ -338,7 +335,11 @@
 
   // ── Wire up controls ───────────────────────────────────────────────────
   contentsClose?.addEventListener("click", () => modalContents?.close());
-  detailClose?.addEventListener("click", () => modalDetail?.close());
+  detailClose?.addEventListener("click", () => {
+    modalDetail?.close();
+    if (modalContents?.open) modalContents.close();
+  });
+  detailBack?.addEventListener("click", () => modalDetail?.close());
 
   const sideAuxEl = document.getElementById("side-aux");
   if (sideAuxEl) {

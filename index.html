@@ -32,7 +32,7 @@
         <div class="site-header__card">
           <h1>Interactive Pyxis</h1>
           <p>
-            A Pyxis-inspired cheatsheet for clerkship students learning <strong>where</strong> medications and supplies live,
+            A Pyxis-inspired cheatsheet for medical students learning <strong>where</strong> medications and supplies live,
             <strong>what</strong> they are, and <strong>why</strong> they matter.
             You will see these machines in the OR and sometimes in the hospital hallways - feel free to explore!
           </p>
@@ -204,6 +204,9 @@
           <div class="modal__body modal__body--detail" id="modal-detail-body">
             <p class="empty-hint">Choose an item in the drawer to see clinical orientation and pearls.</p>
           </div>
+          <footer class="modal__footer" id="modal-detail-footer" hidden>
+            <button type="button" class="modal__back-btn" id="modal-detail-back" aria-label="Back to drawer">← Back to drawer</button>
+          </footer>
         </div>
       </dialog>
 
@@ -272,7 +275,7 @@
         <div class="disclaimer-widget__inner">
           <p class="disclaimer-widget__heading">Educational Resource — Not for Clinical Decision-Making</p>
           <p class="disclaimer-widget__text">
-            This tool is designed exclusively for medical students on anesthesiology clerkships to build context around
+            This tool is designed exclusively for medical students on anesthesiology rotations to build context around
             what they observe in the OR. The information presented, including drug doses, mechanisms, and clinical pearls
             , is meant to supplement direct teaching, not replace it.
             It should <strong>never be relied upon as the sole basis for patient care decisions.</strong>

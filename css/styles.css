@@ -803,6 +803,34 @@ body {
   min-width: 0;
 }
 
+.modal__footer {
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--panel-border);
+  background: rgba(248, 245, 241, 0.9);
+  display: flex;
+  justify-content: center;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.modal__back-btn {
+  appearance: none;
+  background: none;
+  border: 1px solid rgba(40, 109, 192, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.modal__back-btn:hover {
+  background: rgba(40, 109, 192, 0.08);
+  border-color: var(--accent);
+}
+
 .modal__eyebrow {
   margin: 0;
   font-size: 0.6875rem;
