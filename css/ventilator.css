@@ -403,7 +403,7 @@ html { scrollbar-gutter: stable; }
   background: linear-gradient(135deg, #0d1830 0%, #101e38 100%);
   border: 1px solid #1e3050;
   border-radius: 14px;
-  padding: 16px 22px;
+  padding: 1.5rem 2.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   text-align: center;
 }
@@ -411,14 +411,14 @@ html { scrollbar-gutter: stable; }
   font-size: clamp(1.35rem, 2.5vw, 1.75rem);
   font-weight: 700;
   color: #c8ddf4;
-  margin: 0 0 5px;
+  margin: 0;
   letter-spacing: -0.02em;
 }
 .vent-intro-card p {
   font-size: 0.9375rem;
   color: #7090b0;
   line-height: 1.55;
-  margin: 0 auto;
+  margin: 0.55rem auto 0;
   max-width: 860px;
 }
 
