@@ -794,6 +794,50 @@
   </div>
 </dialog>
 
+<!-- ── Fixed disclaimer widget ──────────────────────────────────────────── -->
+<div class="disclaimer-widget" role="complementary" aria-label="Educational disclaimer">
+  <div class="disclaimer-widget__tab" aria-hidden="true">⚕ Educational Sources and Disclaimer</div>
+  <div class="disclaimer-widget__panel">
+    <div class="disclaimer-widget__inner">
+      <p class="disclaimer-widget__heading">Educational Resource — Not for Clinical Decision-Making</p>
+      <p class="disclaimer-widget__text">
+        This tool is designed exclusively for medical students on anesthesiology rotations to build context around
+        what they observe in the OR. The information presented, including drug doses, mechanisms, and clinical pearls
+        , is meant to supplement direct teaching, not replace it.
+        It should <strong>never be relied upon as the sole basis for patient care decisions.</strong>
+        Always conduct your own research, defer to your supervising attendings, follow local protocols and formularies,
+        and exercise clinical judgment adapted to each patient.
+      </p>
+      <p class="disclaimer-widget__source">Informed by attending faculty, ASA/AHA/ACC guidelines, FDA labeling, peer-reviewed literature, and the <strong>Manual of Clinical Anesthesiology</strong> by Chu, Traynor, and Kurup.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Fixed feedback widget (right side) ──────────────────────────────── -->
+<div class="feedback-widget" id="feedback-widget" role="complementary" aria-label="Share feedback">
+  <div class="feedback-widget__panel">
+    <div class="feedback-widget__inner">
+      <div class="feedback-widget__header">
+        <span class="feedback-widget__title">📝 Website Feedback</span>
+        <div class="feedback-widget__actions">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSc27Ic13RxeNzyR7CU9cGFNYJV1PdYIiwMpdytQK4e_eM158Q/viewform"
+             target="_blank" rel="noopener" class="feedback-widget__newtab"
+             title="Open in new tab to preserve your answers while navigating">↗ Open in new tab</a>
+          <button class="feedback-widget__close" aria-label="Close feedback panel">×</button>
+        </div>
+      </div>
+      <p class="feedback-widget__hint">Tip: use "Open in new tab" above if you plan to navigate between pages while filling this out.</p>
+      <iframe
+        src="https://docs.google.com/forms/d/e/1FAIpQLSc27Ic13RxeNzyR7CU9cGFNYJV1PdYIiwMpdytQK4e_eM158Q/viewform?embedded=true"
+        class="feedback-widget__iframe"
+        frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+    </div>
+  </div>
+  <button class="feedback-widget__tab" id="feedback-tab" aria-label="Open feedback form" aria-expanded="false">
+    📝 Share Feedback
+  </button>
+</div>
+
 <script src="js/ventilator.js"></script>
 <script src="js/monitor-tutorial.js"></script>
 <script src="js/analytics.js"></script>

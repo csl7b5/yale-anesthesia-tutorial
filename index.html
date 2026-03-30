@@ -297,6 +297,31 @@
 
     </div><!-- /app -->
 
+    <!-- ── Fixed feedback widget (right side) ──────────────────────────── -->
+    <div class="feedback-widget" id="feedback-widget" role="complementary" aria-label="Share feedback">
+      <div class="feedback-widget__panel">
+        <div class="feedback-widget__inner">
+          <div class="feedback-widget__header">
+            <span class="feedback-widget__title">📝 Website Feedback</span>
+            <div class="feedback-widget__actions">
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSc27Ic13RxeNzyR7CU9cGFNYJV1PdYIiwMpdytQK4e_eM158Q/viewform"
+                 target="_blank" rel="noopener" class="feedback-widget__newtab"
+                 title="Open in new tab to preserve your answers while navigating">↗ Open in new tab</a>
+              <button class="feedback-widget__close" aria-label="Close feedback panel">×</button>
+            </div>
+          </div>
+          <p class="feedback-widget__hint">Tip: use "Open in new tab" above if you plan to navigate between pages while filling this out.</p>
+          <iframe
+            src="https://docs.google.com/forms/d/e/1FAIpQLSc27Ic13RxeNzyR7CU9cGFNYJV1PdYIiwMpdytQK4e_eM158Q/viewform?embedded=true"
+            class="feedback-widget__iframe"
+            frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+        </div>
+      </div>
+      <button class="feedback-widget__tab" id="feedback-tab" aria-label="Open feedback form" aria-expanded="false">
+        📝 Share Feedback
+      </button>
+    </div>
+
     <!-- Inline: build controlled-grid cells -->
     <script>
       (function () {

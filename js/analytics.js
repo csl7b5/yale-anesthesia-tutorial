@@ -312,4 +312,32 @@
 
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  //  FEEDBACK WIDGET — both pages
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const FEEDBACK_KEY   = 'fbPanelOpen';
+  const feedbackWidget = document.getElementById('feedback-widget');
+  const feedbackTab    = document.getElementById('feedback-tab');
+  const feedbackClose  = feedbackWidget?.querySelector('.feedback-widget__close');
+
+  if (feedbackWidget && feedbackTab) {
+    function setFeedbackOpen(open) {
+      feedbackWidget.classList.toggle('is-open', open);
+      feedbackTab.setAttribute('aria-expanded', String(open));
+      sessionStorage.setItem(FEEDBACK_KEY, open ? '1' : '0');
+    }
+
+    // Restore panel state when navigating between pages
+    if (sessionStorage.getItem(FEEDBACK_KEY) === '1') setFeedbackOpen(true);
+
+    feedbackTab.addEventListener('click', () => {
+      const willOpen = !feedbackWidget.classList.contains('is-open');
+      setFeedbackOpen(willOpen);
+      if (willOpen) track('feedback_form_opened', { page: PAGE });
+    });
+
+    feedbackClose?.addEventListener('click', () => setFeedbackOpen(false));
+  }
+
 })();
