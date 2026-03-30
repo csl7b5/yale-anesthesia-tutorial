@@ -397,7 +397,7 @@ html { scrollbar-gutter: stable; }
    ══════════════════════════════════════════════════════════════════════════ */
 /* ── Intro card ──────────────────────────────────────────────────────────── */
 .vent-intro-card {
-  max-width: 1055px;
+  max-width: 680px;
   margin: 0 auto 10px;
   box-sizing: border-box;
   background: linear-gradient(135deg, #0d1830 0%, #101e38 100%);

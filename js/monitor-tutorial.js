@@ -112,15 +112,15 @@
     }
 
     const MODES = {
-      normal:       { sys: 0.98, dia: 0.58, notchH: 0.740, decK: 5.8 },
-      hypotension:  { sys: 0.55, dia: 0.34, notchH: 0.440, decK: 5.8 },
-      hyperdynamic: { sys: 1.30, dia: 0.40, notchH: 0.870, decK: 4.6 },
+      normal:       { sys: 0.98, dia: 0.58, notchH: 0.840, decK: 7.5 },
+      hypotension:  { sys: 0.55, dia: 0.34, notchH: 0.495, decK: 7.5 },
+      hyperdynamic: { sys: 1.30, dia: 0.40, notchH: 0.945, decK: 6.2 },
     };
     const c = MODES[mode] || MODES.normal;
 
-    const upEnd  = 0.08; // end of upstroke
-    const pkEnd  = 0.13; // end of systolic peak plateau
-    const notchP = 0.30; // dicrotic notch — closer to systolic peak
+    const upEnd  = 0.07; // end of upstroke
+    const pkEnd  = 0.09; // very short plateau → pointed systolic peak
+    const notchP = 0.20; // dicrotic notch — immediately after systolic peak
 
     if (phase < upEnd) {
       const t = phase / upEnd;
@@ -135,7 +135,7 @@
     const dNotch = (notchP - pkEnd) / (1 - pkEnd);
     const baseAtNotch = (c.sys - c.dia) * Math.exp(-c.decK * dNotch) + c.dia;
     const notchAmp = Math.max(0, c.notchH - baseAtNotch);
-    return Math.max(c.dia * 0.88, decay + notchAmp * g(phase, notchP, 0.022, 1.0));
+    return Math.max(c.dia * 0.88, decay + notchAmp * g(phase, notchP, 0.028, 1.0));
   }
 
   // SpO2 pleth: each mode has distinct amplitude AND morphology
@@ -179,7 +179,7 @@
     // Bronchospasm: normal Phase II upstroke, then continuously upsloping Phase III (shark-fin)
     if (mode === 'bronchospasm') {
       const peak = 1.52;
-      const u2 = 0.28, u3 = 0.46, dn = 0.91;
+      const u2 = 0.36, u3 = 0.52, dn = 0.91;
       if (phase < u2) return 0;
       if (phase < u3) {
         // Normal-looking steep upstroke — student thinks it's a regular capnogram
@@ -196,16 +196,16 @@
     }
 
     const CFG = {
-      normal:      { peak:1.00, base:0.00, u2:0.30, u3:0.52, sl:0.05, dn:0.80 },
-      hypovent:    { peak:1.61, base:0.00, u2:0.28, u3:0.52, sl:0.09, dn:0.78 },
-      hypervent:   { peak:0.67, base:0.00, u2:0.32, u3:0.50, sl:0.02, dn:0.83 },
-      curare:      { peak:1.00, base:0.00, u2:0.30, u3:0.52, sl:0.05, dn:0.80, curare:true },
+      normal:      { peak:1.00, base:0.00, u2:0.38, u3:0.56, sl:0.05, dn:0.83 },
+      hypovent:    { peak:1.61, base:0.00, u2:0.36, u3:0.55, sl:0.09, dn:0.81 },
+      hypervent:   { peak:0.67, base:0.00, u2:0.38, u3:0.54, sl:0.02, dn:0.85 },
+      curare:      { peak:1.00, base:0.00, u2:0.38, u3:0.56, sl:0.05, dn:0.83, curare:true },
       esophageal:  { flat:true },
-      lowco:       { peak:0.56, base:0.00, u2:0.30, u3:0.52, sl:0.02, dn:0.80 },
-      rebreathing: { peak:1.12, base:0.33, u2:0.30, u3:0.52, sl:0.06, dn:0.80 },
-      maintenance: { peak:1.00, base:0.00, u2:0.30, u3:0.52, sl:0.05, dn:0.80 },
-      induction:   { peak:1.06, base:0.00, u2:0.30, u3:0.52, sl:0.05, dn:0.80 },
-      emergence:   { peak:0.94, base:0.00, u2:0.30, u3:0.52, sl:0.04, dn:0.82 },
+      lowco:       { peak:0.56, base:0.00, u2:0.38, u3:0.56, sl:0.02, dn:0.83 },
+      rebreathing: { peak:1.12, base:0.33, u2:0.38, u3:0.56, sl:0.06, dn:0.83 },
+      maintenance: { peak:1.00, base:0.00, u2:0.38, u3:0.56, sl:0.05, dn:0.83 },
+      induction:   { peak:1.06, base:0.00, u2:0.38, u3:0.56, sl:0.05, dn:0.83 },
+      emergence:   { peak:0.94, base:0.00, u2:0.38, u3:0.56, sl:0.04, dn:0.84 },
     };
     const c = CFG[mode] || CFG.normal;
     if (c.flat) return 0;
@@ -260,20 +260,20 @@
       { phase: 0.38, text: 'Wide QRS', yOff: 14, rgb: '255,100,100' },
     ],
     abp_normal:       [
-      { phase: 0.10, text: 'Systole',       yOff: 12, rgb: '255,160,160' },
-      { phase: 0.30, text: '▾ Notch',       yOff: 8,  rgb: '255,210,210' },
+      { phase: 0.08, text: 'Systole',       yOff: 12, rgb: '255,160,160' },
+      { phase: 0.20, text: '▾ Notch',       yOff: 8,  rgb: '255,210,210' },
       { phase: 0.78, text: 'Diastole', above: false, yOff: 8, rgb: '180,180,255' },
     ],
     abp_hypotension:  [
-      { phase: 0.10, text: 'Systole',  yOff: 12, rgb: '255,160,160' },
+      { phase: 0.08, text: 'Systole',  yOff: 12, rgb: '255,160,160' },
       { phase: 0.78, text: 'Diastole', above: false, yOff: 8, rgb: '180,180,255' },
     ],
     abp_dampened:     [
       { phase: 0.26, text: 'Rounded Peak', yOff: 10, rgb: '255,200,160' },
     ],
     abp_hyperdynamic: [
-      { phase: 0.10, text: 'Systole',      yOff: 14, rgb: '255,160,160' },
-      { phase: 0.30, text: '▾ Notch',      yOff: 10, rgb: '255,210,210' },
+      { phase: 0.08, text: 'Systole',      yOff: 14, rgb: '255,160,160' },
+      { phase: 0.20, text: '▾ Notch',      yOff: 10, rgb: '255,210,210' },
       { phase: 0.78, text: 'Diastole', above: false, yOff: 8, rgb: '180,180,255' },
     ],
     abp_overdamped:   [
@@ -284,14 +284,14 @@
     spo2_vasoconstriction:[{ phase: 0.18, text: 'Narrow',     yOff: 10, rgb: '255,200,120' }],
     spo2_motion:          [{ phase: 0.30, text: 'Artifact',   yOff: 10, rgb: '255,120,120' }],
     capno_normal:     [
-      { phase: 0.15, text: 'I',      yOff: 8,  rgb: '100,170,255' },
-      { phase: 0.41, text: 'II',     yOff: 12, rgb: '255,230,100' },
-      { phase: 0.65, text: 'III',    yOff: 12, rgb: '255,238,0' },
-      { phase: 0.76, text: 'EtCO₂', yOff: 14, rgb: '255,238,0' },
+      { phase: 0.20, text: 'I',      yOff: 8,  rgb: '100,170,255' },
+      { phase: 0.47, text: 'II',     yOff: 12, rgb: '255,230,100' },
+      { phase: 0.68, text: 'III',    yOff: 12, rgb: '255,238,0' },
+      { phase: 0.78, text: 'EtCO₂', yOff: 14, rgb: '255,238,0' },
     ],
     capno_bronchospasm: [
-      { phase: 0.88, text: 'Shark-fin Peak', yOff: 14, rgb: '255,150,80' },
-      { phase: 0.58, text: '▲ Phase III', yOff: 12, rgb: '255,190,100' },
+      { phase: 0.89, text: 'Shark-fin Peak', yOff: 14, rgb: '255,150,80' },
+      { phase: 0.70, text: '▲ Phase III', yOff: 12, rgb: '255,190,100' },
     ],
     capno_rebreathing: [
       { phase: 0.15, text: '↑ Baseline', above: false, yOff: 8, rgb: '255,180,100' },
