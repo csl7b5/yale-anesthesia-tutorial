@@ -1227,3 +1227,363 @@ html { scrollbar-gutter: stable; }
   padding: 8px;
   text-align: center;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MONITOR TUTORIAL MODALS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Clickable wave-num trigger */
+.wave-num--trig {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 2px 4px;
+  border-radius: 6px;
+  transition: background 0.18s;
+}
+.wave-num--trig:hover { background: rgba(255,255,255,0.07); }
+.wn-trig-hint {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  color: rgba(255,255,255,0.5);
+  transition: opacity 0.18s;
+  margin-top: 2px;
+}
+.wave-num--trig:hover .wn-trig-hint { opacity: 1; }
+
+/* ── Dialog shell ─────────────────────────────────────────────────────────── */
+.mon-tut {
+  background: #070f1e;
+  border: 1px solid #1e3050;
+  border-radius: 14px;
+  box-shadow: 0 12px 60px rgba(0,0,0,0.75), 0 0 0 1px rgba(40,109,192,0.18);
+  padding: 0;
+  width: min(720px, 96vw);
+  max-height: 92vh;
+  overflow: hidden;
+  color: #c8ddf4;
+}
+.mon-tut--wide { width: min(940px, 96vw); }
+.mon-tut::backdrop { background: rgba(0,0,0,0.75); }
+
+.mon-tut__inner {
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.mon-tut__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #1e3050;
+  background: linear-gradient(180deg, #0d1830 0%, #080f1d 100%);
+  flex-shrink: 0;
+}
+.mon-tut__eyebrow {
+  margin: 0 0 2px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #3a6a9e;
+}
+.mon-tut__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #c8ddf4;
+  letter-spacing: -0.01em;
+}
+.mon-tut__close {
+  appearance: none;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #1e3050;
+  border-radius: 6px;
+  color: #6080a0;
+  cursor: pointer;
+  font-size: 1.1rem;
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.mon-tut__close:hover { background: rgba(255,255,255,0.12); color: #c8ddf4; }
+
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+.mon-tut__tabs {
+  display: flex;
+  border-bottom: 1px solid #1e3050;
+  background: #050c18;
+  flex-shrink: 0;
+}
+.mon-tut__tab {
+  appearance: none; background: none; border: none;
+  border-bottom: 2px solid transparent;
+  padding: 9px 18px;
+  font-size: 0.74rem; font-weight: 600;
+  color: #3a6a9e; cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: color 0.15s, border-color 0.15s;
+}
+.mon-tut__tab:hover { color: #90b8d8; }
+.mon-tut__tab--active { color: #c8ddf4; border-bottom-color: #286dc0; }
+
+/* ── Waveform section ────────────────────────────────────────────────────── */
+.mon-tut__wave-section {
+  background: #050c18;
+  border-bottom: 1px solid #1a2a3e;
+  padding: 0;
+  flex-shrink: 0;
+}
+.mon-tut__canvas {
+  display: block;
+  width: 100%;
+  height: 160px;
+  border-radius: 0;
+}
+.mon-tut--wide .mon-tut__canvas { height: 155px; }
+
+/* ── Stats row (numerics + interp) ──────────────────────────────────────── */
+.mon-tut__stats-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px 18px;
+  border-bottom: 1px solid #1a2a3e;
+  background: rgba(5,12,24,0.6);
+}
+.mon-tut__nums {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+  min-width: 130px;
+}
+.tut-nrow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.78rem;
+}
+.tut-nk { color: #3a6a9e; font-size: 0.68rem; min-width: 48px; }
+.tut-nv { font-size: 1.1rem; font-weight: 700; }
+.tut-nu { color: #3a6a9e; font-size: 0.62rem; }
+
+.mon-tut__interp {
+  flex: 1;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #90b0cc;
+  background: rgba(40,109,192,0.07);
+  border-left: 3px solid #286dc0;
+  border-radius: 0 6px 6px 0;
+  padding: 8px 12px;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+/* Capno phase chips (basics tab) */
+.mon-tut__capno-phases {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.cphs {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+.cphs--i   { background: rgba(40,109,192,0.15); color: #6090c0; border: 1px solid #1e3868; }
+.cphs--ii  { background: rgba(255,200,50,0.12); color: #c8a840; border: 1px solid rgba(255,200,50,0.25); }
+.cphs--iii { background: rgba(255,238,0,0.12);  color: #c8c030; border: 1px solid rgba(255,238,0,0.25); }
+.cphs--down{ background: rgba(100,180,100,0.12);color: #70b070; border: 1px solid rgba(100,180,100,0.25); }
+
+/* ── Selector row ────────────────────────────────────────────────────────── */
+.mon-tut__selector-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid #1a2a3e;
+  background: rgba(5,12,24,0.4);
+}
+.mon-tut__select-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3a6a9e;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.mon-tut__select {
+  flex: 1;
+  appearance: none;
+  background: rgba(40,109,192,0.10);
+  border: 1px solid #284868;
+  border-radius: 7px;
+  color: #c8ddf4;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 32px 7px 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a7ab0'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s, background-color 0.15s;
+  max-width: 480px;
+}
+.mon-tut__select:hover { border-color: #286dc0; background-color: rgba(40,109,192,0.18); }
+.mon-tut__select:focus { outline: none; border-color: #286dc0; box-shadow: 0 0 0 2px rgba(40,109,192,0.2); }
+.mon-tut__select option { background: #0d1830; color: #c8ddf4; }
+
+/* ── Teaching section ────────────────────────────────────────────────────── */
+.mon-tut__teach-section {
+  padding: 12px 18px 14px;
+  border-bottom: 1px solid #1a2a3e;
+}
+.mon-tut__section-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3a6a9e;
+  margin: 0 0 8px;
+}
+.mon-tut__teach-list {
+  margin: 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #7898b8;
+}
+.mon-tut__teach-list strong { color: #b8d4f0; }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.mon-tut__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #050c18;
+  flex-shrink: 0;
+}
+.mon-tut__foot-btn {
+  appearance: none;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #1e3050;
+  border-radius: 7px;
+  color: #6080a0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 16px;
+  transition: background 0.15s, color 0.15s;
+}
+.mon-tut__foot-btn:hover { background: rgba(255,255,255,0.1); color: #c8ddf4; }
+.mon-tut__foot-btn--primary {
+  background: rgba(40,109,192,0.22);
+  border-color: #286dc0;
+  color: #c8ddf4;
+}
+.mon-tut__foot-btn--primary:hover { background: rgba(40,109,192,0.38); }
+
+/* ── Gas monitoring tab ──────────────────────────────────────────────────── */
+.mon-tut__tab-panel { flex: 1; }
+
+.mon-tut__gas-panel {
+  display: flex;
+  gap: 0;
+}
+.mon-tut__gas-traces {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #1a2a3e;
+}
+.mon-tut__gas-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid #1a2a3e;
+  padding: 6px 10px 6px 0;
+}
+.mon-tut__gas-row:last-child { border-bottom: none; }
+.mon-tut__gas-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 44px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 8px;
+}
+.mon-tut__gas-canvas {
+  flex: 1;
+  display: block;
+  border-radius: 4px;
+  height: 72px;
+}
+.mon-tut__gas-vals {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 115px;
+  padding-left: 12px;
+}
+.mon-tut__gas-teach {
+  width: 230px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+/* ── Volatile & O2 cards ─────────────────────────────────────────────────── */
+.mon-tut__vol-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 14px 18px;
+}
+.mon-tut__vol-card {
+  background: rgba(40,109,192,0.06);
+  border: 1px solid #1e3050;
+  border-radius: 10px;
+  padding: 14px;
+}
+.mon-tut__vol-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+.mon-tut__vol-card p {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: #7898b8;
+  margin: 0 0 6px;
+}
+.mon-tut__vol-card p:last-child { margin-bottom: 0; }
+.mon-tut__vol-card strong { color: #b8d4f0; }

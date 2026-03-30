@@ -56,7 +56,7 @@
             <div class="wave-row" data-color="#00e676">
               <div class="wave-tag" style="color:#00e676">II</div>
               <canvas class="wave-canvas" id="canvas-ecg"></canvas>
-              <div class="wave-num" style="color:#00e676">
+              <button class="wave-num wave-num--trig" style="color:#00e676" id="trig-ecg" aria-label="Open ECG tutorial" title="Click to learn about ECG">
                 <div class="wn-big" id="num-hr">72</div>
                 <div class="wn-unit">HR bpm</div>
                 <div class="wn-st">
@@ -64,39 +64,43 @@
                   <span id="st-v5">V5: 0.0</span>
                   <span id="st-avf">aVF: 0.1</span>
                 </div>
-              </div>
+                <div class="wn-trig-hint">▶ Learn</div>
+              </button>
             </div>
 
             <!-- ABP row -->
             <div class="wave-row" data-color="#ff4c4c">
               <div class="wave-tag" style="color:#ff4c4c">ABP</div>
               <canvas class="wave-canvas" id="canvas-abp"></canvas>
-              <div class="wave-num" style="color:#ff4c4c">
+              <button class="wave-num wave-num--trig" style="color:#ff4c4c" id="trig-abp" aria-label="Open A-line tutorial" title="Click to learn about arterial lines">
                 <div class="wn-big" id="num-abp-sys">118</div>
                 <div class="wn-sub" id="num-abp-map">/ 72 (88)</div>
                 <div class="wn-unit">mmHg</div>
-              </div>
+                <div class="wn-trig-hint">▶ Learn</div>
+              </button>
             </div>
 
             <!-- SpO2 row -->
             <div class="wave-row" data-color="#00e5ff">
               <div class="wave-tag" style="color:#00e5ff">SpO₂</div>
               <canvas class="wave-canvas" id="canvas-spo2"></canvas>
-              <div class="wave-num" style="color:#00e5ff">
+              <button class="wave-num wave-num--trig" style="color:#00e5ff" id="trig-spo2" aria-label="Open SpO2 tutorial" title="Click to learn about pulse oximetry">
                 <div class="wn-big" id="num-spo2">99</div>
                 <div class="wn-unit">SpO₂ %</div>
-              </div>
+                <div class="wn-trig-hint">▶ Learn</div>
+              </button>
             </div>
 
             <!-- EtCO2 row -->
             <div class="wave-row" data-color="#ffee00">
               <div class="wave-tag" style="color:#ffee00">CO₂</div>
               <canvas class="wave-canvas" id="canvas-etco2"></canvas>
-              <div class="wave-num" style="color:#ffee00">
+              <button class="wave-num wave-num--trig" style="color:#ffee00" id="trig-etco2" aria-label="Open capnography tutorial" title="Click to learn about capnography">
                 <div class="wn-big" id="num-etco2">36</div>
                 <div class="wn-unit">EtCO₂ mmHg</div>
                 <div class="wn-rr" id="num-rr">RR 12</div>
-              </div>
+                <div class="wn-trig-hint">▶ Learn</div>
+              </button>
             </div>
 
             <!-- Bottom bar: NIBP · Temp · Gas -->
@@ -500,6 +504,291 @@
   </footer>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════════════════
+     MONITOR TUTORIAL MODALS
+     ══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ECG Tutorial -->
+<dialog class="mon-tut" id="tut-ecg">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">5-Lead ECG Monitoring in the OR</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-ecg">×</button>
+    </header>
+    <div class="mon-tut__wave-section">
+      <canvas class="mon-tut__canvas" id="tut-ecg-canvas" width="700" height="160"></canvas>
+    </div>
+    <div class="mon-tut__stats-row">
+      <div class="mon-tut__nums">
+        <div class="tut-nrow"><span class="tut-nk">HR</span><span class="tut-nv" id="tut-ecg-hr" style="color:#00e676">72</span><span class="tut-nu">bpm</span></div>
+        <div class="tut-nrow"><span class="tut-nk">ST II</span><span class="tut-nv" style="color:#00e676">0.0</span><span class="tut-nu">mm</span></div>
+        <div class="tut-nrow"><span class="tut-nk">ST V5</span><span class="tut-nv" style="color:#00e676">0.0</span><span class="tut-nu">mm</span></div>
+      </div>
+      <div class="mon-tut__interp" id="tut-ecg-interp">Regular rate and rhythm. Clear P wave before every QRS. Rate 60–100 bpm. Normal intraoperative finding.</div>
+    </div>
+    <div class="mon-tut__selector-row">
+      <label class="mon-tut__select-label" for="tut-ecg-select">Common OR Rhythms</label>
+      <select class="mon-tut__select" id="tut-ecg-select">
+        <option value="normal">Normal Sinus Rhythm</option>
+        <option value="tach">Sinus Tachycardia</option>
+        <option value="brady">Sinus Bradycardia</option>
+        <option value="afib">Atrial Fibrillation</option>
+        <option value="flutter">Atrial Flutter (2:1 Block)</option>
+        <option value="vtach">Ventricular Tachycardia</option>
+      </select>
+    </div>
+    <div class="mon-tut__teach-section">
+      <h3 class="mon-tut__section-title">Key Teaching Points</h3>
+      <ul class="mon-tut__teach-list">
+        <li>HR is derived from the <strong>RR interval</strong> — the distance between two consecutive R peaks</li>
+        <li><strong>Lead II</strong> is the primary intraoperative lead for rhythm detection; P waves are largest here</li>
+        <li><strong>V5</strong> is the most sensitive single lead for detecting myocardial ischemia</li>
+        <li>ST changes &gt;1 mm (elevation or depression) suggest ischemia — inform your attending</li>
+        <li>Always confirm a monitor rhythm with a <strong>pulse check</strong> before treating</li>
+      </ul>
+    </div>
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-ecg">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-ecg">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- A-Line Tutorial -->
+<dialog class="mon-tut" id="tut-abp">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">Arterial Line Waveform Interpretation</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-abp">×</button>
+    </header>
+    <div class="mon-tut__wave-section">
+      <canvas class="mon-tut__canvas" id="tut-abp-canvas" width="700" height="160"></canvas>
+    </div>
+    <div class="mon-tut__stats-row">
+      <div class="mon-tut__nums">
+        <div class="tut-nrow"><span class="tut-nk">SBP</span><span class="tut-nv" id="tut-abp-sys" style="color:#ff4c4c">118</span><span class="tut-nu">mmHg</span></div>
+        <div class="tut-nrow"><span class="tut-nk">DBP</span><span class="tut-nv" id="tut-abp-dia" style="color:#ff4c4c">72</span><span class="tut-nu">mmHg</span></div>
+        <div class="tut-nrow"><span class="tut-nk">MAP</span><span class="tut-nv" id="tut-abp-map" style="color:#ff4c4c">88</span><span class="tut-nu">mmHg</span></div>
+      </div>
+      <div class="mon-tut__interp" id="tut-abp-interp">Normal arterial waveform. Brisk upstroke, clear dicrotic notch, normal pulse pressure (~46 mmHg). Waveform is reliable.</div>
+    </div>
+    <div class="mon-tut__selector-row">
+      <label class="mon-tut__select-label" for="tut-abp-select">Waveform Pattern</label>
+      <select class="mon-tut__select" id="tut-abp-select">
+        <option value="normal">Normal</option>
+        <option value="hypotension">Hypotension — Low Amplitude</option>
+        <option value="dampened">Dampened Waveform (Line Issue)</option>
+        <option value="hyperdynamic">Hyperdynamic — Wide Pulse Pressure</option>
+        <option value="overdamped">Overdamped — Unreliable Reading</option>
+      </select>
+    </div>
+    <div class="mon-tut__teach-section">
+      <h3 class="mon-tut__section-title">Key Teaching Points</h3>
+      <ul class="mon-tut__teach-list">
+        <li>Waveform shape reflects <strong>stroke volume + vascular resistance</strong> in real time</li>
+        <li><strong>MAP</strong> is most clinically relevant — goal ≥65 mmHg to ensure organ perfusion</li>
+        <li>The <strong>dicrotic notch</strong> marks aortic valve closure and separates systole from diastole</li>
+        <li>Pulse pressure (SBP–DBP) reflects stroke volume; wide = hyperdynamic, narrow = low SV</li>
+        <li>A dampened waveform may be a <strong>line problem</strong> — flush and check before treating the patient</li>
+      </ul>
+    </div>
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-abp">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-abp">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- SpO2 Tutorial -->
+<dialog class="mon-tut" id="tut-spo2">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">Pulse Oximetry and Pleth Waveform</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-spo2">×</button>
+    </header>
+    <div class="mon-tut__wave-section">
+      <canvas class="mon-tut__canvas" id="tut-spo2-canvas" width="700" height="160"></canvas>
+    </div>
+    <div class="mon-tut__stats-row">
+      <div class="mon-tut__nums">
+        <div class="tut-nrow"><span class="tut-nk">SpO₂</span><span class="tut-nv" id="tut-spo2-val" style="color:#00e5ff">99</span><span class="tut-nu">%</span></div>
+        <div class="tut-nrow"><span class="tut-nk">PI</span><span class="tut-nv" id="tut-spo2-pi" style="color:#00e5ff">2.4</span><span class="tut-nu">%</span></div>
+      </div>
+      <div class="mon-tut__interp" id="tut-spo2-interp">Normal pleth. Good amplitude, regular peaks, strong perfusion index. SpO₂ 99% is accurate and reliable.</div>
+    </div>
+    <div class="mon-tut__selector-row">
+      <label class="mon-tut__select-label" for="tut-spo2-select">Clinical Scenario</label>
+      <select class="mon-tut__select" id="tut-spo2-select">
+        <option value="normal">Normal Perfusion</option>
+        <option value="lowperf">Low Perfusion — Shock / Low CO</option>
+        <option value="vasoconstriction">Vasoconstriction (e.g., Vasopressors)</option>
+        <option value="motion">Motion Artifact</option>
+      </select>
+    </div>
+    <div class="mon-tut__teach-section">
+      <h3 class="mon-tut__section-title">Key Teaching Points</h3>
+      <ul class="mon-tut__teach-list">
+        <li>SpO₂ reflects <strong>oxygen saturation</strong> — it does NOT reflect ventilation (use EtCO₂ for that)</li>
+        <li>Pleth <strong>amplitude</strong> is your perfusion indicator — a flat wave is a red flag regardless of the number</li>
+        <li><strong>"Good number ≠ good perfusion"</strong> — vasoconstricted patients can read 99% while hypoperfused</li>
+        <li>SpO₂ lags actual arterial saturation by <strong>30–60 seconds</strong> — act early if the trend is downward</li>
+        <li>A noisy or absent waveform means the reading is unreliable — reposition the probe first</li>
+      </ul>
+    </div>
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-spo2">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-spo2">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- Capnography Tutorial (wide, tabbed) -->
+<dialog class="mon-tut mon-tut--wide" id="tut-etco2">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">Capnography &amp; Gas Monitoring</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-etco2">×</button>
+    </header>
+    <div class="mon-tut__tabs" id="tut-etco2-tabs">
+      <button class="mon-tut__tab mon-tut__tab--active" data-tab="basics">Capnogram Basics</button>
+      <button class="mon-tut__tab" data-tab="patterns">Pathologic Patterns</button>
+      <button class="mon-tut__tab" data-tab="gasmon">Gas Monitoring</button>
+      <button class="mon-tut__tab" data-tab="volatile">Volatile &amp; O₂</button>
+    </div>
+
+    <!-- Tab: Basics -->
+    <div class="mon-tut__tab-panel" id="tut-etco2-basics">
+      <div class="mon-tut__wave-section">
+        <canvas class="mon-tut__canvas" id="tut-etco2-canvas-basics" width="700" height="160"></canvas>
+      </div>
+      <div class="mon-tut__stats-row">
+        <div class="mon-tut__nums">
+          <div class="tut-nrow"><span class="tut-nk">EtCO₂</span><span class="tut-nv" style="color:#ffee00">36</span><span class="tut-nu">mmHg</span></div>
+          <div class="tut-nrow"><span class="tut-nk">RR</span><span class="tut-nv" style="color:#ffee00">12</span><span class="tut-nu">/min</span></div>
+        </div>
+        <div class="mon-tut__capno-phases">
+          <span class="cphs cphs--i">I — Dead space</span>
+          <span class="cphs cphs--ii">II — Upstroke</span>
+          <span class="cphs cphs--iii">III — Plateau</span>
+          <span class="cphs cphs--down">↓ Inspiration</span>
+        </div>
+      </div>
+      <div class="mon-tut__teach-section">
+        <h3 class="mon-tut__section-title">The Capnogram</h3>
+        <ul class="mon-tut__teach-list">
+          <li><strong>Phase I</strong> — Inspiratory baseline: dead space ventilation, CO₂ ≈ 0 mmHg</li>
+          <li><strong>Phase II</strong> — Expiratory upstroke: mixing of dead space and alveolar gas, CO₂ rises sharply</li>
+          <li><strong>Phase III</strong> — Alveolar plateau: CO₂-rich gas; EtCO₂ is measured at the very end of this phase</li>
+          <li><strong>Downstroke</strong> — Inspiration begins; fresh gas washes CO₂ back to zero immediately</li>
+          <li>Normal EtCO₂: <strong>35–45 mmHg</strong>. Reflects both <em>ventilation</em> and <em>perfusion</em></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tab: Patterns -->
+    <div class="mon-tut__tab-panel" id="tut-etco2-patterns" hidden>
+      <div class="mon-tut__wave-section">
+        <canvas class="mon-tut__canvas" id="tut-etco2-canvas-patterns" width="700" height="160"></canvas>
+      </div>
+      <div class="mon-tut__stats-row">
+        <div class="mon-tut__nums">
+          <div class="tut-nrow"><span class="tut-nk">EtCO₂</span><span class="tut-nv" id="tut-etco2-val" style="color:#ffee00">36</span><span class="tut-nu">mmHg</span></div>
+          <div class="tut-nrow"><span class="tut-nk">RR</span><span class="tut-nv" id="tut-etco2-rr" style="color:#ffee00">12</span><span class="tut-nu">/min</span></div>
+        </div>
+        <div class="mon-tut__interp" id="tut-etco2-interp">Normal capnogram. Clear phases I–III, sharp downstroke. EtCO₂ 35–45 mmHg indicates adequate ventilation and perfusion.</div>
+      </div>
+      <div class="mon-tut__selector-row">
+        <label class="mon-tut__select-label" for="tut-etco2-select">Pathologic Pattern</label>
+        <select class="mon-tut__select" id="tut-etco2-select">
+          <option value="normal">Normal Capnogram</option>
+          <option value="hypovent">Hypoventilation — Elevated EtCO₂</option>
+          <option value="hypervent">Hyperventilation — Low EtCO₂</option>
+          <option value="bronchospasm">Bronchospasm — Shark-Fin Pattern</option>
+          <option value="curare">Curare Cleft — Spontaneous Breath During NMB</option>
+          <option value="esophageal">Esophageal Intubation — Flat Line</option>
+          <option value="lowco">Low Cardiac Output — Sudden EtCO₂ Drop</option>
+          <option value="rebreathing">Rebreathing — Elevated Baseline</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tab: Gas Monitoring -->
+    <div class="mon-tut__tab-panel" id="tut-etco2-gasmon" hidden>
+      <div class="mon-tut__gas-panel">
+        <div class="mon-tut__gas-traces">
+          <div class="mon-tut__gas-row">
+            <span class="mon-tut__gas-label" style="color:#ffee00">CO₂</span>
+            <canvas class="mon-tut__gas-canvas" id="tut-gas-co2" width="440" height="72"></canvas>
+            <div class="mon-tut__gas-vals">
+              <div class="tut-nrow"><span class="tut-nk">EtCO₂</span><span class="tut-nv" id="tut-gas-etco2" style="color:#ffee00">36</span><span class="tut-nu">mmHg</span></div>
+            </div>
+          </div>
+          <div class="mon-tut__gas-row">
+            <span class="mon-tut__gas-label" style="color:#00e5ff">O₂</span>
+            <canvas class="mon-tut__gas-canvas" id="tut-gas-o2" width="440" height="72"></canvas>
+            <div class="mon-tut__gas-vals">
+              <div class="tut-nrow"><span class="tut-nk">FiO₂</span><span class="tut-nv" id="tut-gas-fio2" style="color:#00e5ff">60</span><span class="tut-nu">%</span></div>
+              <div class="tut-nrow"><span class="tut-nk">EtO₂</span><span class="tut-nv" id="tut-gas-eto2" style="color:#00e5ff">52</span><span class="tut-nu">%</span></div>
+            </div>
+          </div>
+          <div class="mon-tut__gas-row">
+            <span class="mon-tut__gas-label" style="color:#c084fc">Sevo</span>
+            <canvas class="mon-tut__gas-canvas" id="tut-gas-sevo" width="440" height="72"></canvas>
+            <div class="mon-tut__gas-vals">
+              <div class="tut-nrow"><span class="tut-nk">FiSevo</span><span class="tut-nv" id="tut-gas-fisevo" style="color:#c084fc">2.3</span><span class="tut-nu">%</span></div>
+              <div class="tut-nrow"><span class="tut-nk">EtSevo</span><span class="tut-nv" id="tut-gas-etsevo" style="color:#c084fc">2.1</span><span class="tut-nu">%</span></div>
+              <div class="tut-nrow"><span class="tut-nk">MAC</span><span class="tut-nv" id="tut-gas-mac" style="color:#c084fc">0.95</span><span class="tut-nu"></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="mon-tut__gas-teach">
+          <label class="mon-tut__select-label" for="tut-gas-select">Gas Scenario</label>
+          <select class="mon-tut__select" id="tut-gas-select">
+            <option value="maintenance">Steady-State Maintenance</option>
+            <option value="induction">Induction (FiSevo Rising)</option>
+            <option value="emergence">Emergence (Agent Washout)</option>
+            <option value="rebreathing">Rebreathing / Absorber Issue</option>
+            <option value="lowco">Low Cardiac Output</option>
+          </select>
+          <div class="mon-tut__interp" id="tut-gas-interp">Steady-state maintenance. FiSevo and EtSevo are close — the patient has equilibrated. EtCO₂ and EtO₂ are within normal range.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Volatile & O2 -->
+    <div class="mon-tut__tab-panel" id="tut-etco2-volatile" hidden>
+      <div class="mon-tut__vol-grid">
+        <div class="mon-tut__vol-card">
+          <h3 class="mon-tut__vol-title" style="color:#ffee00">CO₂ — Ventilation &amp; Perfusion</h3>
+          <p>EtCO₂ is not just "how well they're breathing." It also reflects cardiac output. A sudden drop in EtCO₂ with unchanged ventilation settings should prompt you to think about <strong>pulmonary embolism, cardiac arrest, or severe hypotension</strong>.</p>
+          <p>Normal EtCO₂: <strong>35–45 mmHg</strong>. Arterial CO₂ (PaCO₂) runs ~5 mmHg higher due to dead space.</p>
+        </div>
+        <div class="mon-tut__vol-card">
+          <h3 class="mon-tut__vol-title" style="color:#00e5ff">O₂ — Inspired vs. End-Tidal</h3>
+          <p>FiO₂ is what you <em>deliver</em>. EtO₂ is what the patient <em>exhales</em>. The difference reflects oxygen consumption and circuit efficiency.</p>
+          <p>A large FiO₂–EtO₂ gap suggests <strong>high metabolic demand or circuit issues</strong>. EtO₂ typically runs 8–15% below FiO₂ at steady state.</p>
+        </div>
+        <div class="mon-tut__vol-card">
+          <h3 class="mon-tut__vol-title" style="color:#c084fc">Volatile — Inspired vs. End-Tidal Sevo</h3>
+          <p>The vaporizer sets FiSevo. EtSevo is the clinically meaningful number — it most closely reflects <strong>brain concentration and anesthetic depth</strong>.</p>
+          <p>During <strong>induction</strong>: FiSevo rises first, EtSevo lags. During <strong>emergence</strong>: EtSevo falls as agent washes out. BIS changes follow with an additional delay.</p>
+        </div>
+        <div class="mon-tut__vol-card">
+          <h3 class="mon-tut__vol-title" style="color:#a3e635">MAC — Minimum Alveolar Concentration</h3>
+          <p>MAC is the alveolar concentration at which 50% of patients do not move to a surgical incision. It is <strong>additive</strong> — sevo + N₂O reduces required sevo concentration.</p>
+          <p>Maintenance target: <strong>0.8–1.3 MAC</strong>. Values &lt;0.7 MAC significantly increase the risk of intraoperative awareness.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-etco2">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-etco2">Close</button>
+    </footer>
+  </div>
+</dialog>
+
 <script src="js/ventilator.js"></script>
+<script src="js/monitor-tutorial.js"></script>
 </body>
 </html>
