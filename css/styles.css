@@ -1145,6 +1145,10 @@ body {
 .med-badge--antiemetic    { background: rgba(30, 150, 160, 0.11); color: #147280; border-color: rgba(30, 150, 160, 0.22); }
 .med-badge--volatile      { background: rgba(128, 90, 200, 0.11); color: #5a30a0; border-color: rgba(128, 90, 200, 0.22); }
 .med-badge--other         { background: rgba(88, 104, 122, 0.11); color: #3d5060; border-color: rgba(88, 104, 122, 0.22); }
+.med-badge--antibiotic    { background: rgba(60, 160, 80, 0.11);  color: #1e6e35; border-color: rgba(60, 160, 80, 0.22); }
+.med-badge--rhythm        { background: rgba(180, 80, 160, 0.11); color: #7a2070; border-color: rgba(180, 80, 160, 0.22); }
+.med-badge--bpcontrol     { background: rgba(200, 100, 40, 0.11); color: #8a3a10; border-color: rgba(200, 100, 40, 0.22); }
+.med-badge--rescue        { background: rgba(210, 40, 40, 0.15);  color: #8a0a0a; border-color: rgba(210, 40, 40, 0.30); }
 
 /* Controlled substance badge */
 .chip--controlled {

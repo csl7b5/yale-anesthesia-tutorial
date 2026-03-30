@@ -53,12 +53,20 @@
       return { label: "Anticholinergic",  cls: "anticholinergic" };
     if (/opioid|opiate|narcotic/.test(c))
       return { label: "Opioid",           cls: "opioid" };
-    if (/local anesthetic|antiarrhythmic/.test(c))
+    if (/local anesthetic/.test(c))
       return { label: "Local Anesthetic", cls: "local" };
     if (/5-ht3|corticosteroid/.test(c))
       return { label: "Antiemetic",       cls: "antiemetic" };
     if (/volatile|inhaled|inhalation/.test(c))
       return { label: "Volatile",         cls: "volatile" };
+    if (/antibiotic|antimicrobial|penicillin|cephalosporin|fluoroquinolone|macrolide/.test(c))
+      return { label: "Antibiotic",       cls: "antibiotic" };
+    if (/antiarrhythmic|rhythm control|cardiac rhythm/.test(c))
+      return { label: "Rate Control",      cls: "rhythm" };
+    if (/antihypertensive|blood pressure|calcium channel|beta.?blocker|ace inhibitor|vasodilator/.test(c))
+      return { label: "BP Control",       cls: "bpcontrol" };
+    if (/rescue|resuscitation|emergency|anaphylaxis|reversal agent/.test(c))
+      return { label: "Rescue",           cls: "rescue" };
     return { label: "Supportive",         cls: "other" };
   }
 
@@ -346,7 +354,7 @@
     bindHover(sideAuxEl);
     const openAux = () => openContentsModal(
       "Auxiliary & Sharps",
-      `<p class="detail-body">This side compartment holds the <strong>sharps container</strong> for safe disposal of needles, blades, and other sharps after procedures. It also provides quick access to auxiliary supplies such as extra labels, alcohol swabs, and miscellaneous items needed at the bedside.</p>`
+      `<p class="detail-body">This side compartment holds the <strong>substance-return container</strong> for safe disposal of unused controlled substances that are still in their vials, unopened. Furthermore, separate from the Pyxis system, there are large, red <strong>sharps containers</strong> for disposal of needles, blades, and other biohazardous sharps - ensure that you always dispose of sharps in the proper locations!</p>`
     );
     sideAuxEl.addEventListener("click",   e => { e.currentTarget.blur(); openAux(); });
     sideAuxEl.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openAux(); } });
