@@ -45,8 +45,12 @@
 
   async function init() {
     const user = await SB.getUser();
-    if (!user) return;
+    if (!user) {
+      console.log('[event-logger] No authenticated user — logging disabled.');
+      return;
+    }
     userId = user.id;
+    console.log('[event-logger] Authenticated as', user.email, '— logging enabled for', PAGE);
 
     const role = await SB.getRole();
     updateNav(user, role);
@@ -57,12 +61,14 @@
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  function insert(table, row) {
-    return SB.client.from(table).insert(row);
+  async function insert(table, row) {
+    const { error } = await SB.client.from(table).insert(row);
+    if (error) console.warn('[event-logger] insert into', table, 'failed:', error.message, row);
   }
 
-  function update(table, id, fields) {
-    return SB.client.from(table).update(fields).eq('id', id);
+  async function update(table, id, fields) {
+    const { error } = await SB.client.from(table).update(fields).eq('id', id);
+    if (error) console.warn('[event-logger] update', table, id, 'failed:', error.message);
   }
 
   // ── Ventilator page listeners ────────────────────────────────────────────
