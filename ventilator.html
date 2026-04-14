@@ -884,11 +884,57 @@
   </button>
 </div>
 
+<!-- ── Debrief modal ──────────────────────────────────────────────────────── -->
+<dialog id="debrief-modal" class="debrief-dialog">
+  <div class="debrief-dialog__inner">
+    <div class="debrief-dialog__header">
+      <h2 class="debrief-dialog__title">Scenario Debrief</h2>
+      <button class="debrief-dialog__close" id="debrief-close" aria-label="Close debrief">×</button>
+    </div>
+
+    <p class="debrief-dialog__summary" id="debrief-summary"></p>
+
+    <div class="debrief-dialog__row">
+      <div class="debrief-dialog__col">
+        <h3 class="debrief-dialog__label debrief-dialog__label--good">Strengths</h3>
+        <ul class="debrief-dialog__list" id="debrief-strengths"></ul>
+      </div>
+      <div class="debrief-dialog__col">
+        <h3 class="debrief-dialog__label debrief-dialog__label--gap">Areas to Review</h3>
+        <ul class="debrief-dialog__list" id="debrief-gaps"></ul>
+      </div>
+    </div>
+
+    <div class="debrief-dialog__steps" id="debrief-steps"></div>
+
+    <div class="debrief-dialog__section">
+      <h3 class="debrief-dialog__label">High-Yield Teaching Points</h3>
+      <ul class="debrief-dialog__teaching" id="debrief-teaching"></ul>
+    </div>
+
+    <div class="debrief-dialog__section" id="debrief-drill-section" hidden>
+      <h3 class="debrief-dialog__label">Quick Drill</h3>
+      <p class="debrief-dialog__drill-prompt" id="debrief-drill-prompt"></p>
+      <div class="debrief-dialog__drill-choices" id="debrief-drill-choices"></div>
+      <p class="debrief-dialog__drill-feedback" id="debrief-drill-feedback" hidden></p>
+    </div>
+
+    <div class="debrief-dialog__section" id="debrief-signin-prompt" hidden>
+      <p class="debrief-dialog__signin-text">
+        <a href="platform/auth.html">Sign in</a> to save your debrief and track your progress over time.
+      </p>
+    </div>
+  </div>
+</dialog>
+
 <script src="js/ventilator.js"></script>
 <script src="js/monitor-tutorial.js"></script>
 <script src="js/analytics.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="platform/js/supabase-client.js"></script>
+<script src="platform/js/debrief-data.js"></script>
+<script src="platform/js/debrief-engine.js"></script>
 <script src="platform/js/event-logger.js"></script>
+<script src="platform/js/debrief-ui.js"></script>
 </body>
 </html>
