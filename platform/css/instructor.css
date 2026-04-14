@@ -1,0 +1,208 @@
+/* ── Instructor dashboard styles ───────────────────────────────────────── */
+
+/* Wider container for instructor view */
+body[data-required-role="instructor"] .dashboard-main {
+  max-width: 1100px;
+}
+
+/* Filters */
+.inst-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.2rem;
+  align-items: flex-end;
+  margin-top: 0.8rem;
+}
+.inst-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.inst-filter-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary, #6b7280);
+  white-space: nowrap;
+}
+.inst-select,
+.inst-date,
+.inst-input {
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 0.38rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2937;
+}
+.inst-select--wide { min-width: 260px; }
+.inst-input { width: 100%; margin-bottom: 0.4rem; }
+.inst-date { width: 140px; }
+
+.inst-btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background: var(--yale-blue, #00356b);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.inst-btn:hover { background: #002147; }
+.inst-btn--small { padding: 0.3rem 0.7rem; font-size: 0.82rem; }
+.inst-btn--outline {
+  background: transparent;
+  border: 1px solid var(--yale-blue, #00356b);
+  color: var(--yale-blue, #00356b);
+}
+.inst-btn--outline:hover { background: rgba(0,53,107,0.06); }
+.inst-btn--danger { background: #dc2626; }
+.inst-btn--danger:hover { background: #b91c1c; }
+
+/* Tabs */
+.inst-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+.inst-tab {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  color: #6b7280;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.inst-tab:hover { color: #1f2937; }
+.inst-tab--active {
+  color: var(--yale-blue, #00356b);
+  border-bottom-color: var(--yale-blue, #00356b);
+}
+
+/* Panels */
+.inst-panel { animation: fadeUp 0.2s ease; }
+
+/* Hint text */
+.inst-hint { font-size: 0.82rem; color: #6b7280; margin: 0.3rem 0 0.8rem; }
+
+/* Tables */
+.inst-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.inst-table th,
+.inst-table td {
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+.inst-table th {
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  background: #f9fafb;
+}
+.inst-table tbody tr:hover { background: #f0f4ff; }
+
+/* Heatmap cell */
+.heatmap-cell {
+  display: inline-block;
+  min-width: 46px;
+  text-align: center;
+  padding: 0.3rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Cohort form */
+.inst-cohort-form {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Cohort card */
+.cohort-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  background: #fff;
+}
+.cohort-card__info { flex: 1; }
+.cohort-card__name { font-weight: 700; font-size: 0.92rem; }
+.cohort-card__meta { font-size: 0.78rem; color: #6b7280; margin-top: 0.15rem; }
+.cohort-card__actions { display: flex; gap: 0.4rem; }
+
+/* Member badge */
+.member-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  margin: 0.2rem;
+}
+.member-badge__remove {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0;
+}
+
+/* Export */
+.inst-export-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+/* Debrief card (individual learner) */
+.debrief-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+  background: #fff;
+}
+.debrief-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+}
+.debrief-card__scenario { font-weight: 700; font-size: 0.92rem; }
+.debrief-card__date { font-size: 0.78rem; color: #6b7280; }
+.debrief-card__body { font-size: 0.85rem; line-height: 1.5; }
+.debrief-card__body h4 { margin: 0.4rem 0 0.2rem; font-size: 0.85rem; }
+.debrief-card__body ul { margin: 0; padding-left: 1.2rem; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 700px) {
+  .inst-filters { flex-direction: column; align-items: stretch; }
+  .inst-date { width: 100%; }
+  .inst-select--wide { min-width: 100%; }
+}

@@ -6,158 +6,173 @@
   <title>Instructor Dashboard — Anesthesia Playground</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/instructor.css" />
 </head>
 <body data-required-role="instructor">
 
   <nav class="dash-nav">
     <a href="../index.html" class="dash-nav__brand">Anesthesia Playground</a>
     <div class="dash-nav__actions">
-      <a href="../index.html" class="dash-nav__link">← Back to Simulator</a>
+      <a href="../ventilator.html" class="dash-nav__link">← Simulator</a>
       <button class="dash-nav__btn" onclick="SB.signOut()">Sign Out</button>
     </div>
   </nav>
 
   <main class="dashboard-main">
 
+    <!-- ── Welcome + filters ────────────────────────────────────────────── -->
     <div class="dash-welcome">
       <h1 class="dash-welcome__name" id="welcome-name">Instructor Dashboard</h1>
-      <p class="dash-welcome__meta">Cohort performance and learner analytics</p>
+      <div class="inst-filters">
+        <div class="inst-filter-group">
+          <label class="inst-filter-label">Cohort</label>
+          <select id="filter-cohort" class="inst-select">
+            <option value="all">All Learners</option>
+          </select>
+          <button class="inst-btn inst-btn--small" id="btn-manage-cohorts">Manage Cohorts</button>
+        </div>
+        <div class="inst-filter-group">
+          <label class="inst-filter-label">Date Range</label>
+          <input type="date" id="filter-start" class="inst-date" />
+          <span class="inst-filter-label" style="margin:0 0.3rem">to</span>
+          <input type="date" id="filter-end" class="inst-date" />
+        </div>
+        <button class="inst-btn" id="btn-apply-filters">Apply Filters</button>
+      </div>
     </div>
 
-    <div class="dash-section">
-      <h2 class="dash-section__title">Cohort Overview</h2>
+    <!-- ── Tabs ─────────────────────────────────────────────────────────── -->
+    <div class="inst-tabs" id="inst-tabs">
+      <button class="inst-tab inst-tab--active" data-tab="overview">Cohort Overview</button>
+      <button class="inst-tab" data-tab="scenarios">Scenario Performance</button>
+      <button class="inst-tab" data-tab="tutorials">Tutorial Engagement</button>
+      <button class="inst-tab" data-tab="learners">Individual Learners</button>
+      <button class="inst-tab" data-tab="export">Export</button>
+    </div>
+
+    <!-- ── Tab: Overview ────────────────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-overview">
       <div class="dash-stat-grid" id="cohort-stats">
-        <div class="dash-stat">
-          <div class="dash-stat__value" id="stat-learners">—</div>
-          <div class="dash-stat__label">Active Learners</div>
+        <div class="dash-stat"><div class="dash-stat__value" id="stat-learners">—</div><div class="dash-stat__label">Active Learners</div></div>
+        <div class="dash-stat"><div class="dash-stat__value" id="stat-total-attempts">—</div><div class="dash-stat__label">Total Attempts</div></div>
+        <div class="dash-stat"><div class="dash-stat__value" id="stat-completion-rate">—</div><div class="dash-stat__label">Completion Rate</div></div>
+        <div class="dash-stat"><div class="dash-stat__value" id="stat-cohort-avg-time">—</div><div class="dash-stat__label">Avg Completion (sec)</div></div>
+        <div class="dash-stat"><div class="dash-stat__value" id="stat-avg-latency">—</div><div class="dash-stat__label">Avg Answer Latency (sec)</div></div>
+        <div class="dash-stat"><div class="dash-stat__value" id="stat-tutorial-rate">—</div><div class="dash-stat__label">Tutorial Adoption</div></div>
+      </div>
+      <div class="dash-section" style="margin-top:1.2rem">
+        <h2 class="dash-section__title">Scenario Summary</h2>
+        <div id="overview-scenario-table"><p class="dash-empty">No data yet.</p></div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Scenario Performance ────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-scenarios" hidden>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Step Difficulty Heatmap</h2>
+        <p class="inst-hint">Median answer latency (seconds) per step. Darker = slower = harder.</p>
+        <div id="heatmap-container"><p class="dash-empty">No data yet.</p></div>
+      </div>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Common Wrong Answers</h2>
+        <div id="wrong-answers-container"><p class="dash-empty">No data yet.</p></div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Tutorial Engagement ─────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-tutorials" hidden>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Monitor Tutorial Usage</h2>
+        <div id="tutorial-stats-container"><p class="dash-empty">No data yet.</p></div>
+      </div>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Pathology Selections</h2>
+        <div id="pathology-stats-container"><p class="dash-empty">No data yet.</p></div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Individual Learners ─────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-learners" hidden>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Select a Learner</h2>
+        <select id="learner-select" class="inst-select inst-select--wide">
+          <option value="">— Choose a learner —</option>
+        </select>
+      </div>
+      <div id="learner-detail" hidden>
+        <div class="dash-section">
+          <h2 class="dash-section__title" id="learner-detail-name">Learner</h2>
+          <div class="dash-stat-grid" id="learner-stats"></div>
         </div>
-        <div class="dash-stat">
-          <div class="dash-stat__value" id="stat-total-attempts">—</div>
-          <div class="dash-stat__label">Total Attempts</div>
+        <div class="dash-section">
+          <h2 class="dash-section__title">Scenario History</h2>
+          <div id="learner-history"></div>
         </div>
-        <div class="dash-stat">
-          <div class="dash-stat__value" id="stat-completion-rate">—</div>
-          <div class="dash-stat__label">Completion Rate</div>
-        </div>
-        <div class="dash-stat">
-          <div class="dash-stat__value" id="stat-cohort-avg-time">—</div>
-          <div class="dash-stat__label">Avg Completion (sec)</div>
+        <div class="dash-section">
+          <h2 class="dash-section__title">Debrief History</h2>
+          <div id="learner-debriefs"></div>
         </div>
       </div>
     </div>
 
-    <div class="dash-section">
-      <h2 class="dash-section__title">Scenario Performance</h2>
-      <div id="scenario-perf">
-        <p class="dash-empty">No scenario data yet.</p>
-      </div>
-    </div>
-
-    <div class="dash-section">
-      <h2 class="dash-section__title">Individual Learners</h2>
-      <div id="learner-list">
-        <p class="dash-empty">No learners have signed up yet.</p>
+    <!-- ── Tab: Export ──────────────────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-export" hidden>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Export Data</h2>
+        <p class="inst-hint">Download filtered data as CSV for reporting or analysis.</p>
+        <div class="inst-export-btns">
+          <button class="inst-btn" id="btn-export-attempts">Download Scenario Attempts</button>
+          <button class="inst-btn" id="btn-export-steps">Download Step Events</button>
+          <button class="inst-btn" id="btn-export-tutorials">Download Tutorial Events</button>
+        </div>
       </div>
     </div>
 
   </main>
 
+  <!-- ── Cohort management modal ──────────────────────────────────────── -->
+  <dialog id="cohort-modal" class="debrief-dialog">
+    <div class="debrief-dialog__inner">
+      <div class="debrief-dialog__header">
+        <h2 class="debrief-dialog__title">Manage Cohorts</h2>
+        <button class="debrief-dialog__close" onclick="document.getElementById('cohort-modal').close()">×</button>
+      </div>
+
+      <div class="inst-cohort-form">
+        <h3 class="dash-section__title">Create New Cohort</h3>
+        <input id="cohort-name" class="inst-input" placeholder="Cohort name (e.g. Spring 2026 MS3s)" />
+        <input id="cohort-desc" class="inst-input" placeholder="Description (optional)" />
+        <div style="display:flex;gap:0.5rem;align-items:center;margin:0.5rem 0">
+          <label class="inst-filter-label">Start</label>
+          <input type="date" id="cohort-start" class="inst-date" />
+          <label class="inst-filter-label">End</label>
+          <input type="date" id="cohort-end" class="inst-date" />
+        </div>
+        <button class="inst-btn" id="btn-create-cohort">Create Cohort</button>
+      </div>
+
+      <div style="margin-top:1.2rem">
+        <h3 class="dash-section__title">Existing Cohorts</h3>
+        <div id="cohort-list"><p class="dash-empty">No cohorts yet.</p></div>
+      </div>
+
+      <div id="cohort-member-editor" hidden style="margin-top:1.2rem">
+        <h3 class="dash-section__title" id="cohort-member-title">Members</h3>
+        <div id="cohort-member-list"></div>
+        <div style="margin-top:0.6rem">
+          <select id="cohort-add-user" class="inst-select inst-select--wide">
+            <option value="">— Add a learner —</option>
+          </select>
+          <button class="inst-btn inst-btn--small" id="btn-add-member">Add</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/auth-guard.js"></script>
-  <script>
-    (async function () {
-      const profile = await SB.getProfile();
-      if (!profile) return;
-
-      document.getElementById('welcome-name').textContent =
-        'Instructor Dashboard — ' + (profile.display_name || '');
-
-      // Fetch all attempts (instructor RLS allows this)
-      const { data: attempts } = await SB.client
-        .from('scenario_attempts')
-        .select('*')
-        .order('started_at', { ascending: false });
-
-      if (!attempts || attempts.length === 0) return;
-
-      const completed = attempts.filter(a => a.completion_status === 'completed');
-      const uniqueUsers = new Set(attempts.map(a => a.user_id).filter(Boolean));
-
-      // Cohort stats
-      document.getElementById('stat-learners').textContent = uniqueUsers.size;
-      document.getElementById('stat-total-attempts').textContent = attempts.length;
-      document.getElementById('stat-completion-rate').textContent =
-        attempts.length > 0
-          ? Math.round((completed.length / attempts.length) * 100) + '%'
-          : '—';
-      if (completed.length > 0) {
-        const avg = Math.round(
-          completed.reduce((s, a) => s + (a.total_seconds || 0), 0) / completed.length
-        );
-        document.getElementById('stat-cohort-avg-time').textContent = avg;
-      }
-
-      // Scenario breakdown table
-      const byScenario = {};
-      attempts.forEach(a => {
-        if (!byScenario[a.scenario_name]) {
-          byScenario[a.scenario_name] = { started: 0, completed: 0, totalTime: 0 };
-        }
-        byScenario[a.scenario_name].started++;
-        if (a.completion_status === 'completed') {
-          byScenario[a.scenario_name].completed++;
-          byScenario[a.scenario_name].totalTime += (a.total_seconds || 0);
-        }
-      });
-
-      const scenEl = document.getElementById('scenario-perf');
-      scenEl.innerHTML = `
-        <table class="dash-table">
-          <thead><tr>
-            <th>Scenario</th><th>Started</th><th>Completed</th><th>Rate</th><th>Avg Time (sec)</th>
-          </tr></thead>
-          <tbody>
-            ${Object.entries(byScenario).map(([name, d]) => `<tr>
-              <td>${name}</td>
-              <td>${d.started}</td>
-              <td>${d.completed}</td>
-              <td>${d.started > 0 ? Math.round((d.completed / d.started) * 100) + '%' : '—'}</td>
-              <td>${d.completed > 0 ? Math.round(d.totalTime / d.completed) : '—'}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>`;
-
-      // Learner list
-      const { data: profiles } = await SB.client
-        .from('profiles')
-        .select('id, display_name, institution, training_level, role')
-        .eq('role', 'student')
-        .order('display_name');
-
-      if (profiles && profiles.length > 0) {
-        const learnerEl = document.getElementById('learner-list');
-        learnerEl.innerHTML = `
-          <table class="dash-table">
-            <thead><tr>
-              <th>Name</th><th>Institution</th><th>Level</th><th>Scenarios</th>
-            </tr></thead>
-            <tbody>
-              ${profiles.map(p => {
-                const userAttempts = attempts.filter(a => a.user_id === p.id);
-                const userCompleted = userAttempts.filter(a => a.completion_status === 'completed');
-                return `<tr>
-                  <td>${p.display_name || '(unnamed)'}</td>
-                  <td>${p.institution}</td>
-                  <td>${p.training_level || '—'}</td>
-                  <td>${userCompleted.length} / ${userAttempts.length}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>`;
-      }
-    })();
-  </script>
+  <script src="js/instructor-dashboard.js"></script>
 
 </body>
 </html>
