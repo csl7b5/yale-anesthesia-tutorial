@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign In — Anesthesia Playground</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body class="auth-ready">
+
+  <nav class="dash-nav">
+    <a href="../index.html" class="dash-nav__brand">Anesthesia Playground</a>
+  </nav>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <h1 class="auth-card__title">Sign In</h1>
+      <p class="auth-card__subtitle">
+        Enter your email to receive a magic link.<br>
+        No password needed — just click the link in your inbox.
+      </p>
+
+      <form id="auth-form">
+        <input
+          id="auth-email"
+          class="auth-card__input"
+          type="email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+        />
+        <button id="auth-submit" class="auth-card__submit" type="submit">
+          Send Magic Link
+        </button>
+      </form>
+
+      <p id="auth-status" class="auth-card__status"></p>
+
+      <a href="../index.html" class="auth-card__skip">
+        ← Continue without an account
+      </a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    (function () {
+      const form   = document.getElementById('auth-form');
+      const email  = document.getElementById('auth-email');
+      const btn    = document.getElementById('auth-submit');
+      const status = document.getElementById('auth-status');
+
+      // If already logged in, redirect to dashboard
+      SB.getUser().then(user => {
+        if (user) {
+          SB.getRole().then(role => {
+            window.location.replace(
+              (role === 'instructor' || role === 'admin')
+                ? 'instructor.html'
+                : 'student.html'
+            );
+          });
+        }
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        status.textContent = 'Sending magic link…';
+        status.className = 'auth-card__status';
+
+        const { error } = await SB.signInWithEmail(email.value.trim());
+
+        if (error) {
+          status.textContent = error.message;
+          status.className = 'auth-card__status auth-card__status--error';
+          btn.disabled = false;
+        } else {
+          status.textContent = 'Check your inbox — click the link to sign in.';
+          status.className = 'auth-card__status auth-card__status--success';
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

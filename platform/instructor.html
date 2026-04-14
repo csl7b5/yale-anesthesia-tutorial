@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Instructor Dashboard — Anesthesia Playground</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body data-required-role="instructor">
+
+  <nav class="dash-nav">
+    <a href="../index.html" class="dash-nav__brand">Anesthesia Playground</a>
+    <div class="dash-nav__actions">
+      <a href="../index.html" class="dash-nav__link">← Back to Simulator</a>
+      <button class="dash-nav__btn" onclick="SB.signOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <main class="dashboard-main">
+
+    <div class="dash-welcome">
+      <h1 class="dash-welcome__name" id="welcome-name">Instructor Dashboard</h1>
+      <p class="dash-welcome__meta">Cohort performance and learner analytics</p>
+    </div>
+
+    <div class="dash-section">
+      <h2 class="dash-section__title">Cohort Overview</h2>
+      <div class="dash-stat-grid" id="cohort-stats">
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="stat-learners">—</div>
+          <div class="dash-stat__label">Active Learners</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="stat-total-attempts">—</div>
+          <div class="dash-stat__label">Total Attempts</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="stat-completion-rate">—</div>
+          <div class="dash-stat__label">Completion Rate</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="stat-cohort-avg-time">—</div>
+          <div class="dash-stat__label">Avg Completion (sec)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2 class="dash-section__title">Scenario Performance</h2>
+      <div id="scenario-perf">
+        <p class="dash-empty">No scenario data yet.</p>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2 class="dash-section__title">Individual Learners</h2>
+      <div id="learner-list">
+        <p class="dash-empty">No learners have signed up yet.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script>
+    (async function () {
+      const profile = await SB.getProfile();
+      if (!profile) return;
+
+      document.getElementById('welcome-name').textContent =
+        'Instructor Dashboard — ' + (profile.display_name || '');
+
+      // Fetch all attempts (instructor RLS allows this)
+      const { data: attempts } = await SB.client
+        .from('scenario_attempts')
+        .select('*')
+        .order('started_at', { ascending: false });
+
+      if (!attempts || attempts.length === 0) return;
+
+      const completed = attempts.filter(a => a.completion_status === 'completed');
+      const uniqueUsers = new Set(attempts.map(a => a.user_id).filter(Boolean));
+
+      // Cohort stats
+      document.getElementById('stat-learners').textContent = uniqueUsers.size;
+      document.getElementById('stat-total-attempts').textContent = attempts.length;
+      document.getElementById('stat-completion-rate').textContent =
+        attempts.length > 0
+          ? Math.round((completed.length / attempts.length) * 100) + '%'
+          : '—';
+      if (completed.length > 0) {
+        const avg = Math.round(
+          completed.reduce((s, a) => s + (a.total_seconds || 0), 0) / completed.length
+        );
+        document.getElementById('stat-cohort-avg-time').textContent = avg;
+      }
+
+      // Scenario breakdown table
+      const byScenario = {};
+      attempts.forEach(a => {
+        if (!byScenario[a.scenario_name]) {
+          byScenario[a.scenario_name] = { started: 0, completed: 0, totalTime: 0 };
+        }
+        byScenario[a.scenario_name].started++;
+        if (a.completion_status === 'completed') {
+          byScenario[a.scenario_name].completed++;
+          byScenario[a.scenario_name].totalTime += (a.total_seconds || 0);
+        }
+      });
+
+      const scenEl = document.getElementById('scenario-perf');
+      scenEl.innerHTML = `
+        <table class="dash-table">
+          <thead><tr>
+            <th>Scenario</th><th>Started</th><th>Completed</th><th>Rate</th><th>Avg Time (sec)</th>
+          </tr></thead>
+          <tbody>
+            ${Object.entries(byScenario).map(([name, d]) => `<tr>
+              <td>${name}</td>
+              <td>${d.started}</td>
+              <td>${d.completed}</td>
+              <td>${d.started > 0 ? Math.round((d.completed / d.started) * 100) + '%' : '—'}</td>
+              <td>${d.completed > 0 ? Math.round(d.totalTime / d.completed) : '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+
+      // Learner list
+      const { data: profiles } = await SB.client
+        .from('profiles')
+        .select('id, display_name, institution, training_level, role')
+        .eq('role', 'student')
+        .order('display_name');
+
+      if (profiles && profiles.length > 0) {
+        const learnerEl = document.getElementById('learner-list');
+        learnerEl.innerHTML = `
+          <table class="dash-table">
+            <thead><tr>
+              <th>Name</th><th>Institution</th><th>Level</th><th>Scenarios</th>
+            </tr></thead>
+            <tbody>
+              ${profiles.map(p => {
+                const userAttempts = attempts.filter(a => a.user_id === p.id);
+                const userCompleted = userAttempts.filter(a => a.completion_status === 'completed');
+                return `<tr>
+                  <td>${p.display_name || '(unnamed)'}</td>
+                  <td>${p.institution}</td>
+                  <td>${p.training_level || '—'}</td>
+                  <td>${userCompleted.length} / ${userAttempts.length}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>`;
+      }
+    })();
+  </script>
+
+</body>
+</html>

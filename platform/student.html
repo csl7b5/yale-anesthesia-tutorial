@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Dashboard — Anesthesia Playground</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body data-required-role="student">
+
+  <nav class="dash-nav">
+    <a href="../index.html" class="dash-nav__brand">Anesthesia Playground</a>
+    <div class="dash-nav__actions">
+      <a href="../index.html" class="dash-nav__link">← Back to Simulator</a>
+      <button class="dash-nav__btn" onclick="SB.signOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <main class="dashboard-main">
+
+    <div class="dash-welcome">
+      <h1 class="dash-welcome__name" id="welcome-name">Welcome back</h1>
+      <p class="dash-welcome__meta" id="welcome-meta"></p>
+    </div>
+
+    <div class="dash-section">
+      <h2 class="dash-section__title">Performance Summary</h2>
+      <div class="dash-stat-grid" id="stats-grid">
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="stat-completed">—</div>
+          <div class="dash-stat__label">Scenarios Completed</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="stat-avg-time">—</div>
+          <div class="dash-stat__label">Avg Time (sec)</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="stat-avg-latency">—</div>
+          <div class="dash-stat__label">Avg Answer Latency (sec)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2 class="dash-section__title">Scenario History</h2>
+      <div id="history-container">
+        <p class="dash-empty">Complete a scenario in the simulator to see your history here.</p>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2 class="dash-section__title">Recent Activity</h2>
+      <div id="activity-container">
+        <p class="dash-empty">No activity yet — start exploring!</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script>
+    (async function () {
+      const profile = await SB.getProfile();
+      if (!profile) return;
+
+      // Welcome card
+      document.getElementById('welcome-name').textContent =
+        'Welcome back, ' + (profile.display_name || 'Student');
+      const meta = [profile.institution, profile.training_level].filter(Boolean).join(' · ');
+      document.getElementById('welcome-meta').textContent = meta;
+
+      // Fetch completed scenarios
+      const { data: attempts } = await SB.client
+        .from('scenario_attempts')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('started_at', { ascending: false });
+
+      if (attempts && attempts.length > 0) {
+        const completed = attempts.filter(a => a.completion_status === 'completed');
+
+        // Stats
+        document.getElementById('stat-completed').textContent = completed.length;
+        if (completed.length > 0) {
+          const avgTime = Math.round(
+            completed.reduce((s, a) => s + (a.total_seconds || 0), 0) / completed.length
+          );
+          document.getElementById('stat-avg-time').textContent = avgTime;
+        }
+
+        // Avg latency across all step events
+        const attemptIds = attempts.map(a => a.id);
+        const { data: steps } = await SB.client
+          .from('step_events')
+          .select('latency_seconds')
+          .in('attempt_id', attemptIds);
+
+        if (steps && steps.length > 0) {
+          const avgLat = Math.round(
+            steps.reduce((s, e) => s + e.latency_seconds, 0) / steps.length
+          );
+          document.getElementById('stat-avg-latency').textContent = avgLat;
+        }
+
+        // History table
+        const histEl = document.getElementById('history-container');
+        histEl.innerHTML = `
+          <table class="dash-table">
+            <thead><tr>
+              <th>Scenario</th><th>Status</th><th>Time (sec)</th><th>Date</th>
+            </tr></thead>
+            <tbody>
+              ${attempts.map(a => `<tr>
+                <td>${a.scenario_name}</td>
+                <td>${a.completion_status}</td>
+                <td>${a.total_seconds ?? '—'}</td>
+                <td>${new Date(a.started_at).toLocaleDateString()}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`;
+      }
+
+      // Recent tutorial activity
+      const { data: tutorials } = await SB.client
+        .from('tutorial_events')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (tutorials && tutorials.length > 0) {
+        const actEl = document.getElementById('activity-container');
+        actEl.innerHTML = `
+          <table class="dash-table">
+            <thead><tr>
+              <th>Monitor</th><th>Action</th><th>Value</th><th>Date</th>
+            </tr></thead>
+            <tbody>
+              ${tutorials.map(t => `<tr>
+                <td>${t.monitor}</td>
+                <td>${t.event_type}</td>
+                <td>${t.event_value || '—'}</td>
+                <td>${new Date(t.created_at).toLocaleDateString()}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`;
+      }
+    })();
+  </script>
+
+</body>
+</html>

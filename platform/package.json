@@ -1,0 +1,12 @@
+{
+  "name": "yale-anesthesia-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Authenticated learner + educator platform layer for Yale Anesthesia Playground",
+  "scripts": {
+    "dev": "echo 'Static site — open platform/auth.html in a browser or use a local server'",
+    "migrate": "echo 'Run SQL files in platform/supabase/ via the Supabase dashboard SQL editor'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

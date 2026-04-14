@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signing in… — Anesthesia Playground</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body class="auth-ready">
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <h1 class="auth-card__title">Signing you in…</h1>
+      <p id="cb-status" class="auth-card__subtitle">Verifying your magic link.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    (async function () {
+      const status = document.getElementById('cb-status');
+
+      // Supabase automatically picks up the token fragment from the URL
+      const { data: { session }, error } = await SB.client.auth.getSession();
+
+      if (error || !session) {
+        status.textContent = 'Something went wrong — try signing in again.';
+        status.classList.add('auth-card__status--error');
+        setTimeout(() => window.location.replace('auth.html'), 2500);
+        return;
+      }
+
+      const role = await SB.getRole();
+      window.location.replace(
+        (role === 'instructor' || role === 'admin')
+          ? 'instructor.html'
+          : 'student.html'
+      );
+    })();
+  </script>
+
+</body>
+</html>

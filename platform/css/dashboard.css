@@ -1,0 +1,276 @@
+/* dashboard.css — shared styles for auth + dashboard pages */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap");
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "DM Sans", system-ui, sans-serif;
+  background: #eef0f4;
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(40,109,192,.05), transparent),
+    radial-gradient(ellipse 80% 50% at 100% 50%, rgba(99,102,241,.04), transparent);
+  color: #1c2738;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide page content until auth check completes */
+body:not(.auth-ready) .dashboard-main {
+  opacity: 0;
+  pointer-events: none;
+}
+body.auth-ready .dashboard-main {
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+/* ── Nav ─────────────────────────────────────────────────── */
+
+.dash-nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(18,30,45,.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.5rem;
+}
+
+.dash-nav__brand {
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  color: #286dc0;
+  text-decoration: none;
+}
+
+.dash-nav__actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.dash-nav__link {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #58687a;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.dash-nav__link:hover { color: #286dc0; }
+
+.dash-nav__btn {
+  background: none;
+  border: 1px solid rgba(18,30,45,.15);
+  border-radius: 6px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #58687a;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.dash-nav__btn:hover {
+  background: #286dc0;
+  color: #fff;
+  border-color: #286dc0;
+}
+
+/* ── Auth card (login page) ──────────────────────────────── */
+
+.auth-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(18,30,45,.10);
+  padding: 2.5rem 2.2rem;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.auth-card__title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.3rem;
+  color: #1c2738;
+}
+
+.auth-card__subtitle {
+  font-size: 0.82rem;
+  color: #58687a;
+  margin: 0 0 1.8rem;
+  line-height: 1.5;
+}
+
+.auth-card__input {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(18,30,45,.18);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  outline: none;
+  transition: border 0.2s;
+}
+.auth-card__input:focus {
+  border-color: #286dc0;
+  box-shadow: 0 0 0 3px rgba(40,109,192,.12);
+}
+
+.auth-card__submit {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 8px;
+  background: #286dc0;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.auth-card__submit:hover { background: #1a54a0; }
+.auth-card__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-card__status {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #58687a;
+  min-height: 1.4em;
+}
+.auth-card__status--error { color: #d44; }
+.auth-card__status--success { color: #2a7; }
+
+.auth-card__skip {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  color: #58687a;
+  text-decoration: none;
+}
+.auth-card__skip:hover { color: #286dc0; text-decoration: underline; }
+
+/* ── Dashboard cards ─────────────────────────────────────── */
+
+.dashboard-main {
+  flex: 1;
+  max-width: 900px;
+  width: 100%;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.dash-welcome {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(18,30,45,.08);
+  padding: 1.5rem 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.dash-welcome__name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.dash-welcome__meta {
+  font-size: 0.78rem;
+  color: #58687a;
+  margin: 0;
+}
+
+.dash-section {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(18,30,45,.08);
+  padding: 1.5rem 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.dash-section__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #286dc0;
+  margin: 0 0 1rem;
+}
+
+.dash-empty {
+  font-size: 0.82rem;
+  color: #58687a;
+  font-style: italic;
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.dash-table th {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 2px solid rgba(18,30,45,.1);
+  color: #58687a;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.dash-table td {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid rgba(18,30,45,.06);
+}
+
+.dash-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.dash-stat {
+  text-align: center;
+  padding: 0.8rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(40,109,192,.04);
+}
+
+.dash-stat__value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #286dc0;
+}
+
+.dash-stat__label {
+  font-size: 0.68rem;
+  color: #58687a;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

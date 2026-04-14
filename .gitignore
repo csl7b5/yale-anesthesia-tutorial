@@ -1,3 +1,9 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# Environment secrets
+.env
+platform/.env
+node_modules/
+platform/node_modules/

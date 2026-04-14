@@ -92,6 +92,18 @@ body {
   font-weight: 600;
 }
 
+.site-nav__tab--signin {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.site-nav__tab--signin:hover {
+  background: #1a54a0;
+  border-color: #1a54a0;
+}
+
 /* —— Page sections —— */
 .page-section {
   display: none;
