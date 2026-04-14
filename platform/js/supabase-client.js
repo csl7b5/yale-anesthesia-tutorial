@@ -9,7 +9,7 @@
   'use strict';
 
   const SUPABASE_URL  = 'https://fpdlxevzbyqkztauwtno.supabase.co';
-  const SUPABASE_ANON = 'sb_publishable_IPL8H5MvvizvGjNPf0sYzQ_AWKLzR48';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwZGx4ZXZ6Ynlxa3p0YXV3dG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxOTU1MTIsImV4cCI6MjA5MTc3MTUxMn0.uUaPku_1h3Uz95YidWEXrRwWbJ3NBVrNpWtN_XsjIjg';
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
