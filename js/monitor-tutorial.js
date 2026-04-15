@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  const BG = '#070f1e';
+  const BG = '#000000';
 
   // ═══════════════════════════════════════════════════════════════════════════
   //  PRESET DATA
@@ -356,7 +356,7 @@
 
     function initBuf() {
       bx.fillStyle = BG; bx.fillRect(0, 0, W, H);
-      bx.strokeStyle = 'rgba(255,255,255,0.045)'; bx.lineWidth = 1;
+      bx.strokeStyle = 'rgba(255,255,255,0.05)'; bx.lineWidth = 1;
       [0.25, 0.5, 0.75].forEach(f => {
         const y = padT + drawH * f;
         bx.beginPath(); bx.moveTo(0, y); bx.lineTo(W, y); bx.stroke();
@@ -395,7 +395,7 @@
         bx.fillRect(0, 0, e2, H);
       }
       // Restore grid inside eraser
-      bx.strokeStyle = 'rgba(255,255,255,0.045)'; bx.lineWidth = 1;
+      bx.strokeStyle = 'rgba(255,255,255,0.05)'; bx.lineWidth = 1;
       [0.25, 0.5, 0.75].forEach(f => {
         const y = padT + drawH * f;
         bx.beginPath();
@@ -479,7 +479,7 @@
       // Composite: buffer → main canvas, then overlays
       ctx.drawImage(buf, 0, 0);
       ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.13)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(sweepX, padT - 2); ctx.lineTo(sweepX, H - padB + 2); ctx.stroke();
       ctx.restore();
       drawLabels(sweepX);

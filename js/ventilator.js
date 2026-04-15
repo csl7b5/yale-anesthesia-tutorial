@@ -267,12 +267,15 @@
     );
   }
 
+  /* Waveform / TOF display — pure black (matches .mon-screen / tutorial wave section) */
+  const MONITOR_SCREEN_BG = '#000000';
+
   /* ─────────────────────────────────────────────────────────────────────────
      SCROLL WAVEFORM CLASS
      ───────────────────────────────────────────────────────────────────────── */
   class ScrollWaveform {
     constructor(canvas, { color, pxPerSec, minVal, maxVal, lineWidth=1.5,
-                          bgColor='#03060e', gridVals=[] }) {
+                          bgColor=MONITOR_SCREEN_BG, gridVals=[] }) {
       this.canvas   = canvas;
       this.ctx      = canvas.getContext('2d');
       this.W        = canvas.width;
@@ -310,7 +313,7 @@
       ctx.fillRect(0, 0, W, H);
 
       if (gridVals.length) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
         ctx.lineWidth = 0.5;
         for (const gv of gridVals) {
           const gy = yOf(gv);
@@ -381,11 +384,11 @@
     const xOf = v => PAD.l + (v / maxV) * innerW;
     const yOf = p => H - PAD.b - (p / maxP) * innerH;
 
-    ctx.fillStyle = '#03060e';
+    ctx.fillStyle = MONITOR_SCREEN_BG;
     ctx.fillRect(0, 0, W, H);
 
     // Axis lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
     ctx.lineWidth = 0.5;
     [0, maxV*0.5, maxV].forEach(v => {
       const x = xOf(v);
@@ -420,7 +423,7 @@
 
     // Draw in-progress current breath (dimmer)
     if (pvBuf.length > 1) {
-      ctx.strokeStyle = 'rgba(160,160,160,0.3)';
+      ctx.strokeStyle = 'rgba(200,200,200,0.35)';
       ctx.lineWidth = 1;
       ctx.shadowBlur = 0;
       ctx.beginPath();
@@ -449,7 +452,7 @@
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     const depth = 1 - vitals.bisSmoothed/100;
-    ctx.fillStyle = '#03060e';
+    ctx.fillStyle = MONITOR_SCREEN_BG;
     ctx.fillRect(0, 0, W, H);
     const bands = [
       { amp: depth*0.9+0.08,       color:[255,68,68]  },
@@ -469,7 +472,7 @@
         ctx.fillRect(x+1.5, py, bandW-3, 1);
       }
     });
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
     ctx.lineWidth = 0.5;
     for (let i = 1; i < bands.length; i++) {
       ctx.beginPath();
@@ -1721,7 +1724,7 @@
       const h = canvas.height;
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '#030810';
+      ctx.fillStyle = MONITOR_SCREEN_BG;
       ctx.fillRect(0, 0, w, h);
 
       const count = tofCount();
@@ -1772,14 +1775,14 @@
       const h = canvas.height;
 
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '#030810';
+      ctx.fillStyle = MONITOR_SCREEN_BG;
       ctx.fillRect(0, 0, w, h);
 
       const baseY = Math.round(h * 0.83);
       const amp   = h * 0.70;
 
       /* baseline grid */
-      ctx.strokeStyle = '#0a1c30';
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 5]);
       ctx.beginPath(); ctx.moveTo(0, baseY); ctx.lineTo(w, baseY); ctx.stroke();
@@ -1790,7 +1793,7 @@
       TWITCH_AT.forEach((tAt, i) => {
         const x = Math.round((tAt / CYCLE_DUR) * w);
         const isPast = tofCycleTime >= tAt - 0.05;
-        ctx.strokeStyle = isPast ? '#182e48' : '#0d1c2e';
+        ctx.strokeStyle = isPast ? 'rgba(120,180,255,0.45)' : 'rgba(255,255,255,0.12)';
         ctx.lineWidth = 1;
         ctx.setLineDash([2, 4]);
         ctx.beginPath(); ctx.moveTo(x, 16); ctx.lineTo(x, baseY); ctx.stroke();
@@ -1814,11 +1817,11 @@
 
       /* dim the "upcoming" portion of the cycle */
       const cursorX = Math.round((tofCycleTime / CYCLE_DUR) * w);
-      ctx.fillStyle = 'rgba(3,8,16,0.50)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.48)';
       ctx.fillRect(cursorX, 0, w - cursorX, h);
 
       /* cursor line */
-      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(cursorX, 0); ctx.lineTo(cursorX, h); ctx.stroke();
 
@@ -1828,7 +1831,7 @@
       TWITCH_AT.forEach((tAt, i) => {
         const x = Math.round((tAt / CYCLE_DUR) * w);
         const isJustFired = tofCycleTime > tAt - 0.05 && tofCycleTime < tAt + 0.3;
-        ctx.fillStyle = isJustFired ? '#ffffff' : '#2a4060';
+        ctx.fillStyle = isJustFired ? '#ffffff' : '#8a9aaa';
         ctx.fillText(labels[i], x, 12);
       });
       ctx.textAlign = 'left';

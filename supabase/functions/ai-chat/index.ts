@@ -1,6 +1,6 @@
 // Supabase Edge Function: authenticated AI chat with OpenAI, 15 queries/day, logging.
-// Deploy: `supabase functions deploy ai-chat --no-verify-jwt` is WRONG — we verify JWT in code.
-// Use: `supabase functions deploy ai-chat`
+// Deploy: `supabase functions deploy ai-chat` (see supabase/config.toml: verify_jwt=false;
+// auth is enforced here via auth.getUser(jwt).)
 // Secrets: OPENAI_API_KEY (set in Dashboard → Edge Functions → Secrets)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";

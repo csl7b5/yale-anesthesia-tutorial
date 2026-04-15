@@ -26,39 +26,31 @@
     const { data: refreshed } = await SB.client.auth.refreshSession();
     if (refreshed.session) session = refreshed.session;
 
-    const base = SB.client.supabaseUrl;
-    const anon = SB.client.supabaseKey;
-    const url = base.replace(/\/$/, '') + '/functions/v1/ai-chat';
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + session.access_token,
-        apikey: anon,
-      },
-      body: JSON.stringify({
+    const { data: json, error: fnErr } = await SB.client.functions.invoke('ai-chat', {
+      body: {
         page: page === 'ventilator' ? 'ventilator' : 'pyxis',
         messages: messages,
-      }),
+      },
+      headers: {
+        Authorization: 'Bearer ' + session.access_token,
+      },
     });
 
-    let json = {};
-    try {
-      json = await res.json();
-    } catch (_) {
-      return { ok: false, code: 'parse', message: 'Invalid response from server.' };
+    if (fnErr) {
+      let code = 'http';
+      let message = fnErr.message || 'Request failed.';
+      try {
+        const ctx = fnErr.context;
+        if (ctx && typeof ctx.body === 'string') {
+          const parsed = JSON.parse(ctx.body);
+          if (parsed.error) code = parsed.error;
+          if (parsed.message) message = parsed.message;
+        }
+      } catch (_) {}
+      return { ok: false, code, message };
     }
 
-    if (!res.ok) {
-      return {
-        ok: false,
-        code: json.error || 'http',
-        message: json.message || ('Error ' + res.status),
-      };
-    }
-
-    if (json.reply) {
+    if (json && json.reply) {
       return {
         ok: true,
         reply: json.reply,
@@ -66,6 +58,10 @@
       };
     }
 
-    return { ok: false, code: json.error || 'unknown', message: json.message || 'Unexpected response.' };
+    return {
+      ok: false,
+      code: (json && json.error) || 'unknown',
+      message: (json && json.message) || 'Unexpected response.',
+    };
   };
 })();

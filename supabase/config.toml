@@ -1,0 +1,5 @@
+# Per-function Edge settings (picked up on `supabase functions deploy`).
+# Gateway JWT check is disabled for ai-chat; the handler still validates the
+# Bearer token with auth.getUser(jwt) before calling OpenAI or logging usage.
+[functions.ai-chat]
+verify_jwt = false
