@@ -66,7 +66,6 @@
     btn.type = 'button';
     btn.className = 'scen-next-btn debrief-trigger';
     btn.textContent = '📋 View Debrief';
-    btn.style.marginTop = '0.8rem';
     btn.addEventListener('click', showDebrief);
 
     const restartBtn = document.getElementById('scen-restart-btn');

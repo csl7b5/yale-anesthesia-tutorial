@@ -132,11 +132,13 @@
   </main>
 
   <!-- ── Cohort management modal ──────────────────────────────────────── -->
-  <dialog id="cohort-modal" class="debrief-dialog">
-    <div class="debrief-dialog__inner">
-      <div class="debrief-dialog__header">
-        <h2 class="debrief-dialog__title">Manage Cohorts</h2>
-        <button class="debrief-dialog__close" onclick="document.getElementById('cohort-modal').close()">×</button>
+  <dialog id="cohort-modal" class="debrief-dialog cohort-dialog">
+    <div class="cohort-dialog__inner debrief-dialog__inner">
+      <div class="cohort-dialog__header">
+        <h2 class="cohort-dialog__title debrief-dialog__title">Manage Cohorts</h2>
+        <button type="button" class="cohort-dialog__close" id="cohort-modal-close" aria-label="Close cohort manager">
+          <span aria-hidden="true">×</span>
+        </button>
       </div>
 
       <div class="inst-cohort-form">

@@ -62,6 +62,9 @@
 
     setupTabs();
     setupCohortModal();
+    $('cohort-modal-close')?.addEventListener('click', () => {
+      document.getElementById('cohort-modal')?.close();
+    });
     window.openAccountModal = () => openModalSafe($('account-modal'));
     window.closeAccountModal = () => closeModalSafe($('account-modal'));
     $('btn-account-settings')?.addEventListener('click', window.openAccountModal);

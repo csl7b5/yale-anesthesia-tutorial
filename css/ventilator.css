@@ -41,6 +41,19 @@ html { scrollbar-gutter: stable; }
   font-weight: 600;
 }
 
+/* Sign-in / My Dashboard — keep solid blue button with white label (overrides .vent-page .site-nav__tab) */
+.vent-page .site-nav__tab.site-nav__tab--signin {
+  color: #fff !important;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.vent-page .site-nav__tab.site-nav__tab--signin:hover {
+  color: #fff !important;
+  background: #1a54a0;
+  border-color: #1a54a0;
+}
+
 /* ── Workstation container ───────────────────────────────────────────────── */
 .vent-workstation {
   max-width: 1380px;
@@ -882,6 +895,27 @@ html { scrollbar-gutter: stable; }
 }
 #scen-resolution h3 { font-size: 1rem; color: #c8ddf4; margin: 0 0 10px; }
 #scen-resolution p { font-size: 11px; color: #7090b0; line-height: 1.7; max-width: 700px; margin: 0 auto 20px; }
+
+/* Post-scenario actions: equal-width buttons, consistent gap */
+.scen-resolution__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+}
+.scen-resolution__actions .scen-next-btn,
+.scen-resolution__actions .mode-btn {
+  width: 100%;
+  margin-top: 0;
+  min-height: 40px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    TRAIN-OF-FOUR — MINI CARD (ctrl-col)
