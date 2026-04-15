@@ -17,10 +17,14 @@
       return { ok: false, code: 'config', message: 'Sign-in service not loaded.' };
     }
 
-    const { data: { session } } = await SB.client.auth.getSession();
+    let { data: { session } } = await SB.client.auth.getSession();
     if (!session) {
       return { ok: false, code: 'auth', message: 'Please sign in to use the assistant.' };
     }
+
+    // Refresh so access_token is valid (expired tokens cause gateway "Invalid JWT").
+    const { data: refreshed } = await SB.client.auth.refreshSession();
+    if (refreshed.session) session = refreshed.session;
 
     const base = SB.client.supabaseUrl;
     const anon = SB.client.supabaseKey;

@@ -133,4 +133,5 @@ You do **not** need to keep your Mac online for visitors; deploy is a one-off up
 | Wrong architecture | Intel Mac needs `supabase_darwin_amd64` from [CLI releases](https://github.com/supabase/cli/releases/latest), not `arm64`. |
 | Deploy errors | Confirm `supabase/functions/ai-chat/index.ts` exists; run `supabase login` again. |
 | Chat 401 | User must be **signed in** on the site. |
+| **Invalid JWT** | Redeploy `ai-chat` after pulling latest (Edge uses `getUser(jwt)`); ensure `platform/js/ai-chat.js` refreshes the session before calling. Sign out and sign in again if it persists. |
 | Chat 500 / “Assistant unavailable” | Check **`OPENAI_API_KEY`** secret; check **Edge Functions → ai-chat → Logs**. |

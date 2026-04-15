@@ -45,6 +45,11 @@ Deno.serve(async (req: Request) => {
       return jsonErr(401, "unauthorized", "Sign in required.");
     }
 
+    const jwt = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (!jwt) {
+      return jsonErr(401, "unauthorized", "Sign in required.");
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -59,12 +64,14 @@ Deno.serve(async (req: Request) => {
       global: { headers: { Authorization: authHeader } },
     });
 
+    // Must pass the JWT explicitly — getUser() with no args does not validate the header in Edge.
     const {
       data: { user },
       error: userErr,
-    } = await userClient.auth.getUser();
+    } = await userClient.auth.getUser(jwt);
     if (userErr || !user) {
-      return jsonErr(401, "unauthorized", "Invalid or expired session.");
+      console.error("getUser", userErr?.message);
+      return jsonErr(401, "unauthorized", userErr?.message || "Invalid or expired session.");
     }
 
     const body = await req.json().catch(() => ({}));
