@@ -55,7 +55,7 @@
       sb.from('scenario_attempts').select('*').order('started_at', { ascending: false }),
       sb.from('step_events').select('*'),
       sb.from('tutorial_events').select('*'),
-      sb.from('ai_outputs').select('*').order('created_at', { ascending: false })
+      sb.from('ai_outputs').select('*, scenario_attempts!inner(user_id, scenario_id, scenario_name)').order('created_at', { ascending: false })
     ]);
 
     allProfiles = pRes.data || [];
@@ -97,11 +97,11 @@
     let fs = steps.filter(s => attemptIds.has(s.attempt_id));
     let ft = tutEvents;
     if (filteredUserIds) ft = ft.filter(t => filteredUserIds.has(t.user_id));
-    if (startDate) ft = ft.filter(t => t.opened_at >= startDate);
-    if (endDate) ft = ft.filter(t => t.opened_at <= endDate + 'T23:59:59');
+    if (startDate) ft = ft.filter(t => t.created_at >= startDate);
+    if (endDate) ft = ft.filter(t => t.created_at <= endDate + 'T23:59:59');
 
     let fd = debriefs;
-    if (filteredUserIds) fd = fd.filter(d => filteredUserIds.has(d.user_id));
+    if (filteredUserIds) fd = fd.filter(d => filteredUserIds.has(d.scenario_attempts?.user_id));
 
     // Update learner dropdown to filtered set
     let visibleProfiles = allProfiles;
@@ -120,15 +120,15 @@
     $('stat-learners').textContent = profiles.length;
     $('stat-total-attempts').textContent = fa.length;
 
-    const completed = fa.filter(a => a.status === 'completed');
+    const completed = fa.filter(a => a.completion_status === 'completed');
     const rate = fa.length ? ((completed.length / fa.length) * 100).toFixed(0) : '—';
     $('stat-completion-rate').textContent = fa.length ? rate + '%' : '—';
 
-    const durations = completed.filter(a => a.duration_sec != null).map(a => a.duration_sec);
+    const durations = completed.filter(a => a.total_seconds != null).map(a => a.total_seconds);
     $('stat-cohort-avg-time').textContent = durations.length
       ? (durations.reduce((s, v) => s + v, 0) / durations.length).toFixed(1) : '—';
 
-    const latencies = fs.filter(s => s.latency_ms != null).map(s => s.latency_ms / 1000);
+    const latencies = fs.filter(s => s.latency_seconds != null).map(s => s.latency_seconds);
     $('stat-avg-latency').textContent = latencies.length
       ? (latencies.reduce((s, v) => s + v, 0) / latencies.length).toFixed(1) : '—';
 
@@ -139,13 +139,14 @@
     // Scenario summary table
     const byScenario = groupBy(fa, 'scenario_id');
     const rows = Object.entries(byScenario).map(([scId, arr]) => {
-      const comp = arr.filter(a => a.status === 'completed');
-      const dur = comp.filter(a => a.duration_sec).map(a => a.duration_sec);
+      const comp = arr.filter(a => a.completion_status === 'completed');
+      const dur = comp.filter(a => a.total_seconds).map(a => a.total_seconds);
       const scSteps = fs.filter(s => arr.some(a => a.id === s.attempt_id));
       const correct = scSteps.filter(s => s.is_correct).length;
       const total = scSteps.length;
+      const displayName = arr[0]?.scenario_name || scId;
       return {
-        scenario: scId,
+        scenario: displayName,
         attempts: arr.length,
         completed: comp.length,
         avgTime: dur.length ? (dur.reduce((s, v) => s + v, 0) / dur.length).toFixed(1) : '—',
@@ -178,9 +179,10 @@
       const stepNums = Object.keys(byStep).sort((a, b) => +a - +b);
       if (!stepNums.length) continue;
 
-      heatHtml += `<div style="margin-bottom:1rem"><strong>${esc(scId)}</strong><div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">`;
+      const scenDisplayName = arr[0]?.scenario_name || scId;
+      heatHtml += `<div style="margin-bottom:1rem"><strong>${esc(scenDisplayName)}</strong><div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">`;
       for (const sn of stepNums) {
-        const lats = byStep[sn].filter(s => s.latency_ms).map(s => s.latency_ms / 1000);
+        const lats = byStep[sn].filter(s => s.latency_seconds).map(s => s.latency_seconds);
         const med = lats.length ? median(lats) : 0;
         const bg = latencyColor(med);
         heatHtml += `<div class="heatmap-cell" style="background:${bg}" title="Step ${sn}: median ${med.toFixed(1)}s">S${sn}<br>${med.toFixed(1)}s</div>`;
@@ -195,7 +197,7 @@
     for (const s of wrongSteps) {
       const key = `${s.attempt_id}__step${s.step_number}`;
       const scAttempt = fa.find(a => a.id === s.attempt_id);
-      const scId = scAttempt ? scAttempt.scenario_id : 'unknown';
+      const scId = scAttempt ? (scAttempt.scenario_name || scAttempt.scenario_id) : 'unknown';
       const wKey = `${scId}|Step ${s.step_number}|${s.choice_label}`;
       wrongGroups[wKey] = (wrongGroups[wKey] || 0) + 1;
     }
@@ -218,13 +220,14 @@
 
   /* ── Tab: Tutorials ─────────────────────────────────────────────────── */
   function renderTutorials(ft) {
-    const byTutorial = groupBy(ft, 'tutorial_id');
-    const rows = Object.entries(byTutorial).map(([tid, arr]) => {
+    const byMonitor = groupBy(ft, 'monitor');
+    const rows = Object.entries(byMonitor).map(([mon, arr]) => {
       const users = new Set(arr.map(e => e.user_id));
       const dwells = arr.filter(e => e.dwell_seconds).map(e => e.dwell_seconds);
       return {
-        tutorial: tid,
-        opens: arr.length,
+        monitor: mon,
+        opens: arr.filter(e => e.event_type === 'opened').length,
+        totalEvents: arr.length,
         uniqueUsers: users.size,
         avgDwell: dwells.length ? (dwells.reduce((s, v) => s + v, 0) / dwells.length).toFixed(1) : '—'
       };
@@ -233,31 +236,31 @@
     if (!rows.length) {
       $('tutorial-stats-container').innerHTML = '<p class="dash-empty">No tutorial data for current filters.</p>';
     } else {
-      let html = '<table class="inst-table"><thead><tr><th>Tutorial</th><th>Opens</th><th>Unique Users</th><th>Avg Dwell (s)</th></tr></thead><tbody>';
+      let html = '<table class="inst-table"><thead><tr><th>Monitor</th><th>Opens</th><th>Total Events</th><th>Unique Users</th><th>Avg Dwell (s)</th></tr></thead><tbody>';
       for (const r of rows) {
-        html += `<tr><td>${esc(r.tutorial)}</td><td>${r.opens}</td><td>${r.uniqueUsers}</td><td>${r.avgDwell}</td></tr>`;
+        html += `<tr><td>${esc(r.monitor)}</td><td>${r.opens}</td><td>${r.totalEvents}</td><td>${r.uniqueUsers}</td><td>${r.avgDwell}</td></tr>`;
       }
       html += '</tbody></table>';
       $('tutorial-stats-container').innerHTML = html;
     }
 
     // Pathology selections
-    const pathEvents = ft.filter(e => e.pathology);
+    const pathEvents = ft.filter(e => e.event_type === 'pathology_selected' && e.event_value);
     const pathCounts = {};
     for (const e of pathEvents) {
-      const k = `${e.tutorial_id}|${e.pathology}`;
+      const k = `${e.monitor}|${e.event_value}`;
       pathCounts[k] = (pathCounts[k] || 0) + 1;
     }
     const pathRows = Object.entries(pathCounts)
-      .map(([k, count]) => { const [tut, path] = k.split('|'); return { tut, path, count }; })
+      .map(([k, count]) => { const [mon, path] = k.split('|'); return { mon, path, count }; })
       .sort((a, b) => b.count - a.count);
 
     if (!pathRows.length) {
       $('pathology-stats-container').innerHTML = '<p class="dash-empty">No pathology selection data.</p>';
     } else {
-      let html = '<table class="inst-table"><thead><tr><th>Tutorial</th><th>Pathology</th><th>Selections</th></tr></thead><tbody>';
+      let html = '<table class="inst-table"><thead><tr><th>Monitor</th><th>Pathology</th><th>Selections</th></tr></thead><tbody>';
       for (const r of pathRows) {
-        html += `<tr><td>${esc(r.tut)}</td><td>${esc(r.path)}</td><td>${r.count}</td></tr>`;
+        html += `<tr><td>${esc(r.mon)}</td><td>${esc(r.path)}</td><td>${r.count}</td></tr>`;
       }
       html += '</tbody></table>';
       $('pathology-stats-container').innerHTML = html;
@@ -285,8 +288,8 @@
     const ua = fa.filter(a => a.user_id === uid);
     const uaIds = new Set(ua.map(a => a.id));
     const us = fs.filter(s => uaIds.has(s.attempt_id));
-    const comp = ua.filter(a => a.status === 'completed');
-    const durations = comp.filter(a => a.duration_sec).map(a => a.duration_sec);
+    const comp = ua.filter(a => a.completion_status === 'completed');
+    const durations = comp.filter(a => a.total_seconds).map(a => a.total_seconds);
     const correct = us.filter(s => s.is_correct).length;
 
     $('learner-stats').innerHTML = `
@@ -304,10 +307,10 @@
         const aSteps = us.filter(s => s.attempt_id === a.id);
         const aCorrect = aSteps.filter(s => s.is_correct).length;
         html += `<tr>
-          <td>${esc(a.scenario_id)}</td>
+          <td>${esc(a.scenario_name || a.scenario_id)}</td>
           <td>${new Date(a.started_at).toLocaleDateString()}</td>
-          <td>${a.status}</td>
-          <td>${a.duration_sec ?? '—'}</td>
+          <td>${a.completion_status}</td>
+          <td>${a.total_seconds ?? '—'}</td>
           <td>${aCorrect}/${aSteps.length}</td>
         </tr>`;
       }
@@ -316,7 +319,7 @@
     }
 
     // Debriefs
-    const ud = fd.filter(d => d.user_id === uid);
+    const ud = fd.filter(d => d.scenario_attempts?.user_id === uid);
     if (!ud.length) {
       $('learner-debriefs').innerHTML = '<p class="dash-empty">No debriefs.</p>';
     } else {
@@ -324,21 +327,22 @@
       for (const d of ud) {
         let body = '';
         try {
-          const payload = typeof d.payload === 'string' ? JSON.parse(d.payload) : d.payload;
-          if (payload.strengths?.length) {
-            body += '<h4>Strengths</h4><ul>' + payload.strengths.map(s => `<li>${esc(s)}</li>`).join('') + '</ul>';
+          const dj = typeof d.debrief_json === 'string' ? JSON.parse(d.debrief_json) : d.debrief_json;
+          if (dj.strengths?.length) {
+            body += '<h4>Strengths</h4><ul>' + dj.strengths.map(s => `<li>${esc(s)}</li>`).join('') + '</ul>';
           }
-          if (payload.gaps?.length) {
-            body += '<h4>Areas for Growth</h4><ul>' + payload.gaps.map(g => `<li>${esc(g)}</li>`).join('') + '</ul>';
+          if (dj.gaps?.length) {
+            body += '<h4>Areas for Growth</h4><ul>' + dj.gaps.map(g => `<li>${esc(g)}</li>`).join('') + '</ul>';
           }
-          if (payload.teaching_points?.length) {
-            body += '<h4>Teaching Points</h4><ul>' + payload.teaching_points.map(tp => `<li>${esc(typeof tp === 'string' ? tp : tp.text)}</li>`).join('') + '</ul>';
+          if (dj.teaching_points?.length) {
+            body += '<h4>Teaching Points</h4><ul>' + dj.teaching_points.map(tp => `<li>${esc(typeof tp === 'string' ? tp : tp.text)}</li>`).join('') + '</ul>';
           }
         } catch { body = '<p>(raw debrief data)</p>'; }
 
+        const scenName = d.scenario_attempts?.scenario_name || d.scenario_attempts?.scenario_id || 'Unknown';
         html += `<div class="debrief-card">
           <div class="debrief-card__header">
-            <span class="debrief-card__scenario">${esc(d.scenario_id || 'Unknown')}</span>
+            <span class="debrief-card__scenario">${esc(scenName)}</span>
             <span class="debrief-card__date">${new Date(d.created_at).toLocaleDateString()}</span>
           </div>
           <div class="debrief-card__body">${body}</div>
@@ -525,7 +529,7 @@
       rows = steps.filter(s => validAttempts.has(s.attempt_id));
       filename = 'step_events.csv';
     } else {
-      rows = filterRows(tutEvents, 'user_id', 'opened_at', startDate, endDate);
+      rows = filterRows(tutEvents, 'user_id', 'created_at', startDate, endDate);
       filename = 'tutorial_events.csv';
     }
 

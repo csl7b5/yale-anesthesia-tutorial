@@ -88,7 +88,7 @@
       currentStepNumber = 0;
       currentScenarioId = scenIdx;
 
-      const { data } = await insert('scenario_attempts', {
+      const { data, error } = await SB.client.from('scenario_attempts').insert({
         user_id:           userId,
         session_id:        sessionId,
         scenario_id:       scenIdx,
@@ -97,6 +97,7 @@
         completion_status: 'in_progress',
       }).select('id').single();
 
+      if (error) console.warn('[event-logger] scenario_attempts insert failed:', error.message);
       if (data) currentAttemptId = data.id;
     });
 
@@ -118,6 +119,7 @@
 
       const latency    = Math.round((Date.now() - stepShownAt) / 1000);
       const answerIdx  = parseInt(choice.dataset.choiceIdx, 10);
+      const choiceLabel = choice.textContent?.trim() || '';
 
       // Determine correctness after a micro-delay (class added post-click by ventilator.js)
       setTimeout(async () => {
@@ -129,6 +131,7 @@
           answer_index:    answerIdx,
           is_correct:      isCorrect,
           latency_seconds: latency,
+          choice_label:    choiceLabel,
         });
       }, 100);
 
