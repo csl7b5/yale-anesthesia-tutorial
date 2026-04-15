@@ -14,6 +14,7 @@
     <a href="../index.html" class="dash-nav__brand">Anesthesia Playground</a>
     <div class="dash-nav__actions">
       <a href="../ventilator.html" class="dash-nav__link">← Simulator</a>
+      <button class="dash-nav__btn" id="btn-account-settings">Account Settings</button>
       <button class="dash-nav__btn" onclick="SB.signOut()">Sign Out</button>
     </div>
   </nav>
@@ -126,15 +127,6 @@
           <button class="inst-btn" id="btn-export-tutorials">Download Tutorial Events</button>
         </div>
       </div>
-      <div class="dash-section">
-        <h2 class="dash-section__title">Account Settings</h2>
-        <p class="inst-hint">Set or update your password so you can sign in without a magic link.</p>
-        <form id="set-pw-form" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap">
-          <input id="new-pw" type="password" placeholder="New password (min 6 chars)" minlength="6" required class="inst-input" style="width:260px;margin-bottom:0" />
-          <button type="submit" class="inst-btn">Update Password</button>
-          <span id="pw-update-status" style="font-size:0.82rem;margin-left:0.4rem"></span>
-        </form>
-      </div>
     </div>
 
   </main>
@@ -175,6 +167,19 @@
           <button class="inst-btn inst-btn--small" id="btn-add-member">Add</button>
         </div>
       </div>
+    </div>
+  </dialog>
+
+  <dialog id="account-modal">
+    <div style="min-width:320px;max-width:480px;padding:0.4rem">
+      <h3 style="margin:0 0 0.4rem;font-size:1rem">Account Settings</h3>
+      <p class="inst-hint">Set or update your password so you can sign in without a magic link.</p>
+      <form id="set-pw-form" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap">
+        <input id="new-pw" type="password" placeholder="New password (min 6 chars)" minlength="6" required class="inst-input" style="width:100%;margin-bottom:0" />
+        <button type="submit" class="inst-btn">Update Password</button>
+        <button type="button" class="inst-btn inst-btn--outline" onclick="document.getElementById('account-modal').close()">Close</button>
+      </form>
+      <span id="pw-update-status" style="display:block;font-size:0.82rem;margin-top:0.6rem"></span>
     </div>
   </dialog>
 

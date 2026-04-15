@@ -36,6 +36,9 @@
 
     setupTabs();
     setupCohortModal();
+    $('btn-account-settings')?.addEventListener('click', () => {
+      $('account-modal')?.showModal();
+    });
     $('btn-apply-filters').addEventListener('click', applyFilters);
     $('btn-export-attempts').addEventListener('click', () => exportCSV('attempts'));
     $('btn-export-steps').addEventListener('click', () => exportCSV('steps'));
