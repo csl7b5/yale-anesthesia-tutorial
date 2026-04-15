@@ -7,3 +7,7 @@ Thumbs.db
 platform/.env
 node_modules/
 platform/node_modules/
+
+# Local Supabase CLI download (do not commit binaries)
+supabase/supabase_darwin_arm64/
+supabase/supabase_darwin_amd64/

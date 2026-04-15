@@ -526,15 +526,9 @@
 
 })();
 
-// ── Anesthesia AI Chat ────────────────────────────────────────────────────
+// ── Anesthesia AI Chat (server-side via Supabase Edge Function; sign-in required) ──
 (function initChat() {
-  var SYSTEM_PROMPT =
-    "You are an expert anesthesia attending physician helping a 3rd–4th year medical student on their " +
-    "anesthesia clerkship. Answer questions about anesthesia medications, airway management, " +
-    "IV access, lines, monitoring, equipment, ventilator settings and waveforms, vitals, and perioperative concepts. Be concise and " +
-    "practical — like a knowledgeable senior resident explaining things at the bedside. " +
-    "Keep answers to 3–5 sentences unless asked to elaborate. Always note that responses are " +
-    "for educational purposes only and that clinical decisions must follow institutional protocols.";
+  var AUTH_URL = "platform/auth.html";
 
   var panel      = document.getElementById("chat-panel");
   var messagesEl = document.getElementById("chat-messages");
@@ -549,18 +543,22 @@
   var history = [];
   var busy    = false;
 
-  function getKey()   { return localStorage.getItem("pyxis-oai-key") || ""; }
-  function saveKey(k) { localStorage.setItem("pyxis-oai-key", k.trim()); }
-
   function openPanel() {
     panel.setAttribute("aria-hidden", "false");
     monitorBtn && monitorBtn.setAttribute("aria-expanded", "true");
-    if (!getKey()) {
-      showKeyCard();
-    } else if (messagesEl.children.length === 0) {
-      appendMsg("ai", "Don't be afraid to ask me anything about anesthesia - that's what attendings (AI) are for! We're here to help you learn.");
+    if (!window.SB || !window.SB.client) {
+      appendMsg("system", "Assistant unavailable (configuration).");
+      setTimeout(function () { inputEl && inputEl.focus(); }, 80);
+      return;
     }
-    setTimeout(function () { inputEl && inputEl.focus(); }, 80);
+    window.SB.client.auth.getSession().then(function (res) {
+      if (!res.data.session) {
+        showSignInCard();
+      } else if (messagesEl.children.length === 0) {
+        appendMsg("ai", "Don't be afraid to ask me anything about anesthesia — that's what attendings (AI) are for! We're here to help you learn. (Up to 15 questions per day while signed in.)");
+      }
+      setTimeout(function () { inputEl && inputEl.focus(); }, 80);
+    });
   }
 
   function closePanel() {
@@ -574,7 +572,7 @@
   });
 
   closeBtn && closeBtn.addEventListener("click", closePanel);
-  keyBtn   && keyBtn.addEventListener("click", function () { showKeyCard(true); });
+  keyBtn   && keyBtn.addEventListener("click", function () { showSignInCard(true); });
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && panel.getAttribute("aria-hidden") === "false") closePanel();
@@ -607,87 +605,65 @@
     if (el) el.remove();
   }
 
-  function showKeyCard(replacing) {
-    var existing = document.getElementById("chat-apikey-card");
+  function showSignInCard(replacing) {
+    var existing = document.getElementById("chat-signin-card");
     if (existing && !replacing) return;
     if (existing) existing.remove();
 
     var card = document.createElement("div");
-    card.className = "chat-apikey-card";
-    card.id = "chat-apikey-card";
+    card.className = "chat-apikey-card chat-signin-card";
+    card.id = "chat-signin-card";
     card.innerHTML =
-      "<p>Enter your <strong>OpenAI API key</strong> to activate the assistant. " +
-      "It is stored only in your browser\u2019s local storage and sent only to OpenAI.</p>" +
-      "<input type=\"password\" id=\"chat-key-input\" placeholder=\"sk-...\" autocomplete=\"off\">" +
-      "<button type=\"button\" id=\"chat-key-save\">Activate</button>";
+      "<p><strong>Sign in</strong> to use the AI attending. Your questions are logged for education quality (up to <strong>15 per day</strong>).</p>" +
+      "<a class=\"chat-signin-card__link\" href=\"" + AUTH_URL + "\">Sign in or create account</a>";
     messagesEl.appendChild(card);
     messagesEl.scrollTop = messagesEl.scrollHeight;
-
-    function tryActivate() {
-      var val = (document.getElementById("chat-key-input").value || "").trim();
-      if (val.startsWith("sk-") && val.length > 20) {
-        saveKey(val);
-        card.remove();
-        appendMsg("ai", "Ready! Ask me anything about anesthesia.");
-        inputEl && inputEl.focus();
-      } else {
-        document.getElementById("chat-key-input").style.borderColor = "#c0402a";
-      }
-    }
-
-    document.getElementById("chat-key-save").addEventListener("click", tryActivate);
-    document.getElementById("chat-key-input").addEventListener("keydown", function (e) {
-      if (e.key === "Enter") tryActivate();
-    });
   }
 
   function sendMessage() {
     if (busy) return;
     var text = (inputEl && inputEl.value || "").trim();
     if (!text) return;
-    if (!getKey()) { openPanel(); return; }
-
-    inputEl.value = "";
-    appendMsg("user", text);
-    history.push({ role: "user", content: text });
+    if (!window.invokeAIChat || !window.SB) {
+      appendMsg("system", "\u26A0 Assistant unavailable. Refresh the page or try again later.");
+      return;
+    }
 
     busy = true;
     sendBtn && (sendBtn.disabled = true);
-    showTyping();
 
-    fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + getKey()
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "system", content: SYSTEM_PROMPT }].concat(history),
-        max_tokens: 520,
-        temperature: 0.6
-      })
-    })
-    .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
-    .then(function (r) {
+    window.SB.client.auth.getSession().then(function (res) {
+      if (!res.data.session) {
+        openPanel();
+        return null;
+      }
+
+      inputEl.value = "";
+      appendMsg("user", text);
+      history.push({ role: "user", content: text });
+      showTyping();
+
+      return window.invokeAIChat("pyxis", history);
+    }).then(function (r) {
+      if (r === null || r === undefined) return;
       hideTyping();
       if (!r.ok) {
-        var code = r.data.error && r.data.error.code;
-        appendMsg("system",
-          code === "invalid_api_key"
-            ? "\u26A0 Invalid API key \u2014 click \u2699 to update it."
-            : "\u26A0 " + ((r.data.error && r.data.error.message) || "API error."));
+        if (r.code === "auth") {
+          appendMsg("system", "\u26A0 Please sign in to use the assistant.");
+          showSignInCard(true);
+        } else if (r.code === "rate_limit") {
+          appendMsg("system", "\u26A0 " + (r.message || "Daily limit reached."));
+        } else {
+          appendMsg("system", "\u26A0 " + (r.message || "Something went wrong."));
+        }
         return;
       }
-      var reply = r.data.choices[0].message.content.trim();
-      history.push({ role: "assistant", content: reply });
-      appendMsg("ai", reply);
-    })
-    .catch(function () {
+      history.push({ role: "assistant", content: r.reply });
+      appendMsg("ai", r.reply);
+    }).catch(function () {
       hideTyping();
-      appendMsg("system", "\u26A0 Could not reach the AI. Check your connection and API key.");
-    })
-    .finally(function () {
+      appendMsg("system", "\u26A0 Could not reach the assistant. Check your connection and try again.");
+    }).finally(function () {
       busy = false;
       sendBtn && (sendBtn.disabled = false);
       inputEl && inputEl.focus();

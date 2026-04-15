@@ -2141,6 +2141,18 @@ body {
 
 .chat-apikey-card button:hover { opacity: 0.88; }
 
+.chat-signin-card__link {
+  display: inline-block;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.chat-signin-card__link:hover {
+  text-decoration: underline;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    GAS CANISTER / VAPORIZER ASSEMBLY
    ══════════════════════════════════════════════════════════════════════════ */
