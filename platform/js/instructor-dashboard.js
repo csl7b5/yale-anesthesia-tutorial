@@ -42,6 +42,24 @@
     $('btn-export-tutorials').addEventListener('click', () => exportCSV('tutorials'));
     $('learner-select').addEventListener('change', onLearnerChange);
 
+    // Password update
+    $('set-pw-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pw = $('new-pw').value;
+      const st = $('pw-update-status');
+      st.textContent = 'Updating…';
+      st.style.color = '#58687a';
+      const { error } = await sb.auth.updateUser({ password: pw });
+      if (error) {
+        st.textContent = error.message;
+        st.style.color = '#d44';
+      } else {
+        st.textContent = 'Password updated!';
+        st.style.color = '#2a7';
+        $('new-pw').value = '';
+      }
+    });
+
     await loadAll();
     applyFilters();
   }

@@ -126,6 +126,15 @@
           <button class="inst-btn" id="btn-export-tutorials">Download Tutorial Events</button>
         </div>
       </div>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Account Settings</h2>
+        <p class="inst-hint">Set or update your password so you can sign in without a magic link.</p>
+        <form id="set-pw-form" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap">
+          <input id="new-pw" type="password" placeholder="New password (min 6 chars)" minlength="6" required class="inst-input" style="width:260px;margin-bottom:0" />
+          <button type="submit" class="inst-btn">Update Password</button>
+          <span id="pw-update-status" style="font-size:0.82rem;margin-left:0.4rem"></span>
+        </form>
+      </div>
     </div>
 
   </main>

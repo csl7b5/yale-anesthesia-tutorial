@@ -41,6 +41,16 @@
     return { data, error };
   }
 
+  async function signUpWithPassword(email, password) {
+    const { data, error } = await sb.auth.signUp({ email, password });
+    return { data, error };
+  }
+
+  async function signInWithPassword(email, password) {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    return { data, error };
+  }
+
   async function signOut() {
     await sb.auth.signOut();
     window.location.href = 'auth.html';
@@ -52,6 +62,8 @@
     getProfile,
     getRole,
     signInWithEmail,
+    signUpWithPassword,
+    signInWithPassword,
     signOut,
   };
 })();

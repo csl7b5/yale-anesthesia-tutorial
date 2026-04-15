@@ -6,6 +6,46 @@
   <title>Sign In — Anesthesia Playground</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="css/dashboard.css" />
+  <style>
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 0.55rem 0;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      color: #6b7280;
+      font-family: inherit;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .auth-tab:hover { color: #1c2738; }
+    .auth-tab--active {
+      color: #286dc0;
+      border-bottom-color: #286dc0;
+    }
+    .auth-panel { display: none; }
+    .auth-panel--active { display: block; }
+    .auth-card__pw-toggle {
+      display: inline-block;
+      margin-top: 0.8rem;
+      font-size: 0.78rem;
+      color: #286dc0;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+      text-decoration: underline;
+    }
+    .auth-card__input + .auth-card__input { margin-top: 0.6rem; }
+  </style>
 </head>
 <body class="auth-ready">
 
@@ -16,26 +56,63 @@
   <div class="auth-wrapper">
     <div class="auth-card">
       <h1 class="auth-card__title">Sign In</h1>
-      <p class="auth-card__subtitle">
-        Enter your email to receive a magic link.<br>
-        No password needed — just click the link in your inbox.
-      </p>
 
-      <form id="auth-form">
-        <input
-          id="auth-email"
-          class="auth-card__input"
-          type="email"
-          placeholder="you@example.com"
-          required
-          autocomplete="email"
-        />
-        <button id="auth-submit" class="auth-card__submit" type="submit">
-          Send Magic Link
+      <div class="auth-tabs">
+        <button class="auth-tab auth-tab--active" data-panel="password">Email &amp; Password</button>
+        <button class="auth-tab" data-panel="magic">Magic Link</button>
+      </div>
+
+      <!-- Password panel -->
+      <div class="auth-panel auth-panel--active" id="panel-password">
+        <form id="pw-form">
+          <input
+            id="pw-email"
+            class="auth-card__input"
+            type="email"
+            placeholder="you@example.com"
+            required
+            autocomplete="email"
+          />
+          <input
+            id="pw-password"
+            class="auth-card__input"
+            type="password"
+            placeholder="Password (min 6 characters)"
+            required
+            minlength="6"
+            autocomplete="current-password"
+          />
+          <button id="pw-submit" class="auth-card__submit" type="submit">
+            Sign In
+          </button>
+        </form>
+        <button class="auth-card__pw-toggle" id="pw-toggle">
+          Don't have an account? Create one
         </button>
-      </form>
+        <p id="pw-status" class="auth-card__status"></p>
+      </div>
 
-      <p id="auth-status" class="auth-card__status"></p>
+      <!-- Magic link panel -->
+      <div class="auth-panel" id="panel-magic">
+        <p class="auth-card__subtitle" style="margin-top:0">
+          Enter your email to receive a magic link.<br>
+          No password needed — just click the link in your inbox.
+        </p>
+        <form id="magic-form">
+          <input
+            id="magic-email"
+            class="auth-card__input"
+            type="email"
+            placeholder="you@example.com"
+            required
+            autocomplete="email"
+          />
+          <button id="magic-submit" class="auth-card__submit" type="submit">
+            Send Magic Link
+          </button>
+        </form>
+        <p id="magic-status" class="auth-card__status"></p>
+      </div>
 
       <a href="../index.html" class="auth-card__skip">
         ← Continue without an account
@@ -47,41 +124,114 @@
   <script src="js/supabase-client.js"></script>
   <script>
     (function () {
-      const form   = document.getElementById('auth-form');
-      const email  = document.getElementById('auth-email');
-      const btn    = document.getElementById('auth-submit');
-      const status = document.getElementById('auth-status');
-
-      // If already logged in, redirect to dashboard
+      // If already logged in, redirect
       SB.getUser().then(user => {
         if (user) {
           SB.getRole().then(role => {
             window.location.replace(
-              (role === 'instructor' || role === 'admin')
-                ? 'instructor.html'
-                : 'student.html'
+              (role === 'instructor' || role === 'admin') ? 'instructor.html' : 'student.html'
             );
           });
         }
       });
 
-      form.addEventListener('submit', async (e) => {
+      /* ── Tab switching ─────────────────────────────────────── */
+      document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('auth-tab--active'));
+          document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('auth-panel--active'));
+          tab.classList.add('auth-tab--active');
+          document.getElementById('panel-' + tab.dataset.panel).classList.add('auth-panel--active');
+        });
+      });
+
+      /* ── Password sign-in / sign-up ────────────────────────── */
+      let isSignUp = false;
+      const pwForm   = document.getElementById('pw-form');
+      const pwEmail  = document.getElementById('pw-email');
+      const pwPass   = document.getElementById('pw-password');
+      const pwBtn    = document.getElementById('pw-submit');
+      const pwStatus = document.getElementById('pw-status');
+      const pwToggle = document.getElementById('pw-toggle');
+
+      pwToggle.addEventListener('click', () => {
+        isSignUp = !isSignUp;
+        pwBtn.textContent = isSignUp ? 'Create Account' : 'Sign In';
+        pwToggle.textContent = isSignUp
+          ? 'Already have an account? Sign in'
+          : "Don't have an account? Create one";
+        pwPass.placeholder = isSignUp ? 'Create a password (min 6 characters)' : 'Password (min 6 characters)';
+        pwPass.autocomplete = isSignUp ? 'new-password' : 'current-password';
+        pwStatus.textContent = '';
+      });
+
+      pwForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        btn.disabled = true;
-        status.textContent = 'Sending magic link…';
-        status.className = 'auth-card__status';
+        pwBtn.disabled = true;
+        pwStatus.className = 'auth-card__status';
+        pwStatus.textContent = isSignUp ? 'Creating account…' : 'Signing in…';
 
-        const { error } = await SB.signInWithEmail(email.value.trim());
+        const email = pwEmail.value.trim();
+        const password = pwPass.value;
 
-        if (error) {
-          status.textContent = error.message;
-          status.className = 'auth-card__status auth-card__status--error';
-          btn.disabled = false;
+        if (isSignUp) {
+          const { data, error } = await SB.signUpWithPassword(email, password);
+          if (error) {
+            pwStatus.textContent = error.message;
+            pwStatus.className = 'auth-card__status auth-card__status--error';
+            pwBtn.disabled = false;
+            return;
+          }
+          if (data.user && !data.session) {
+            pwStatus.textContent = 'Check your inbox to confirm your email, then sign in.';
+            pwStatus.className = 'auth-card__status auth-card__status--success';
+            pwBtn.disabled = false;
+            return;
+          }
+          // Auto-confirmed (if email confirmation is off)
+          redirectToDashboard();
         } else {
-          status.textContent = 'Check your inbox — click the link to sign in.';
-          status.className = 'auth-card__status auth-card__status--success';
+          const { data, error } = await SB.signInWithPassword(email, password);
+          if (error) {
+            pwStatus.textContent = error.message;
+            pwStatus.className = 'auth-card__status auth-card__status--error';
+            pwBtn.disabled = false;
+            return;
+          }
+          redirectToDashboard();
         }
       });
+
+      /* ── Magic link sign-in ────────────────────────────────── */
+      const magicForm   = document.getElementById('magic-form');
+      const magicEmail  = document.getElementById('magic-email');
+      const magicBtn    = document.getElementById('magic-submit');
+      const magicStatus = document.getElementById('magic-status');
+
+      magicForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        magicBtn.disabled = true;
+        magicStatus.textContent = 'Sending magic link…';
+        magicStatus.className = 'auth-card__status';
+
+        const { error } = await SB.signInWithEmail(magicEmail.value.trim());
+        if (error) {
+          magicStatus.textContent = error.message;
+          magicStatus.className = 'auth-card__status auth-card__status--error';
+          magicBtn.disabled = false;
+        } else {
+          magicStatus.textContent = 'Check your inbox — click the link to sign in.';
+          magicStatus.className = 'auth-card__status auth-card__status--success';
+        }
+      });
+
+      /* ── Redirect helper ───────────────────────────────────── */
+      async function redirectToDashboard() {
+        const role = await SB.getRole();
+        window.location.replace(
+          (role === 'instructor' || role === 'admin') ? 'instructor.html' : 'student.html'
+        );
+      }
     })();
   </script>
 

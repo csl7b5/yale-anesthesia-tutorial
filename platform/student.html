@@ -56,6 +56,20 @@
       </div>
     </div>
 
+    <div class="dash-section">
+      <h2 class="dash-section__title">Account Settings</h2>
+      <p style="font-size:0.82rem;color:#58687a;margin:0 0 0.6rem">Set or update your password so you can sign in without a magic link.</p>
+      <form id="set-pw-form" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap">
+        <input id="new-pw" type="password" placeholder="New password (min 6 chars)" minlength="6" required
+               style="padding:0.45rem 0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.85rem;font-family:inherit;width:260px" />
+        <button type="submit"
+                style="padding:0.45rem 1rem;border:none;border-radius:6px;background:#286dc0;color:#fff;font-size:0.85rem;font-weight:600;font-family:inherit;cursor:pointer">
+          Update Password
+        </button>
+        <span id="pw-update-status" style="font-size:0.82rem;margin-left:0.4rem"></span>
+      </form>
+    </div>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -148,6 +162,24 @@
             </tbody>
           </table>`;
       }
+
+      // Password update
+      document.getElementById('set-pw-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const pw = document.getElementById('new-pw').value;
+        const st = document.getElementById('pw-update-status');
+        st.textContent = 'Updating…';
+        st.style.color = '#58687a';
+        const { error } = await SB.client.auth.updateUser({ password: pw });
+        if (error) {
+          st.textContent = error.message;
+          st.style.color = '#d44';
+        } else {
+          st.textContent = 'Password updated! You can now sign in with email + password.';
+          st.style.color = '#2a7';
+          document.getElementById('new-pw').value = '';
+        }
+      });
     })();
   </script>
 
