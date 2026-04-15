@@ -14,7 +14,7 @@
     <a href="../index.html" class="dash-nav__brand">Anesthesia Playground</a>
     <div class="dash-nav__actions">
       <a href="../ventilator.html" class="dash-nav__link">← Simulator</a>
-      <button class="dash-nav__btn" id="btn-account-settings">Account Settings</button>
+      <button class="dash-nav__btn" id="btn-account-settings" type="button" onclick="window.openAccountModal && window.openAccountModal()">Account Settings</button>
       <button class="dash-nav__btn" onclick="SB.signOut()">Sign Out</button>
     </div>
   </nav>
@@ -177,7 +177,7 @@
       <form id="set-pw-form" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap">
         <input id="new-pw" type="password" placeholder="New password (min 6 chars)" minlength="6" required class="inst-input" style="width:100%;margin-bottom:0" />
         <button type="submit" class="inst-btn">Update Password</button>
-        <button type="button" class="inst-btn inst-btn--outline" onclick="document.getElementById('account-modal').close()">Close</button>
+        <button type="button" class="inst-btn inst-btn--outline" onclick="window.closeAccountModal && window.closeAccountModal()">Close</button>
       </form>
       <span id="pw-update-status" style="display:block;font-size:0.82rem;margin-top:0.6rem"></span>
     </div>

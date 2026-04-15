@@ -25,6 +25,32 @@
   const $  = (id) => document.getElementById(id);
   const $$ = (sel) => document.querySelectorAll(sel);
 
+  function openModalSafe(el) {
+    if (!el) return;
+    if (typeof el.showModal === 'function') {
+      try {
+        el.showModal();
+        return;
+      } catch (_) {
+        // fall through to open attribute fallback
+      }
+    }
+    el.setAttribute('open', '');
+  }
+
+  function closeModalSafe(el) {
+    if (!el) return;
+    if (typeof el.close === 'function') {
+      try {
+        el.close();
+        return;
+      } catch (_) {
+        // fall through to open attribute fallback
+      }
+    }
+    el.removeAttribute('open');
+  }
+
   /* ── Init ───────────────────────────────────────────────────────────── */
   async function init() {
     const user = await SB.getUser();
@@ -36,9 +62,9 @@
 
     setupTabs();
     setupCohortModal();
-    $('btn-account-settings')?.addEventListener('click', () => {
-      $('account-modal')?.showModal();
-    });
+    window.openAccountModal = () => openModalSafe($('account-modal'));
+    window.closeAccountModal = () => closeModalSafe($('account-modal'));
+    $('btn-account-settings')?.addEventListener('click', window.openAccountModal);
     $('btn-apply-filters').addEventListener('click', applyFilters);
     $('btn-export-attempts').addEventListener('click', () => exportCSV('attempts'));
     $('btn-export-steps').addEventListener('click', () => exportCSV('steps'));
