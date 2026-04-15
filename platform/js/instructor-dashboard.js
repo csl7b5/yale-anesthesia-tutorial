@@ -192,13 +192,13 @@
     $('heatmap-container').innerHTML = heatHtml || '<p class="dash-empty">No step data for current filters.</p>';
 
     // Wrong answers
-    const wrongSteps = fs.filter(s => !s.is_correct && s.choice_label);
+    const wrongSteps = fs.filter(s => !s.is_correct);
     const wrongGroups = {};
     for (const s of wrongSteps) {
-      const key = `${s.attempt_id}__step${s.step_number}`;
       const scAttempt = fa.find(a => a.id === s.attempt_id);
       const scId = scAttempt ? (scAttempt.scenario_name || scAttempt.scenario_id) : 'unknown';
-      const wKey = `${scId}|Step ${s.step_number}|${s.choice_label}`;
+      const label = s.choice_label || ('Option ' + (s.answer_index + 1));
+      const wKey = `${scId}|Step ${s.step_number}|${label}`;
       wrongGroups[wKey] = (wrongGroups[wKey] || 0) + 1;
     }
     const wrongRows = Object.entries(wrongGroups)
