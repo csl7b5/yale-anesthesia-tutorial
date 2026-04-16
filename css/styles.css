@@ -44,20 +44,31 @@ body {
 .site-nav__inner {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0.35rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  height: 52px;
+  min-height: 56px;
 }
 
 .site-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--text-primary);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.site-nav__brand-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 6px;
 }
 
 .site-nav__tabs {

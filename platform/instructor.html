@@ -4,14 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Instructor Dashboard — Anesthesia Playground</title>
-  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon.png" type="image/png" />
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/instructor.css" />
 </head>
 <body data-required-role="instructor">
 
   <nav class="dash-nav">
-    <a href="../index.html" class="dash-nav__brand">Anesthesia Playground</a>
+    <a href="../index.html" class="dash-nav__brand">
+      <img src="../favicon.png" alt="" class="dash-nav__brand-logo" width="38" height="38" decoding="async" />
+      Anesthesia Playground
+    </a>
     <div class="dash-nav__actions">
       <a href="../ventilator.html" class="dash-nav__link">← Simulator</a>
       <button class="dash-nav__btn" id="btn-account-settings" type="button" onclick="window.openAccountModal && window.openAccountModal()">Account Settings</button>
