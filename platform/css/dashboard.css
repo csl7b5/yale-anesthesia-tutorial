@@ -1,5 +1,6 @@
 /* dashboard.css — shared styles for auth + dashboard pages */
 
+@import "../css/variables.css";
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap");
 
 *,
@@ -14,7 +15,7 @@ body {
   font-family: "DM Sans", system-ui, sans-serif;
   background: #eef0f4;
   background-image:
-    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(40,109,192,.05), transparent),
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(13,148,136,.06), transparent),
     radial-gradient(ellipse 80% 50% at 100% 50%, rgba(99,102,241,.04), transparent);
   color: #1c2738;
   display: flex;
@@ -51,7 +52,7 @@ body.auth-ready .dashboard-main {
   font-weight: 700;
   font-size: 0.92rem;
   letter-spacing: 0.04em;
-  color: #286dc0;
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -68,7 +69,7 @@ body.auth-ready .dashboard-main {
   text-decoration: none;
   transition: color 0.2s;
 }
-.dash-nav__link:hover { color: #286dc0; }
+.dash-nav__link:hover { color: var(--accent); }
 
 .dash-nav__btn {
   background: none;
@@ -83,9 +84,9 @@ body.auth-ready .dashboard-main {
   transition: all 0.2s;
 }
 .dash-nav__btn:hover {
-  background: #286dc0;
+  background: var(--accent);
   color: #fff;
-  border-color: #286dc0;
+  border-color: var(--accent);
 }
 
 /* ── Auth card (login page) ──────────────────────────────── */
@@ -133,8 +134,8 @@ body.auth-ready .dashboard-main {
   transition: border 0.2s;
 }
 .auth-card__input:focus {
-  border-color: #286dc0;
-  box-shadow: 0 0 0 3px rgba(40,109,192,.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
 .auth-card__submit {
@@ -143,7 +144,7 @@ body.auth-ready .dashboard-main {
   padding: 0.7rem;
   border: none;
   border-radius: 8px;
-  background: #286dc0;
+  background: var(--accent);
   color: #fff;
   font-size: 0.88rem;
   font-weight: 600;
@@ -151,7 +152,7 @@ body.auth-ready .dashboard-main {
   cursor: pointer;
   transition: background 0.2s;
 }
-.auth-card__submit:hover { background: #1a54a0; }
+.auth-card__submit:hover { background: var(--accent-hover); }
 .auth-card__submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -173,7 +174,7 @@ body.auth-ready .dashboard-main {
   color: #58687a;
   text-decoration: none;
 }
-.auth-card__skip:hover { color: #286dc0; text-decoration: underline; }
+.auth-card__skip:hover { color: var(--accent); text-decoration: underline; }
 
 /* ── Dashboard cards ─────────────────────────────────────── */
 
@@ -218,7 +219,7 @@ body.auth-ready .dashboard-main {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #286dc0;
+  color: var(--accent);
   margin: 0 0 1rem;
 }
 
@@ -258,13 +259,13 @@ body.auth-ready .dashboard-main {
   text-align: center;
   padding: 0.8rem 0.5rem;
   border-radius: 10px;
-  background: rgba(40,109,192,.04);
+  background: rgba(13, 148, 136, 0.06);
 }
 
 .dash-stat__value {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #286dc0;
+  color: var(--accent);
 }
 
 .dash-stat__label {

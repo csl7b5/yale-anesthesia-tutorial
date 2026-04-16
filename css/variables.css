@@ -11,9 +11,12 @@
   --supply-rack: #c6cdd5;
   --bin-inner: rgba(255, 255, 255, 0.72);
 
-  /* Accent — Yale blue */
-  --accent: #286dc0;
-  --accent-soft: rgba(40, 109, 192, 0.12);
+  /* Accent — teal (pairs with Yale blue #286dc0 for brand elsewhere) */
+  --accent: #0d9488;
+  --accent-hover: #0f766e;
+  --accent-soft: rgba(13, 148, 136, 0.12);
+  /* Yale blue — optional for “official” brand moments; most UI uses --accent */
+  --brand-yale-blue: #286dc0;
 
   /* Text */
   --text-primary: #1c2738;
@@ -25,7 +28,7 @@
 
   /* Monitor */
   --monitor-bezel: #1e293b;
-  --screen-glow: rgba(148, 197, 255, 0.18);
+  --screen-glow: rgba(45, 212, 191, 0.14);
 
   --radius-lg: 18px;
   --radius-md: 10px;
