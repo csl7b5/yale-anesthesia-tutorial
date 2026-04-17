@@ -2,7 +2,7 @@
  * instructor-dashboard.js — Full instructor dashboard logic
  *
  * Tabs: Cohort Overview, Scenario Performance, Tutorial Engagement,
- *       Individual Learners, Export
+ *       Pyxis Exploration, Individual Learners, Export
  * Features: Cohort management, date-range filtering, CSV export
  */
 (function () {
@@ -19,7 +19,32 @@
   let steps        = [];
   let tutEvents    = [];
   let debriefs     = [];
+  let pyxisEvents  = [];
   let filteredUserIds = null; // null = all
+
+  /** Cached filtered rows for learner tab (cohort + dates) */
+  let __dashFiltered = { a: null, s: null, d: null, p: null };
+
+  /** Expected Pyxis drawers (keep in sync with js/data.js PYXIS_DRAWERS / LEFT / aux) */
+  const PYXIS_CATALOG = [
+    { type: 'main', id: 'induction', label: 'Induction' },
+    { type: 'main', id: 'paralytics', label: 'Paralytics' },
+    { type: 'main', id: 'pressors', label: 'Hemodynamic Control' },
+    { type: 'main', id: 'reversal', label: 'Reversal / Rescue' },
+    { type: 'main', id: 'supportive', label: 'Supportive Care' },
+    { type: 'left', id: 'airway', label: 'Airway' },
+    { type: 'left', id: 'lines', label: 'Lines & Infusion' },
+    { type: 'aux', id: 'aux_sharps', label: 'Auxiliary & Sharps' },
+  ];
+
+  function drawerKey(dt, id) {
+    return (dt || '') + '|' + (id || '');
+  }
+
+  function getDrawerLabel(drawerType, drawerId) {
+    const row = PYXIS_CATALOG.find(c => c.type === drawerType && c.id === drawerId);
+    return row ? row.label : (drawerId || '—');
+  }
 
   /* ── DOM refs ───────────────────────────────────────────────────────── */
   const $  = (id) => document.getElementById(id);
@@ -72,6 +97,7 @@
     $('btn-export-attempts').addEventListener('click', () => exportCSV('attempts'));
     $('btn-export-steps').addEventListener('click', () => exportCSV('steps'));
     $('btn-export-tutorials').addEventListener('click', () => exportCSV('tutorials'));
+    $('btn-export-pyxis')?.addEventListener('click', () => exportCSV('pyxis'));
     $('learner-select').addEventListener('change', onLearnerChange);
 
     // Password update
@@ -98,14 +124,15 @@
 
   /* ── Data loading ───────────────────────────────────────────────────── */
   async function loadAll() {
-    const [pRes, cRes, mRes, aRes, sRes, tRes, dRes] = await Promise.all([
+    const [pRes, cRes, mRes, aRes, sRes, tRes, dRes, pxRes] = await Promise.all([
       sb.from('profiles').select('*').eq('role', 'student'),
       sb.from('cohorts').select('*').order('created_at', { ascending: false }),
       sb.from('cohort_members').select('*'),
       sb.from('scenario_attempts').select('*').order('started_at', { ascending: false }),
       sb.from('step_events').select('*'),
       sb.from('tutorial_events').select('*'),
-      sb.from('ai_outputs').select('*, scenario_attempts!inner(user_id, scenario_id, scenario_name)').order('created_at', { ascending: false })
+      sb.from('ai_outputs').select('*, scenario_attempts!inner(user_id, scenario_id, scenario_name)').order('created_at', { ascending: false }),
+      sb.from('pyxis_events').select('*').order('created_at', { ascending: false }),
     ]);
 
     allProfiles = pRes.data || [];
@@ -115,6 +142,12 @@
     steps       = sRes.data || [];
     tutEvents   = tRes.data || [];
     debriefs    = dRes.data || [];
+    if (pxRes.error) {
+      console.warn('[instructor] pyxis_events:', pxRes.error.message);
+      pyxisEvents = [];
+    } else {
+      pyxisEvents = pxRes.data || [];
+    }
 
     populateCohortDropdown();
     populateLearnerDropdown(allProfiles);
@@ -153,6 +186,13 @@
     let fd = debriefs;
     if (filteredUserIds) fd = fd.filter(d => filteredUserIds.has(d.scenario_attempts?.user_id));
 
+    let fpx = pyxisEvents;
+    if (filteredUserIds) fpx = fpx.filter(e => filteredUserIds.has(e.user_id));
+    if (startDate) fpx = fpx.filter(e => e.created_at >= startDate);
+    if (endDate) fpx = fpx.filter(e => e.created_at <= endDate + 'T23:59:59');
+
+    __dashFiltered = { a: fa, s: fs, d: fd, p: fpx };
+
     // Update learner dropdown to filtered set
     let visibleProfiles = allProfiles;
     if (filteredUserIds) visibleProfiles = allProfiles.filter(p => filteredUserIds.has(p.id));
@@ -161,7 +201,8 @@
     renderOverview(fa, fs, ft, visibleProfiles);
     renderScenarios(fa, fs);
     renderTutorials(ft);
-    renderLearnerDetail(fa, fs, fd);
+    renderPyxis(fpx, visibleProfiles);
+    renderLearnerDetail();
   }
 
   /* ── Tab: Overview ──────────────────────────────────────────────────── */
@@ -324,13 +365,14 @@
     if (uid) renderLearnerDetail();
   }
 
-  function renderLearnerDetail(fa, fs, fd) {
+  function renderLearnerDetail() {
     const uid = $('learner-select').value;
     if (!uid) return;
 
-    if (!fa) {
-      fa = attempts; fs = steps; fd = debriefs;
-    }
+    const fa = __dashFiltered.a != null ? __dashFiltered.a : attempts;
+    const fs = __dashFiltered.s != null ? __dashFiltered.s : steps;
+    const fd = __dashFiltered.d != null ? __dashFiltered.d : debriefs;
+    const fpx = __dashFiltered.p || [];
 
     const profile = allProfiles.find(p => p.id === uid);
     $('learner-detail-name').textContent = profile?.display_name || profile?.id?.slice(0, 8) || 'Learner';
@@ -399,6 +441,151 @@
         </div>`;
       }
       $('learner-debriefs').innerHTML = html;
+    }
+
+    // Pyxis exploration (same filters as cohort)
+    const upx = fpx.filter(e => e.user_id === uid);
+    const opens = upx.filter(e => e.event_type === 'drawer_open');
+    const dwells = upx.filter(e => e.event_type === 'contents_dwell' && e.dwell_seconds != null);
+    const itemViews = upx.filter(e => e.event_type === 'item_detail_view');
+    const sumDwell = dwells.reduce((s, e) => s + (e.dwell_seconds || 0), 0);
+    const byDrawer = {};
+    for (const o of opens) {
+      const k = drawerKey(o.drawer_type, o.drawer_id);
+      byDrawer[k] = (byDrawer[k] || 0) + 1;
+    }
+    const dwellByKey = {};
+    for (const d of dwells) {
+      const k = drawerKey(d.drawer_type, d.drawer_id);
+      if (!dwellByKey[k]) dwellByKey[k] = [];
+      dwellByKey[k].push(d.dwell_seconds);
+    }
+
+    let pyxisHtml = `
+      <div class="dash-stat-grid" style="margin-bottom:1rem">
+        <div class="dash-stat"><div class="dash-stat__value">${opens.length}</div><div class="dash-stat__label">Drawer opens</div></div>
+        <div class="dash-stat"><div class="dash-stat__value">${Object.keys(byDrawer).length}</div><div class="dash-stat__label">Unique drawers</div></div>
+        <div class="dash-stat"><div class="dash-stat__value">${itemViews.length}</div><div class="dash-stat__label">Item views</div></div>
+        <div class="dash-stat"><div class="dash-stat__value">${sumDwell}</div><div class="dash-stat__label">Total dwell (s) in drawers</div></div>
+      </div>`;
+
+    const rows = Object.entries(byDrawer)
+      .map(([k, count]) => {
+        const pipe = k.indexOf('|');
+        const dt = pipe >= 0 ? k.slice(0, pipe) : '';
+        const did = pipe >= 0 ? k.slice(pipe + 1) : k;
+        let dwellDisp = '—';
+        if (dwellByKey[k] && dwellByKey[k].length) {
+          dwellDisp = median(dwellByKey[k]).toFixed(1);
+        }
+        return { k, label: getDrawerLabel(dt, did), count, dwell: dwellDisp };
+      })
+      .sort((a, b) => b.count - a.count);
+
+    if (!rows.length) {
+      pyxisHtml += '<p class="dash-empty">No Pyxis drawer events in this date range.</p>';
+    } else {
+      pyxisHtml += '<table class="inst-table"><thead><tr><th>Drawer</th><th>Opens</th><th>Median dwell (s)</th></tr></thead><tbody>';
+      for (const r of rows) {
+        pyxisHtml += `<tr><td>${esc(r.label)}</td><td>${r.count}</td><td>${r.dwell}</td></tr>`;
+      }
+      pyxisHtml += '</tbody></table>';
+    }
+    $('learner-pyxis').innerHTML = pyxisHtml;
+  }
+
+  /* ── Tab: Pyxis ───────────────────────────────────────────────────── */
+  function renderPyxis(fpx, visibleProfiles) {
+    const learnersWithData = new Set(fpx.map(e => e.user_id));
+    $('pyxis-stat-learners').textContent = learnersWithData.size;
+
+    const drawerOpens = fpx.filter(e => e.event_type === 'drawer_open');
+    $('pyxis-stat-opens').textContent = drawerOpens.length;
+    const repeats = drawerOpens.filter(e => e.is_repeat === true).length;
+    $('pyxis-stat-repeats').textContent = repeats;
+
+    const itemViews = fpx.filter(e => e.event_type === 'item_detail_view').length;
+    $('pyxis-stat-items').textContent = itemViews;
+
+    // Aggregate by drawer
+    const byKey = {};
+    for (const o of drawerOpens) {
+      const k = drawerKey(o.drawer_type, o.drawer_id);
+      if (!byKey[k]) byKey[k] = { opens: [], users: new Set(), repeats: 0 };
+      byKey[k].opens.push(o);
+      byKey[k].users.add(o.user_id);
+      if (o.is_repeat) byKey[k].repeats++;
+    }
+
+    const dwells = fpx.filter(e => e.event_type === 'contents_dwell' && e.dwell_seconds != null);
+    const dwellMedian = {};
+    for (const d of dwells) {
+      const k = drawerKey(d.drawer_type, d.drawer_id);
+      if (!dwellMedian[k]) dwellMedian[k] = [];
+      dwellMedian[k].push(d.dwell_seconds);
+    }
+
+    const drawerRows = Object.keys(byKey)
+      .map(k => {
+        const pipe = k.indexOf('|');
+        const dt = pipe >= 0 ? k.slice(0, pipe) : '';
+        const did = pipe >= 0 ? k.slice(pipe + 1) : k;
+        const dm = dwellMedian[k] && dwellMedian[k].length ? median(dwellMedian[k]) : null;
+        return {
+          label: getDrawerLabel(dt, did),
+          opens: byKey[k].opens.length,
+          uniqueUsers: byKey[k].users.size,
+          repeats: byKey[k].repeats,
+          medDwell: dm != null ? dm.toFixed(1) : '—',
+        };
+      })
+      .sort((a, b) => b.opens - a.opens);
+
+    if (!drawerRows.length) {
+      $('pyxis-drawer-table').innerHTML = '<p class="dash-empty">No Pyxis drawer data for current filters. Learners must be signed in on the Pyxis page.</p>';
+    } else {
+      let html = '<table class="inst-table"><thead><tr><th>Drawer</th><th>Opens</th><th>Unique learners</th><th>Repeat opens</th><th>Median dwell (s)</th></tr></thead><tbody>';
+      for (const r of drawerRows) {
+        html += `<tr><td>${esc(r.label)}</td><td>${r.opens}</td><td>${r.uniqueUsers}</td><td>${r.repeats}</td><td>${r.medDwell}</td></tr>`;
+      }
+      html += '</tbody></table>';
+      $('pyxis-drawer-table').innerHTML = html;
+    }
+
+    // Coverage: % of visible learners who opened each catalog drawer at least once
+    const nLearners = visibleProfiles.length;
+    if (!nLearners) {
+      $('pyxis-coverage-table').innerHTML = '<p class="dash-empty">No learners in the current cohort filter.</p>';
+    } else {
+      let covHtml = '<table class="inst-table"><thead><tr><th>Drawer</th><th>Learners opened / total</th><th>Coverage</th></tr></thead><tbody>';
+      for (const c of PYXIS_CATALOG) {
+        const u = new Set();
+        for (const o of drawerOpens) {
+          if (o.drawer_type === c.type && o.drawer_id === c.id) u.add(o.user_id);
+        }
+        const pct = ((u.size / nLearners) * 100).toFixed(0);
+        covHtml += `<tr><td>${esc(c.label)}</td><td>${u.size} / ${nLearners}</td><td>${pct}%</td></tr>`;
+      }
+      covHtml += '</tbody></table>';
+      $('pyxis-coverage-table').innerHTML = covHtml;
+    }
+
+    // Supply bins
+    const binOpens = fpx.filter(e => e.event_type === 'supply_bin_open' && e.bin_id);
+    const binCount = {};
+    for (const e of binOpens) {
+      binCount[e.bin_id] = (binCount[e.bin_id] || 0) + 1;
+    }
+    const binRows = Object.entries(binCount).sort((a, b) => b[1] - a[1]);
+    if (!binRows.length) {
+      $('pyxis-supply-table').innerHTML = '<p class="dash-empty">No supply bin opens in this range.</p>';
+    } else {
+      let bhtml = '<table class="inst-table"><thead><tr><th>Bin ID</th><th>Opens</th></tr></thead><tbody>';
+      for (const [bid, n] of binRows) {
+        bhtml += `<tr><td>${esc(bid)}</td><td>${n}</td></tr>`;
+      }
+      bhtml += '</tbody></table>';
+      $('pyxis-supply-table').innerHTML = bhtml;
     }
   }
 
@@ -578,6 +765,9 @@
       const validAttempts = new Set(filterRows(attempts, 'user_id', 'started_at', startDate, endDate).map(a => a.id));
       rows = steps.filter(s => validAttempts.has(s.attempt_id));
       filename = 'step_events.csv';
+    } else if (type === 'pyxis') {
+      rows = filterRows(pyxisEvents, 'user_id', 'created_at', startDate, endDate);
+      filename = 'pyxis_events.csv';
     } else {
       rows = filterRows(tutEvents, 'user_id', 'created_at', startDate, endDate);
       filename = 'tutorial_events.csv';

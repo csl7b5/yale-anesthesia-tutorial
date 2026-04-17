@@ -50,6 +50,7 @@
       <button class="inst-tab inst-tab--active" data-tab="overview">Cohort Overview</button>
       <button class="inst-tab" data-tab="scenarios">Scenario Performance</button>
       <button class="inst-tab" data-tab="tutorials">Tutorial Engagement</button>
+      <button class="inst-tab" data-tab="pyxis">Pyxis Exploration</button>
       <button class="inst-tab" data-tab="learners">Individual Learners</button>
       <button class="inst-tab" data-tab="export">Export</button>
     </div>
@@ -95,6 +96,30 @@
       </div>
     </div>
 
+    <!-- ── Tab: Pyxis ───────────────────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-pyxis" hidden>
+      <div class="dash-stat-grid" id="pyxis-cohort-stats">
+        <div class="dash-stat"><div class="dash-stat__value" id="pyxis-stat-learners">—</div><div class="dash-stat__label">Learners (Pyxis data)</div></div>
+        <div class="dash-stat"><div class="dash-stat__value" id="pyxis-stat-opens">—</div><div class="dash-stat__label">Drawer Opens</div></div>
+        <div class="dash-stat"><div class="dash-stat__value" id="pyxis-stat-repeats">—</div><div class="dash-stat__label">Repeat Opens</div></div>
+        <div class="dash-stat"><div class="dash-stat__value" id="pyxis-stat-items">—</div><div class="dash-stat__label">Item Detail Views</div></div>
+      </div>
+      <div class="dash-section" style="margin-top:1.2rem">
+        <h2 class="dash-section__title">Drawers — opens &amp; dwell time</h2>
+        <p class="inst-hint">Repeat opens = second or later visit to the same drawer in a session. Median dwell = time in the drawer list modal.</p>
+        <div id="pyxis-drawer-table"><p class="dash-empty">No Pyxis data for current filters.</p></div>
+      </div>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Catalog coverage (cohort)</h2>
+        <p class="inst-hint">Share of learners in the current filter who opened each drawer at least once.</p>
+        <div id="pyxis-coverage-table"><p class="dash-empty">No data yet.</p></div>
+      </div>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Supply bins</h2>
+        <div id="pyxis-supply-table"><p class="dash-empty">No supply bin opens.</p></div>
+      </div>
+    </div>
+
     <!-- ── Tab: Individual Learners ─────────────────────────────────────── -->
     <div class="inst-panel" id="panel-learners" hidden>
       <div class="dash-section">
@@ -113,6 +138,10 @@
           <div id="learner-history"></div>
         </div>
         <div class="dash-section">
+          <h2 class="dash-section__title">Pyxis exploration</h2>
+          <div id="learner-pyxis"></div>
+        </div>
+        <div class="dash-section">
           <h2 class="dash-section__title">Debrief History</h2>
           <div id="learner-debriefs"></div>
         </div>
@@ -128,6 +157,7 @@
           <button class="inst-btn" id="btn-export-attempts">Download Scenario Attempts</button>
           <button class="inst-btn" id="btn-export-steps">Download Step Events</button>
           <button class="inst-btn" id="btn-export-tutorials">Download Tutorial Events</button>
+          <button class="inst-btn" id="btn-export-pyxis">Download Pyxis Events</button>
         </div>
       </div>
     </div>

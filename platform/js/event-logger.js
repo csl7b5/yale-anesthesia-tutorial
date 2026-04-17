@@ -66,6 +66,11 @@
     if (error) console.warn('[event-logger] insert into', table, 'failed:', error.message, row);
   }
 
+  async function logPyxis(row) {
+    if (!userId) return;
+    await insert('pyxis_events', Object.assign({ user_id: userId, session_id: sessionId }, row));
+  }
+
   async function update(table, id, fields) {
     const { error } = await SB.client.from(table).update(fields).eq('id', id);
     if (error) console.warn('[event-logger] update', table, id, 'failed:', error.message);
@@ -229,11 +234,219 @@
   }
 
   // ── Pyxis page listeners ─────────────────────────────────────────────────
+  // Mirrors js/analytics.js for signed-in users → public.pyxis_events (see 012_create_pyxis_events.sql).
 
   function attachPyxisListeners() {
-    // We can add Pyxis-specific Supabase logging here in a future milestone
-    // (drawer opens, item views, etc.)
-    // For now the GA4 analytics.js handles Pyxis tracking for all users.
+    const drawerVisitCounts = new Map();
+    const uniqueDrawerKeys = new Set();
+    const viewedItems = new Set();
+    const supplyBinKeys = new Set();
+
+    let contentsCtx = null;
+    let detailItemId = null;
+    let detailTimer = null;
+
+    function flushContentsDwell() {
+      if (!contentsCtx || contentsCtx.openedAt == null) return;
+      const dwell = Math.round((Date.now() - contentsCtx.openedAt) / 1000);
+      logPyxis({
+        event_type: 'contents_dwell',
+        drawer_id: contentsCtx.drawerId,
+        drawer_type: contentsCtx.drawerType,
+        dwell_seconds: Math.max(0, dwell),
+      });
+      contentsCtx = null;
+    }
+
+    function beginContentsDrawer(drawerId, drawerType) {
+      flushContentsDwell();
+      contentsCtx = { drawerId: drawerId, drawerType: drawerType, openedAt: Date.now() };
+    }
+
+    function trackDrawerOpen(drawerKey, drawerType, drawerId) {
+      const n = (drawerVisitCounts.get(drawerKey) || 0) + 1;
+      drawerVisitCounts.set(drawerKey, n);
+      uniqueDrawerKeys.add(drawerKey);
+      logPyxis({
+        event_type: 'drawer_open',
+        drawer_id: drawerId,
+        drawer_type: drawerType,
+        is_repeat: n > 1,
+        extra: { visit_count_session: n },
+      });
+    }
+
+    document.querySelectorAll('.site-nav__tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        logPyxis({
+          event_type: 'page_tab_switch',
+          tab_id: tab.dataset.page || tab.textContent.trim(),
+        });
+      });
+    });
+
+    document.querySelectorAll('.main-drawer').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.drawerId;
+        if (!id) return;
+        trackDrawerOpen('main:' + id, 'main', id);
+        beginContentsDrawer(id, 'main');
+      });
+    });
+
+    document.querySelectorAll('.left-drawer').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.id.replace('left-drawer-', '');
+        trackDrawerOpen('left:' + id, 'left', id);
+        beginContentsDrawer(id, 'left');
+      });
+    });
+
+    document.getElementById('side-aux')?.addEventListener('click', () => {
+      trackDrawerOpen('aux:aux_sharps', 'aux', 'aux_sharps');
+      beginContentsDrawer('aux_sharps', 'aux');
+    });
+
+    document.getElementById('gas-canister-btn')?.addEventListener('click', () => {
+      detailItemId = 'volatile_agents';
+      logPyxis({ event_type: 'gas_canister_open' });
+    });
+
+    document.querySelectorAll('.supply-bin').forEach(el => {
+      el.addEventListener('click', () => {
+        const binId = el.dataset.supplyId;
+        if (binId) {
+          supplyBinKeys.add(binId);
+          detailItemId = 'supply:' + binId;
+        }
+        logPyxis({
+          event_type: 'supply_bin_open',
+          bin_id: binId || null,
+        });
+      });
+    });
+
+    document.querySelectorAll('.drawer-cell').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = el.dataset.controlledIndex;
+        const ctrl = window.PYXIS_CONTROLLED_CELLS || [];
+        const medId = idx != null ? ctrl[parseInt(idx, 10)] : null;
+        if (medId) detailItemId = medId;
+        logPyxis({
+          event_type: 'controlled_cell_open',
+          item_type: 'medication',
+          item_id: medId || (idx != null ? 'controlled_idx_' + idx : null),
+          extra: { controlled_index: idx != null ? parseInt(idx, 10) : null },
+        });
+      });
+    });
+
+    const contentsBody = document.getElementById('modal-contents-body');
+    contentsBody?.addEventListener('click', e => {
+      const medTile = e.target.closest('.med-tile');
+      const equipTile = e.target.closest('.equip-tile');
+      const tile = medTile || equipTile;
+      if (!tile) return;
+      const type = medTile ? 'medication' : 'equipment';
+      const itemId = medTile ? tile.dataset.medId : tile.dataset.itemId;
+      if (!itemId) return;
+      const key = type + '_' + itemId;
+      const isRepeat = viewedItems.has(key);
+      viewedItems.add(key);
+      detailItemId = itemId;
+      logPyxis({
+        event_type: 'item_detail_view',
+        item_type: type,
+        item_id: itemId,
+        is_repeat: isRepeat,
+        session_unique_items: viewedItems.size,
+      });
+    });
+
+    const detailDialog = document.getElementById('modal-detail');
+    detailDialog?.addEventListener('toggle', e => {
+      if (e.newState === 'open') {
+        detailTimer = Date.now();
+      } else if (detailTimer != null) {
+        const dwell = Math.round((Date.now() - detailTimer) / 1000);
+        logPyxis({
+          event_type: 'item_detail_dwell',
+          item_id: detailItemId || null,
+          dwell_seconds: dwell,
+        });
+        detailTimer = null;
+      }
+    });
+
+    document.getElementById('modal-detail-back')?.addEventListener('click', () => {
+      logPyxis({
+        event_type: 'back_to_drawer',
+        item_id: detailItemId || null,
+      });
+    });
+
+    document.addEventListener('click', e => {
+      const bubble = e.target.closest('.attending-bubble');
+      if (!bubble) return;
+      logPyxis({
+        event_type: 'team_bubble_click',
+        extra: {
+          person_name: bubble.querySelector('.attending-bubble__name')?.textContent?.trim() || null,
+          person_role: bubble.querySelector('.attending-bubble__role')?.textContent?.trim() || null,
+        },
+      });
+    });
+
+    document.addEventListener('click', e => {
+      const link = e.target.closest('a[href^="mailto:"]');
+      if (!link) return;
+      logPyxis({
+        event_type: 'email_link_click',
+        extra: {
+          email: link.href.replace(/^mailto:/i, ''),
+          person: link.closest('dialog, .modal__inner')?.querySelector('h2, h3')?.textContent?.trim() || null,
+        },
+      });
+    });
+
+    const modalContents = document.getElementById('modal-contents');
+    modalContents?.addEventListener('toggle', e => {
+      if (e.newState === 'closed') {
+        flushContentsDwell();
+      }
+    });
+
+    const FEEDBACK_KEY = 'fbPanelOpen';
+    const feedbackWidget = document.getElementById('feedback-widget');
+    const feedbackTab = document.getElementById('feedback-tab');
+    if (feedbackWidget && feedbackTab) {
+      feedbackTab.addEventListener('click', () => {
+        const willOpen = !feedbackWidget.classList.contains('is-open');
+        if (willOpen) {
+          logPyxis({
+            event_type: 'feedback_opened',
+            extra: { page: PAGE },
+          });
+        }
+      });
+    }
+
+    window.addEventListener('pagehide', () => {
+      if (!userId) return;
+      flushContentsDwell();
+      if (viewedItems.size > 0 || uniqueDrawerKeys.size > 0) {
+        logPyxis({
+          event_type: 'session_coverage',
+          session_unique_drawers: uniqueDrawerKeys.size,
+          session_unique_items: viewedItems.size,
+          extra: {
+            unique_bins: supplyBinKeys.size,
+            page: PAGE,
+            session_storage_feedback_open: sessionStorage.getItem(FEEDBACK_KEY) === '1',
+          },
+        });
+      }
+    });
   }
 
   // ── Mark abandoned attempts on page leave ────────────────────────────────
