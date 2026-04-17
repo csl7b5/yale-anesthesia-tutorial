@@ -163,7 +163,7 @@
     });
 
     // Monitor tutorial interactions
-    ['ecg', 'abp', 'spo2', 'etco2'].forEach(monitorId => {
+    ['ecg', 'abp', 'spo2', 'bis', 'spectral', 'etco2', 'ventwaves'].forEach(monitorId => {
       // Opened
       document.getElementById('trig-' + monitorId)?.addEventListener('click', () => {
         insert('tutorial_events', {
@@ -180,8 +180,11 @@
       ['tut-ecg-select',   'ecg'],
       ['tut-abp-select',   'abp'],
       ['tut-spo2-select',  'spo2'],
+      ['tut-bis-select',      'bis'],
+      ['tut-spectral-select', 'spectral'],
       ['tut-etco2-select', 'etco2'],
       ['tut-gas-select',   'etco2_gas'],
+      ['vent-tut-preset',  'ventwaves'],
     ].forEach(([selId, monitor]) => {
       document.getElementById(selId)?.addEventListener('change', function () {
         insert('tutorial_events', {
@@ -203,6 +206,20 @@
             user_id:     userId,
             session_id:  sessionId,
             monitor:     'etco2',
+            event_type:  'tab_switched',
+            event_value: tab.dataset.tab,
+          });
+        });
+      });
+
+    document.getElementById('tut-ventwaves-tabs')
+      ?.querySelectorAll('.vent-tut__tab')
+      .forEach(tab => {
+        tab.addEventListener('click', () => {
+          insert('tutorial_events', {
+            user_id:     userId,
+            session_id:  sessionId,
+            monitor:     'ventwaves',
             event_type:  'tab_switched',
             event_value: tab.dataset.tab,
           });

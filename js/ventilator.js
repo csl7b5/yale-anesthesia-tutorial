@@ -668,8 +668,8 @@
     const flowC  = setSize('canvas-flow',     68);
     const volC   = setSize('canvas-volume',   68);
 
-    const eegC   = setSize('canvas-eeg',     52);
-    spectralCanvas = setSize('canvas-spectral', 68);
+    const eegC   = setSize('canvas-eeg',     44);
+    spectralCanvas = setSize('canvas-spectral', 56);
     pvCanvas       = setSize('canvas-pv',    115);
 
     if (ecgC)  wfs.ecg  = new ScrollWaveform(ecgC,  { color:'#00e676', pxPerSec:50, minVal:-0.35, maxVal:1.25, lineWidth:1.6 });

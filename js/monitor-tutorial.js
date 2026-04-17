@@ -32,6 +32,14 @@
     motion:           { val: 96, pi: 1.1, mode: 'motion',           interp: 'Motion artifact — chaotic, irregular waveform. SpO₂ number is unreliable. Reposition probe, minimize movement, confirm with A-line if needed.' },
   };
 
+  const BIS_PRESETS = {
+    maintenance: { bis: 48, sr: 0,  emg: 40, eeg: 'maintenance', interp: 'Adequate surgical anesthesia — BIS often ~40–60 with low SR when burst suppression is absent. On frontal EEG, slow-band power (δ and θ) is typically increased relative to awake, reflecting anesthetic slow oscillations; α power may remain appreciable (agent- and age-dependent), while β is often relatively less dominant when EMG and electrical artifact are low. Interpret with end-tidal agent and clinical signs.' },
+    light:       { bis: 68, sr: 0,  emg: 52, eeg: 'light',       interp: 'Lightening / lighter hypnosis — BIS rises; the EEG tends to show more θ and β (and often more α than in deep planes), with less relative δ than at surgical depth. EMG and movement add high-frequency noise. Reassess stimulus, analgesia, and intended depth.' },
+    deep:        { bis: 34, sr: 3,  emg: 30, eeg: 'deep',        interp: 'Deep hypnotic effect — lower BIS with predominant slow activity (δ–θ) on raw EEG; α and β are often relatively less prominent when artifact is minimal. SR may creep up. Correlate with blood pressure, agent exposure, and whether further slowing toward burst suppression is acceptable for the case.' },
+    burst:       { bis: 41, sr: 22, emg: 28, eeg: 'burst',       interp: 'Burst suppression — alternating high-amplitude bursts (slow-rich) and isoelectric periods; SR is high. Indicates profound cortical depression; consider perfusion, temperature, and whether this level of suppression is clinically intended.' },
+    emg:         { bis: 58, sr: 0,  emg: 74, eeg: 'emg',         interp: 'EMG / electrical artifact — frontal electrodes pick up facial muscle or cautery-like high-frequency energy, inflating the β band and distorting processed indices. Fix electrodes and noise sources before changing anesthetic depth based on the display alone.' },
+  };
+
   const CAPNO_PRESETS = {
     normal:      { etco2: 36, rr: 12, mode: 'normal',       interp: 'Normal capnogram. Clear phases I–III, sharp downstroke. EtCO₂ 35–45 mmHg — adequate ventilation and perfusion.' },
     hypovent:    { etco2: 58, rr: 8,  mode: 'hypovent',     interp: 'Hypoventilation — elevated plateau, EtCO₂ >45 mmHg. Increase RR or tidal volume. Check for opioid effect, muscle relaxation, or circuit obstruction.' },
@@ -174,6 +182,31 @@
     return basePleth(phase);
   }
 
+  // Stylized processed-EEG trace for BIS tutorial (normalized 0–1)
+  function waveEEG(phase, mode) {
+    const mix = (freqs, amps) => freqs.reduce((s, f, i) => s + amps[i] * Math.sin(phase * Math.PI * 2 * f), 0);
+
+    if (mode === 'burst') {
+      const u = (phase * 2.6) % 1;
+      if (u < 0.56) {
+        return 0.07 + 0.04 * Math.sin(phase * 140) + 0.02 * Math.sin(phase * 41);
+      }
+      return 0.44 + 0.28 * mix([11, 23, 37], [1, 0.65, 0.4]) + 0.14 * Math.sin(phase * 58);
+    }
+    if (mode === 'emg') {
+      return 0.5 + 0.42 * mix([48, 71, 103, 29], [1, 0.55, 0.35, 0.2]) + 0.1 * Math.sin(phase * 156);
+    }
+    if (mode === 'deep') {
+      return 0.5 + 0.26 * Math.sin(phase * Math.PI * 2 * 2.1) + 0.14 * Math.sin(phase * Math.PI * 2 * 5.5) +
+             0.08 * Math.sin(phase * Math.PI * 2 * 11);
+    }
+    if (mode === 'light') {
+      return 0.52 + 0.18 * mix([17, 31, 44], [1, 0.55, 0.35]) + 0.08 * Math.sin(phase * Math.PI * 2 * 6.5);
+    }
+    // maintenance
+    return 0.5 + 0.15 * mix([9, 19, 33], [1, 0.6, 0.35]) + 0.06 * Math.sin(phase * Math.PI * 2 * 4.2);
+  }
+
   // Capno: returns value in "EtCO2-proportional" units (1.0 = 36 mmHg)
   function waveCapno(phase, mode) {
     // Bronchospasm: normal Phase II upstroke, then continuously upsloping Phase III (shark-fin)
@@ -302,6 +335,14 @@
     capno_curare: [
       { phase: 0.55, text: 'Curare Cleft', yOff: 10, rgb: '255,200,100' },
     ],
+    bis_maintenance: [{ phase: 0.38, text: 'Mixed α / β', yOff: 11, rgb: '0,230,118' }],
+    bis_light:       [{ phase: 0.42, text: '↑ Faster activity', yOff: 12, rgb: '0,230,118' }],
+    bis_deep:        [{ phase: 0.14, text: 'Slow (δ) bias', yOff: 10, rgb: '0,230,118' }],
+    bis_burst:       [
+      { phase: 0.22, text: 'Suppression', yOff: 9, rgb: '148,163,184' },
+      { phase: 0.78, text: 'Burst', yOff: 12, rgb: '0,230,118' },
+    ],
+    bis_emg:         [{ phase: 0.52, text: 'High-freq / EMG', yOff: 11, rgb: '251,191,36' }],
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -508,6 +549,7 @@
   const GAS_CW    = 440 / 2.5;  // 176 px/cycle
 
   function hrSpeed(hr)  { return MAIN_CW  * (hr / 60); }
+  function eegSpeed()  { return MAIN_CW  * (38 / 60); }
   function rrSpeed(rr)  { return CAPNO_CW * (rr / 60); }
   function rrSpeedGas(rr){ return GAS_CW  * (rr / 60); }
 
@@ -648,6 +690,258 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  //  MODAL INIT — BIS / processed EEG
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  function initBISTutorial() {
+    const dialog = document.getElementById('tut-bis');
+    const canvas = document.getElementById('tut-bis-canvas');
+    const sel    = document.getElementById('tut-bis-select');
+    if (!dialog || !canvas || !sel) return;
+
+    let current = 'maintenance';
+    const fnRef    = { fn: ph => waveEEG(ph, 'maintenance') };
+    const speedRef = { val: eegSpeed() };
+
+    function getLabelDefs() {
+      return LABELS['bis_' + current] || LABELS.bis_maintenance;
+    }
+
+    const anim = makeAnim(canvas, fnRef, '#00e676', speedRef, null, getLabelDefs, 3.5);
+
+    function apply(key) {
+      const p = BIS_PRESETS[key]; if (!p) return;
+      current = key; sel.value = key;
+      fnRef.fn    = ph => waveEEG(ph, p.eeg);
+      speedRef.val = eegSpeed();
+      anim.reset();
+      const i = document.getElementById('tut-bis-interp'); if (i) i.textContent = p.interp;
+      const b = document.getElementById('tut-bis-val');    if (b) b.textContent = p.bis;
+      const s = document.getElementById('tut-bis-sr');     if (s) s.textContent = p.sr;
+      const e = document.getElementById('tut-bis-emg');    if (e) e.textContent = p.emg;
+    }
+
+    sel.addEventListener('change', () => apply(sel.value));
+    dialog.addEventListener('toggle', e => {
+      if (e.newState === 'open') { apply(current); anim.start(); }
+      else anim.stop();
+    });
+    dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+    dialog.querySelector('[data-tut-reset]')?.addEventListener('click', () => apply('maintenance'));
+    document.getElementById('trig-bis')?.addEventListener('click', () => dialog.showModal());
+    apply('maintenance');
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  MODAL INIT — Spectral heatmap (δ θ α β), interactive
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  function initSpectralHeatmapTutorial() {
+    const dialog     = document.getElementById('tut-spectral');
+    const canvas     = document.getElementById('tut-spectral-canvas');
+    const sel        = document.getElementById('tut-spectral-select');
+    const scenarioEl = document.getElementById('tut-spectral-scenario-blurb');
+    const bandEl     = document.getElementById('tut-spectral-band-blurb');
+    if (!dialog || !canvas || !sel || !scenarioEl || !bandEl) return;
+
+    const ROWS = 4;
+    /** Same sequential stops as `.tut-spectral__colorbar` — dark/cool = low p, light/warm = high p */
+    const HEAT_RGB_STOPS = [
+      [3, 5, 16],
+      [15, 40, 100],
+      [13, 110, 140],
+      [47, 168, 106],
+      [196, 208, 32],
+      [255, 154, 26],
+      [255, 236, 208],
+    ];
+    const COL_W = 2;
+
+    const SPECTRAL_BAND_HTML = {
+      delta: 'In natural sleep and <strong>deeper anesthesia</strong>, δ power is often relatively high. Under maintenance GA, frontal EEG commonly shows <strong>more δ (and θ) energy than in awake</strong> states. In burst suppression, bursts are typically slow-rich between isoelectric segments.',
+      theta: 'Prominent in <strong>drowsiness</strong> and many <strong>sedated</strong> states. During anesthesia, θ often contributes alongside δ at surgical depth and may increase with <strong>lightening</strong>; always interpret with agent, age, and EMG.',
+      alpha: 'The classic <strong>posterior α</strong> (eyes closed) is a wake rhythm; under GA, frontal montages may still show <strong>α-range activity</strong> depending on depth and drug—often alongside δ–θ rather than in isolation. Rising α with other signs may suggest <strong>lighter hypnosis</strong>.',
+      beta:  'Often reflects <strong>arousal</strong> or <strong>lighter anesthesia</strong>; frontal <strong>EMG</strong> and <strong>electrocautery</strong> add broadband high-frequency power that overlaps β and can falsely suggest “light” EEG unless artifact is excluded.',
+    };
+    const SPECTRAL_BAND_HEADING = { delta: 'Delta', theta: 'Theta', alpha: 'Alpha', beta: 'Beta' };
+
+    function clamp(v, lo, hi) {
+      return Math.max(lo, Math.min(hi, v));
+    }
+
+    function spectralPower(row, mode, tt) {
+      const n = 0.055 * Math.sin(tt * 3.2 + row * 1.1);
+      switch (mode) {
+        case 'maintenance': {
+          /* Adequate anesthesia: δ and α visually predominant vs θ/β (teaching emphasis) */
+          const b = [0.66, 0.34, 0.62, 0.15];
+          return clamp(b[row] + n, 0, 1);
+        }
+        case 'light': {
+          const b = [0.26, 0.44, 0.56, 0.64];
+          return clamp(b[row] + n, 0, 1);
+        }
+        case 'deep': {
+          const b = [0.82, 0.54, 0.22, 0.16];
+          return clamp(b[row] + n, 0, 1);
+        }
+        case 'burst': {
+          const cyc = (tt * 0.45) % 4.5;
+          if (cyc < 2.6) {
+            const b = [0.07, 0.07, 0.06, 0.06];
+            return clamp(b[row] + n * 0.35, 0, 1);
+          }
+          const b = [0.82, 0.48, 0.3, 0.24];
+          return clamp(b[row] + n, 0, 1);
+        }
+        case 'emg': {
+          const b = [0.22, 0.28, 0.34, 0.9];
+          return clamp(b[row] + n, 0, 1);
+        }
+        default:
+          return 0.4;
+      }
+    }
+
+    function powerToHeatStyle(p) {
+      p = clamp(Math.pow(p, 0.88), 0, 1);
+      const n = HEAT_RGB_STOPS.length - 1;
+      const f = p * n;
+      const i = Math.min(Math.floor(f), n - 1);
+      const t = f - i;
+      const a = HEAT_RGB_STOPS[i];
+      const b = HEAT_RGB_STOPS[i + 1];
+      const r = Math.round(a[0] + (b[0] - a[0]) * t);
+      const g = Math.round(a[1] + (b[1] - a[1]) * t);
+      const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+      return `rgb(${r},${g},${bl})`;
+    }
+
+    let mode = 'maintenance';
+    let activeBand = 'delta';
+    let timeOff = 0;
+    let raf = null;
+    let lastTs = null;
+
+    function updateScenarioBlurb() {
+      const p = BIS_PRESETS[mode];
+      scenarioEl.textContent = p ? p.interp : '';
+    }
+
+    function updateBandBlurb() {
+      const key = activeBand in SPECTRAL_BAND_HTML ? activeBand : 'delta';
+      const head = SPECTRAL_BAND_HEADING[key] || 'Delta';
+      const body = SPECTRAL_BAND_HTML[key];
+      bandEl.innerHTML =
+        '<span class="tut-spectral__band-inline-label">' + head + ':</span> ' + body;
+    }
+
+    function paint(ts) {
+      if (!dialog.open) {
+        raf = null;
+        lastTs = null;
+        return;
+      }
+      if (lastTs == null) lastTs = ts;
+      const dt = Math.min((ts - lastTs) / 1000, 0.055);
+      lastTs = ts;
+      timeOff += dt * 5.5;
+
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+      const rowTop = r => Math.floor((r * H) / ROWS);
+      const rowH   = r => (r === ROWS - 1 ? H - rowTop(r) : rowTop(r + 1) - rowTop(r));
+      ctx.fillStyle = '#030510';
+      ctx.fillRect(0, 0, W, H);
+
+      for (let x = 0; x < W; x += COL_W) {
+        const tt = timeOff + x * 0.012;
+        const wSeg = Math.min(COL_W, W - x);
+        for (let r = 0; r < ROWS; r++) {
+          const p = spectralPower(r, mode, tt);
+          ctx.fillStyle = powerToHeatStyle(p);
+          ctx.fillRect(x, rowTop(r), wSeg, rowH(r));
+        }
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+      ctx.lineWidth = 1;
+      for (let r = 1; r < ROWS; r++) {
+        const y = rowTop(r);
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
+
+      raf = requestAnimationFrame(paint);
+    }
+
+    function startAnim() {
+      lastTs = null;
+      if (!raf) raf = requestAnimationFrame(paint);
+    }
+
+    function stopAnim() {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = null;
+      }
+      lastTs = null;
+    }
+
+    function setActiveBand(band) {
+      activeBand = band || 'delta';
+      updateBandBlurb();
+      dialog.querySelectorAll('.tut-spectral__band').forEach(btn => {
+        const on = btn.dataset.band === activeBand;
+        btn.classList.toggle('tut-spectral__band--active', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+
+    sel.addEventListener('change', () => {
+      mode = sel.value;
+      updateScenarioBlurb();
+    });
+
+    dialog.querySelectorAll('.tut-spectral__band').forEach(btn => {
+      btn.addEventListener('click', () => setActiveBand(btn.dataset.band));
+    });
+
+    dialog.addEventListener('toggle', e => {
+      if (e.newState === 'open') {
+        mode = sel.value;
+        timeOff = 0;
+        updateScenarioBlurb();
+        setActiveBand(activeBand);
+        startAnim();
+      } else stopAnim();
+    });
+    dialog.addEventListener('click', e => {
+      if (e.target === dialog) dialog.close();
+    });
+
+    dialog.querySelector('[data-tut-reset]')?.addEventListener('click', () => {
+      sel.value = 'maintenance';
+      mode = 'maintenance';
+      timeOff = 0;
+      activeBand = 'delta';
+      updateScenarioBlurb();
+      setActiveBand('delta');
+    });
+
+    document.getElementById('trig-spectral')?.addEventListener('click', () => dialog.showModal());
+    document.getElementById('bis-open-spectral')?.addEventListener('click', () => {
+      document.getElementById('tut-bis')?.close();
+      queueMicrotask(() => dialog.showModal());
+    });
+
+    updateScenarioBlurb();
+    setActiveBand('delta');
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   //  MODAL INIT — Capnography (tabbed)
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -785,6 +1079,8 @@
     initECGTutorial();
     initALineTutorial();
     initSpO2Tutorial();
+    initBISTutorial();
+    initSpectralHeatmapTutorial();
     initCapnoTutorial();
   });
 

@@ -255,15 +255,45 @@ html { scrollbar-gutter: stable; }
 /* ══════════════════════════════════════════════════════════════════════════
    BIS MONITOR
    ══════════════════════════════════════════════════════════════════════════ */
-.mon-shell--bis .mon-screen { padding: 7px 8px 5px; }
+.mon-shell--bis .mon-screen { padding: 6px 8px 4px; }
 
 .bis-top {
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 .bis-left { flex-shrink: 0; }
+
+/* BIS tutorial trigger (matches vitals ▶ Learn pattern) */
+.bis-trig {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 6px;
+  transition: background 0.18s;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.bis-trig:hover { background: rgba(13, 148, 136, 0.08); }
+.bis-trig-hint {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  color: var(--text-muted);
+  transition: opacity 0.18s;
+  margin-top: 3px;
+}
+.bis-trig:hover .bis-trig-hint { opacity: 1; }
+
 .bis-num {
   font-size: 54px;
   font-weight: 700;
@@ -286,19 +316,41 @@ html { scrollbar-gutter: stable; }
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #8b9aab;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
+  line-height: 1.1;
 }
 #canvas-eeg { display: block; width: 100%; background: #000000; }
 
-.bis-spectral-wrap { position: relative; }
+.bis-spectral-wrap { position: relative; margin-top: 0; }
 #canvas-spectral { display: block; width: 100%; background: #000000; }
+.bis-spectral-trig {
+  display: block;
+  width: 100%;
+  margin-top: 2px;
+  padding: 3px 6px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: rgba(13, 148, 136, 0.08);
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background 0.15s, border-color 0.15s;
+}
+.bis-spectral-trig:hover {
+  background: rgba(13, 148, 136, 0.14);
+  border-color: rgba(13, 148, 136, 0.4);
+}
 .spectral-axis {
   display: flex;
   justify-content: space-around;
   font-size: 8.5px;
   color: #8b9aab;
-  margin-top: 2px;
+  margin-top: 1px;
   letter-spacing: 0.04em;
+  line-height: 1.15;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -389,6 +441,7 @@ html { scrollbar-gutter: stable; }
 .vent-mode-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   flex-shrink: 0;
   width: 100%;
@@ -398,6 +451,25 @@ html { scrollbar-gutter: stable; }
   background: #e8ecf2;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0 0 5px 5px;
+}
+.vent-wave-tut-trig {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 3px 8px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  background: rgba(13, 148, 136, 0.1);
+  border: 1px solid rgba(13, 148, 136, 0.28);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background 0.15s, border-color 0.15s;
+}
+.vent-wave-tut-trig:hover {
+  background: rgba(13, 148, 136, 0.16);
+  border-color: rgba(13, 148, 136, 0.42);
 }
 .mode-chip {
   background: var(--accent);
@@ -1640,6 +1712,578 @@ html { scrollbar-gutter: stable; }
 }
 .mon-tut__vol-card p:last-child { margin-bottom: 0; }
 .mon-tut__vol-card strong { color: var(--text-primary); }
+
+/* BIS tutorial — link to spectral modal */
+.mon-tut__bis-spectral-cta-text {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.mon-tut__bis-spectral-cta-text strong { color: var(--text-primary); }
+.mon-tut__spectral-open {
+  appearance: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid rgba(13, 148, 136, 0.35);
+  border-radius: 8px;
+  padding: 8px 14px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.mon-tut__spectral-open:hover {
+  background: rgba(13, 148, 136, 0.18);
+  border-color: var(--accent);
+}
+
+/* Interactive spectral heatmap modal */
+.tut-spectral-dialog .tut-spectral__scenario-row {
+  padding: 0 0 10px;
+  margin: 0;
+  border-bottom: none;
+}
+.tut-spectral__intro {
+  margin: 0;
+  padding: 10px 18px 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.tut-spectral__intro strong { color: var(--text-primary); }
+.tut-spectral__main {
+  display: flex;
+  gap: 0;
+  padding: 12px 18px 0;
+  align-items: flex-start;
+}
+/* Plot height locked so 4 label rows match 4 canvas rows (canvas is 160px). */
+.tut-spectral__band-labels {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 78px;
+  height: 160px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-subtle);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  overflow: hidden;
+  background: rgba(18, 30, 45, 0.03);
+}
+.tut-spectral__band {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  appearance: none;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 8px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.25;
+  transition: background 0.12s, color 0.12s;
+}
+.tut-spectral__band:last-child { border-bottom: none; }
+.tut-spectral__band:hover { background: var(--accent-soft); color: var(--text-primary); }
+.tut-spectral__band--active {
+  background: rgba(13, 148, 136, 0.12);
+  color: var(--accent);
+}
+.tut-spectral__band-hz {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.tut-spectral__canvas-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+  height: 160px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0 8px 8px 0;
+  overflow: hidden;
+  background: #000;
+}
+.tut-spectral__hm-stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.tut-spectral__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  vertical-align: top;
+}
+/* Unified power scale (matches JS colormap) */
+.tut-spectral__colorbar {
+  width: 22px;
+  flex-shrink: 0;
+  position: relative;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    to top,
+    #030510 0%,
+    #0f2864 16%,
+    #0d6e8c 34%,
+    #2fa86a 50%,
+    #c4d020 68%,
+    #ff9a1a 84%,
+    #ffecd0 100%
+  );
+}
+.tut-spectral__colorbar-hi,
+.tut-spectral__colorbar-lo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.95), 0 1px 2px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+.tut-spectral__colorbar-hi { top: 4px; }
+.tut-spectral__colorbar-lo { bottom: 4px; }
+.tut-spectral__time-hint {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  z-index: 1;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.42);
+  text-align: right;
+  padding: 0;
+  margin: 0;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+.tut-spectral__panel {
+  margin: 12px 18px 0;
+  padding: 12px 14px 14px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  background: rgba(13, 148, 136, 0.06);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+}
+.tut-spectral__panel--scenario {
+  margin-top: 10px;
+}
+.tut-spectral__panel-title {
+  margin: 0 0 8px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.tut-spectral__wave-text {
+  margin: 0;
+}
+.tut-spectral__scenario-text {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.tut-spectral__panel strong { color: var(--text-primary); }
+.tut-spectral__band-inline-label {
+  display: inline;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  margin-right: 0.35em;
+}
+.tut-spectral__footnote {
+  margin: 10px 18px 16px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.tut-spectral__footnote strong { font-style: normal; color: var(--text-primary); }
+@media (max-width: 620px) {
+  .tut-spectral__main { flex-direction: column; align-items: stretch; }
+  .tut-spectral__band-labels {
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    min-height: 48px;
+    border-radius: 8px 8px 0 0;
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: none;
+  }
+  .tut-spectral__band {
+    flex: 1;
+    min-height: 44px;
+    border-bottom: none;
+    border-right: 1px solid var(--border-subtle);
+    text-align: center;
+    padding: 8px 4px;
+  }
+  .tut-spectral__band:last-child { border-right: none; }
+  .tut-spectral__canvas-wrap {
+    border-radius: 0 0 8px 8px;
+    width: 100%;
+    height: 160px;
+  }
+}
+
+/* ── Ventilator waveforms & P–V tutorial ───────────────────────────────── */
+
+/* Sized for aside + ~580px waveforms + padding */
+.vent-tut-dialog.mon-tut {
+  width: min(880px, calc(100vw - 32px));
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.vent-tut-dialog > .mon-tut__inner {
+  overflow-x: hidden;
+}
+
+/* Align header/footer with body gutters */
+.vent-tut-dialog .mon-tut__head {
+  padding-left: 22px;
+  padding-right: 22px;
+}
+.vent-tut-dialog .mon-tut__foot {
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
+.vent-tut-dialog .vent-tut__lead {
+  margin: 0 0 0.85rem;
+  padding: 12px 20px 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  max-width: none;
+}
+.vent-tut-dialog .vent-tut__lead strong { color: var(--text-primary); font-weight: 600; }
+
+.vent-tut__layout {
+  display: grid;
+  grid-template-columns: minmax(236px, 282px) minmax(0, 1fr);
+  gap: 18px 22px;
+  align-items: stretch;
+  padding: 0 20px 12px;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.vent-tut__aside {
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  background: rgba(248, 250, 252, 0.92);
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* Preset row: stack label + full-width select (avoids crush vs mon-tut__selector-row default flex) */
+.vent-tut__aside .vent-tut__preset-row.mon-tut__selector-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.vent-tut__aside .vent-tut__preset-row .mon-tut__select-label {
+  white-space: normal;
+  line-height: 1.3;
+}
+.vent-tut__aside .vent-tut__preset-row .mon-tut__select {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.vent-tut__preset-blurb {
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+  background: rgba(13, 148, 136, 0.07);
+  border-radius: 0 8px 8px 0;
+}
+.vent-tut__preset-blurb strong { color: var(--text-primary); }
+
+.vent-tut__mode {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.vent-tut__mode-btn {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: #fff;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.vent-tut__mode-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.vent-tut__mode-btn--on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Controls: label on its own row, slider + value row — fits narrow aside */
+.vent-tut__ctrl-block .ctrl-row {
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 4px;
+  column-gap: 10px;
+  margin-bottom: 8px;
+}
+.vent-tut__ctrl-block .ctrl-row:last-child {
+  margin-bottom: 0;
+}
+.vent-tut__ctrl-block .ctrl-lbl {
+  flex: 1 0 100%;
+  font-size: 10px;
+  line-height: 1.35;
+  margin: 0;
+}
+.vent-tut__ctrl-block .ctrl-range {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 72px;
+  max-width: 100%;
+}
+.vent-tut__ctrl-block .ctrl-val {
+  flex: 0 0 38px;
+  width: 38px;
+}
+
+.vent-tut__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.vent-tut__readouts {
+  margin: 0 0 12px;
+  padding: 10px 14px 10px;
+  background: rgba(13, 148, 136, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(13, 148, 136, 0.14);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.vent-tut__ro-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.vent-tut__ro-table tr + tr td {
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+.vent-tut__ro-table td {
+  padding: 5px 10px 5px 0;
+  vertical-align: middle;
+}
+.vent-tut__ro-table td:nth-child(3) {
+  padding-left: 18px;
+  border-left: 1px solid rgba(148, 163, 184, 0.15);
+}
+.vent-tut__ro-k {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+  width: 1%;
+}
+.vent-tut__ro-v {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.vent-tut__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  padding: 6px 8px 0;
+  margin: 0;
+  background: rgba(241, 244, 248, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  box-sizing: border-box;
+}
+.vent-tut__tab {
+  padding: 8px 14px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  border-radius: 6px 6px 0 0;
+}
+.vent-tut__tab:hover { color: var(--text-primary); }
+.vent-tut__tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.vent-tut__panel[data-panel="waves"] {
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  background: #08080c;
+}
+
+.vent-tut__wave-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px 18px;
+  box-sizing: border-box;
+}
+.vent-tut__wave-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  min-width: 0;
+}
+.vent-tut__wave-lbl {
+  flex-shrink: 0;
+  width: 48px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: right;
+  padding-top: 6px;
+}
+.vent-tut__wave-lbl small { font-weight: 500; opacity: 0.8; font-size: 8px; }
+.vent-tut__wave-row canvas {
+  flex: 1;
+  display: block;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  background: #000;
+  border-radius: 6px;
+}
+
+.vent-tut__panel[data-panel="pv"] {
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  background: #08080c;
+}
+
+.vent-tut__pv-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px 20px;
+  box-sizing: border-box;
+}
+.vent-tut__pv-wrap canvas {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  background: #000;
+  border-radius: 8px;
+}
+.vent-tut__pv-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 16px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.95);
+}
+.vent-tut__dashed-note {
+  margin: 8px 20px 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .vent-tut-dialog.mon-tut {
+    width: min(100vw - 24px, 880px);
+  }
+  .vent-tut__layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 0 18px 4px;
+  }
+  .vent-tut-dialog .vent-tut__lead {
+    padding: 14px 18px 0;
+    max-width: none;
+  }
+  .vent-tut-dialog .mon-tut__head,
+  .vent-tut-dialog .mon-tut__foot {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .vent-tut__aside {
+    max-height: none;
+    order: 2;
+  }
+  .vent-tut__main {
+    order: 1;
+  }
+}
 
 /* ── Debrief dialog ───────────────────────────────────────────────────── */
 

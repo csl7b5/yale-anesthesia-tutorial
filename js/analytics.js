@@ -275,7 +275,7 @@
     });
 
     // ── Monitor tutorial opens + dwell ────────────────────────────────────────
-    ['ecg', 'abp', 'spo2', 'etco2'].forEach(id => {
+    ['ecg', 'abp', 'spo2', 'bis', 'spectral', 'etco2', 'ventwaves'].forEach(id => {
       document.getElementById('trig-' + id)?.addEventListener('click', () => {
         track('monitor_tutorial_opened', { monitor: id });
       });
@@ -287,8 +287,11 @@
       ['tut-ecg-select',   'ecg'],
       ['tut-abp-select',   'abp'],
       ['tut-spo2-select',  'spo2'],
+      ['tut-bis-select',       'bis'],
+      ['tut-spectral-select',  'spectral'],
       ['tut-etco2-select', 'etco2_patterns'],
       ['tut-gas-select',   'etco2_gas'],
+      ['vent-tut-preset',  'ventwaves'],
     ].forEach(([selId, monitor]) => {
       document.getElementById(selId)?.addEventListener('change', function () {
         track('tutorial_pathology_selected', { monitor, pathology: this.value });
@@ -301,6 +304,14 @@
       .forEach(tab => {
         tab.addEventListener('click', () => {
           track('etco2_tab_switched', { tab: tab.dataset.tab });
+        });
+      });
+
+    document.getElementById('tut-ventwaves-tabs')
+      ?.querySelectorAll('.vent-tut__tab')
+      .forEach(tab => {
+        tab.addEventListener('click', () => {
+          track('ventwaves_tab_switched', { tab: tab.dataset.tab });
         });
       });
 
