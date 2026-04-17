@@ -335,14 +335,14 @@
     capno_curare: [
       { phase: 0.55, text: 'Curare Cleft', yOff: 10, rgb: '255,200,100' },
     ],
-    bis_maintenance: [{ phase: 0.38, text: 'Mixed α / β', yOff: 11, rgb: '0,230,118' }],
-    bis_light:       [{ phase: 0.42, text: '↑ Faster activity', yOff: 12, rgb: '0,230,118' }],
-    bis_deep:        [{ phase: 0.14, text: 'Slow (δ) bias', yOff: 10, rgb: '0,230,118' }],
+    bis_maintenance: [{ phase: 0.38, text: 'Mixed α / β', absY: 18, rgb: '0,230,118' }],
+    bis_light:       [{ phase: 0.42, text: '↑ Faster activity', absY: 18, rgb: '0,230,118' }],
+    bis_deep:        [{ phase: 0.14, text: 'Slow (δ) bias', absY: 18, rgb: '0,230,118' }],
     bis_burst:       [
-      { phase: 0.22, text: 'Suppression', yOff: 9, rgb: '148,163,184' },
-      { phase: 0.78, text: 'Burst', yOff: 12, rgb: '0,230,118' },
+      { phase: 0.10, text: 'Suppression', absY: 14, rgb: '148,163,184' },
+      { phase: 0.38, text: 'Burst', absY: 22, rgb: '0,230,118' },
     ],
-    bis_emg:         [{ phase: 0.52, text: 'High-freq / EMG', yOff: 11, rgb: '251,191,36' }],
+    bis_emg:         [{ phase: 0.52, text: 'High-freq / EMG', absY: 18, rgb: '251,191,36' }],
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -467,8 +467,13 @@
         const alpha = age < fadeStart ? 0.82 :
           Math.max(0, 0.82 * (1 - (age - fadeStart) / (CYCLE_W * 0.47)));
         if (alpha < 0.02) return;
-        const vy = yOf(sampleFnRef.fn(lbl.phase));
-        const ly = lbl.above === false ? vy + (lbl.yOff || 10) + 9 : vy - (lbl.yOff || 10);
+        let ly;
+        if (lbl.absY !== undefined) {
+          ly = lbl.absY;
+        } else {
+          const vy = yOf(sampleFnRef.fn(lbl.phase));
+          ly = lbl.above === false ? vy + (lbl.yOff || 10) + 9 : vy - (lbl.yOff || 10);
+        }
         ctx.fillStyle = `rgba(${lbl.rgb || '200,220,244'},${alpha.toFixed(2)})`;
         ctx.fillText(lbl.text, lblX, ly);
       });
