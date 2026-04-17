@@ -41,8 +41,36 @@
     return { data, error };
   }
 
-  async function signUpWithPassword(email, password) {
-    const { data, error } = await sb.auth.signUp({ email, password });
+  /**
+   * @param {{ fullName?: string, school?: string, trainingLevel?: string }} [meta] — optional; stored in auth user metadata and copied to profiles by handle_new_user.
+   */
+  async function signUpWithPassword(email, password, meta) {
+    const dataPayload = {};
+    if (meta?.fullName && String(meta.fullName).trim()) {
+      dataPayload.full_name = String(meta.fullName).trim();
+    }
+    if (meta?.school && String(meta.school).trim()) {
+      dataPayload.school = String(meta.school).trim();
+    }
+    if (meta?.trainingLevel && String(meta.trainingLevel).trim()) {
+      dataPayload.training_level = String(meta.trainingLevel).trim();
+    }
+    const opts = Object.keys(dataPayload).length
+      ? { email, password, options: { data: dataPayload } }
+      : { email, password };
+    const { data, error } = await sb.auth.signUp(opts);
+    return { data, error };
+  }
+
+  async function updateProfile(updates) {
+    const user = await getUser();
+    if (!user) return { data: null, error: { message: 'Not signed in' } };
+    const { data, error } = await sb
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single();
     return { data, error };
   }
 
@@ -64,6 +92,7 @@
     signInWithEmail,
     signUpWithPassword,
     signInWithPassword,
+    updateProfile,
     signOut,
   };
 })();

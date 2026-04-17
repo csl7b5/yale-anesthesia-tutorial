@@ -45,6 +45,22 @@
       text-decoration: underline;
     }
     .auth-card__input + .auth-card__input { margin-top: 0.6rem; }
+    .auth-signup-extras { margin-top: 0.45rem; }
+    .auth-signup-extras[hidden] { display: none !important; }
+    .auth-signup-extras label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 0.2rem;
+      margin-top: 0.5rem;
+    }
+    .auth-signup-extras label:first-of-type { margin-top: 0; }
+    .auth-signup-extras .auth-card__hint {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin: 0 0 0.35rem;
+    }
   </style>
 </head>
 <body class="auth-ready">
@@ -85,6 +101,45 @@
             minlength="6"
             autocomplete="current-password"
           />
+          <div id="signup-extras" class="auth-signup-extras" hidden>
+            <p class="auth-card__hint">Optional — helps your instructors recognize you on the dashboard.</p>
+            <label for="signup-name">Your name</label>
+            <input
+              id="signup-name"
+              class="auth-card__input"
+              type="text"
+              placeholder="e.g. Jordan Smith"
+              maxlength="120"
+              autocomplete="name"
+            />
+            <label for="signup-school">School / program</label>
+            <input
+              id="signup-school"
+              class="auth-card__input"
+              type="text"
+              placeholder="e.g. Yale School of Medicine"
+              maxlength="160"
+              list="school-suggestions"
+              autocomplete="organization"
+            />
+            <datalist id="school-suggestions">
+              <option value="Yale School of Medicine"></option>
+              <option value="Yale Physician Associate Program"></option>
+              <option value="Yale School of Nursing"></option>
+              <option value="Visiting / other institution"></option>
+            </datalist>
+            <label for="signup-training">Year / training</label>
+            <select id="signup-training" class="auth-card__input" aria-label="Year or training level">
+              <option value="">Optional — select if you’d like</option>
+              <option value="Pre-med">Pre-med</option>
+              <option value="Pre-Clinical">Pre-Clinical</option>
+              <option value="Clerkship">Clerkship</option>
+              <option value="Subintern/Advanced Rotations">Subintern/Advanced Rotations</option>
+              <option value="Research Year">Research Year</option>
+              <option value="Intern">Intern</option>
+              <option value="CA-1 and Beyond">CA-1 and Beyond</option>
+            </select>
+          </div>
           <button id="pw-submit" class="auth-card__submit" type="submit">
             Sign In
           </button>
@@ -157,6 +212,11 @@
       const pwStatus = document.getElementById('pw-status');
       const pwToggle = document.getElementById('pw-toggle');
 
+      const signupExtras = document.getElementById('signup-extras');
+      const signupName = document.getElementById('signup-name');
+      const signupSchool = document.getElementById('signup-school');
+      const signupTraining = document.getElementById('signup-training');
+
       pwToggle.addEventListener('click', () => {
         isSignUp = !isSignUp;
         pwBtn.textContent = isSignUp ? 'Create Account' : 'Sign In';
@@ -166,6 +226,12 @@
         pwPass.placeholder = isSignUp ? 'Create a password (min 6 characters)' : 'Password (min 6 characters)';
         pwPass.autocomplete = isSignUp ? 'new-password' : 'current-password';
         pwStatus.textContent = '';
+        signupExtras.hidden = !isSignUp;
+        if (!isSignUp) {
+          signupName.value = '';
+          signupSchool.value = '';
+          signupTraining.value = '';
+        }
       });
 
       pwForm.addEventListener('submit', async (e) => {
@@ -178,7 +244,11 @@
         const password = pwPass.value;
 
         if (isSignUp) {
-          const { data, error } = await SB.signUpWithPassword(email, password);
+          const { data, error } = await SB.signUpWithPassword(email, password, {
+            fullName: signupName.value,
+            school: signupSchool.value,
+            trainingLevel: signupTraining.value,
+          });
           if (error) {
             pwStatus.textContent = error.message;
             pwStatus.className = 'auth-card__status auth-card__status--error';

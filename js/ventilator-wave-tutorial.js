@@ -67,7 +67,9 @@
     };
   }
 
-  function genPressure(t, d, mode) {
+  /** R_pat: airway resistance (cmH₂O·s/L); affects expiratory pressure decay toward PEEP. */
+  function genPressure(t, d, mode, R_pat) {
+    const r = R_pat != null ? R_pat : 8;
     const phase = (t % d.bp) / d.bp;
     const ti_frac = d.ti / d.bp;
     if (phase < ti_frac) {
@@ -81,7 +83,8 @@
       return d.peep + (d.pip - d.peep) * (1 - Math.exp(-tp / Math.max(tau_n, 0.05)));
     }
     const xe = (phase - ti_frac) / (1 - ti_frac);
-    return d.peep + (d.plat - d.peep) * Math.exp(-xe * 7);
+    const kExp = Math.max(4.2, 7 - 0.055 * Math.max(0, r - 8));
+    return d.peep + (d.plat - d.peep) * Math.exp(-xe * kExp);
   }
 
   function genFlow(t, d, mode, R) {
@@ -98,8 +101,10 @@
       return peak_Lm * Math.exp(-tp / Math.max(d.tau / d.ti, 0.05));
     }
     const xe = (phase - ti_frac) / (1 - ti_frac);
-    const tau_e = Math.max(d.tau / (d.te || 0.1), 0.08);
-    return -peak_Lm * (1 + R * 0.04) * Math.exp(-xe / tau_e);
+    const tauBase = Math.max(d.tau / (d.te || 0.1), 0.08);
+    const tau_e = tauBase * (1 + 0.07 * Math.max(0, R - 8));
+    const peakExpScale = 1 / (1 + 0.034 * Math.max(0, R - 8));
+    return -peak_Lm * peakExpScale * Math.exp(-xe / tau_e);
   }
 
   function genVolume(t, d, mode) {
@@ -126,35 +131,35 @@
     obstructive: {
       label: 'Obstructive / bronchospasm',
       blurb:
-        '**High resistance** widens PIP–Pplat, prolongs **expiratory flow** (may not return to zero before the next breath), and magnifies **auto-PEEP** if expiratory time is short. First-line teaching: treat obstruction and **lengthen expiratory time** (lower RR), not blindly raise PIP.',
-      vent: { mode: 'VC', tv: 480, pip: 12, rr: 12, peep: 5, ti: 1.0 },
-      patient: { compliance: 50, resistance: 30, leak: 0 },
+        '**High airway resistance** widens PIP–Pplat and **limits peak expiratory flow** while **prolonging** the expiratory tail (often still below baseline at end-expiration). Lower RR lengthens Te; treat bronchospasm, not just the ventilator numbers.',
+      vent: { mode: 'VC', tv: 480, pip: 12, rr: 11, peep: 5, ti: 1.0 },
+      patient: { compliance: 50, resistance: 32, leak: 0 },
     },
     restrictive: {
       label: 'Restrictive lungs',
       blurb:
-        '**Low compliance** raises plateau pressure for the same TV (**stiffer lungs**). PIP–Pplat gap may be smaller than in pure obstruction; watch **driving pressure** and consider **smaller TV** strategies clinically.',
+        '**Very low compliance** drives **Pplat and PIP** up for the same delivered TV (VC). The **PIP–Pplat gap stays modest** (resistance is normal) — the story is **stiff lungs** and **driving pressure**, not obstruction.',
       vent: { mode: 'VC', tv: 480, pip: 12, rr: 14, peep: 5, ti: 1.0 },
       patient: { compliance: 16, resistance: 8, leak: 0 },
     },
     leak: {
       label: 'Circuit leak',
       blurb:
-        'Leak reduces **exhaled tidal volume** relative to inspired; the **volume trace** fails to return to baseline and **alarm limits** on minute ventilation may fire. Fix the circuit before chasing ventilator settings.',
+        'A **large leak** means exhaled TV tracks **below** inspired TV — the **volume waveform** does not return to the same baseline each cycle. Waveform shapes for pressure/flow may look surprisingly normal; suspect leak when MV alarms fire.',
       vent: { mode: 'VC', tv: 480, pip: 12, rr: 12, peep: 5, ti: 1.0 },
       patient: { compliance: 50, resistance: 8, leak: 0.45 },
     },
     air_trapping: {
       label: 'Air trapping / risk of auto-PEEP',
       blurb:
-        'Combine **obstruction** with a **short expiratory time** (high RR + relatively long Ti). End-expiratory flow is still “busy” when the next inspiration starts — **intrinsic PEEP** accumulates. Compare **Pplat vs total PEEP** and consider RR/Ti adjustment.',
+        '**Obstruction + short Te** (high RR, long Ti): expiratory flow is **still negative** when the next breath begins — **auto-PEEP** stacks. The flow trace “never settles” to zero before inspiration.',
       vent: { mode: 'VC', tv: 480, pip: 12, rr: 24, peep: 5, ti: 1.2 },
-      patient: { compliance: 50, resistance: 28, leak: 0 },
+      patient: { compliance: 50, resistance: 30, leak: 0 },
     },
     pc_mild: {
-      label: 'Pressure control (same ΔP, softer lungs)',
+      label: 'Pressure control — variable TV',
       blurb:
-        'In **PC-CMV**, inspiratory pressure targets a set **ΔP above PEEP**; **delivered TV** depends on **compliance and inspiratory time**. Compare to VC: volume varies with mechanics while pressure envelope is capped.',
+        '**PC-CMV** holds a **pressure target** (ΔP above PEEP); **TV is not fixed** — it falls out of compliance, Ti, and resistance. Compare to VC where TV is set and pressures swing with mechanics.',
       vent: { mode: 'PC', tv: 480, pip: 16, rr: 12, peep: 5, ti: 1.0 },
       patient: { compliance: 55, resistance: 10, leak: 0 },
     },
@@ -301,8 +306,8 @@
         let lo = Infinity;
         let hi = -Infinity;
         for (let i = 0; i <= N; i++) {
-          const ph = i / N;
-          const t = ph * d.bp;
+          const u = i / N;
+          const t = sweepLinearToPhysPhase(u, d) * d.bp;
           const v = sampleFn(t);
           if (v < lo) lo = v;
           if (v > hi) hi = v;
@@ -314,8 +319,8 @@
         let lo = Infinity;
         let hi = -Infinity;
         for (let i = 0; i <= N; i++) {
-          const ph = i / N;
-          const t = ph * d.bp;
+          const u = i / N;
+          const t = sweepLinearToPhysPhase(u, d) * d.bp;
           for (const v of [fnCur(t), fnBase(t)]) {
             if (v < lo) lo = v;
             if (v > hi) hi = v;
@@ -325,8 +330,8 @@
       }
       {
         const { lo, hi } = scanBaselinePair(
-          t => genPressure(t, d, mode),
-          t => genPressure(t, dBase, mode)
+          t => genPressure(t, d, mode, R),
+          t => genPressure(t, dBase, mode, Rb)
         );
         const p = Math.max((hi - lo) * 0.08, 3);
         sweepRange.paw = { lo: Math.max(0, lo - p), hi: hi + p };
@@ -346,8 +351,8 @@
           ? [t => genVolume(t, d, mode), t => genVolume(t, dBase, mode)]
           : [t => genVolume(t, d, mode)];
         for (let i = 0; i <= N; i++) {
-          const ph = i / N;
-          const t = ph * d.bp;
+          const u = i / N;
+          const t = sweepLinearToPhysPhase(u, d) * d.bp;
           for (const fn of consider) {
             const v = fn(t);
             if (v > hi) hi = v;
@@ -368,6 +373,23 @@
       return yTop + (yBot - yTop) * (1 - (t - lo) / range);
     }
 
+    /**
+     * Linear sweep position u∈[0,1) → physiological phase [0,1) for sampling gen*().
+     * Stretches inspiration (and early breath) across more of the plot width so Te-dominated
+     * expiratory decay does not visually swallow the trace (display-only; physics unchanged).
+     */
+    function sweepLinearToPhysPhase(u, d) {
+      const tf = d.ti / d.bp;
+      u = ((u % 1) + 1) % 1;
+      if (tf <= 1e-9 || tf >= 1 - 1e-9) return u;
+      let alpha = Math.min(0.56, Math.max(tf + 0.17, tf * 2.22));
+      if (alpha >= 1 - 1e-9) alpha = 0.52;
+      if (u <= alpha) {
+        return (u / alpha) * tf;
+      }
+      return tf + ((u - alpha) / (1 - alpha)) * (1 - tf);
+    }
+
     function initSweepBuf(bx) {
       bx.clearRect(0, 0, WAVE_W, WAVE_H);
     }
@@ -382,6 +404,38 @@
         ctxDest.lineTo(WAVE_W - WAVE_PAD.r, y);
         ctxDest.stroke();
       }
+    }
+
+    /** PEEP baseline (Paw) and 0 L/min (Flow) — subtle gray reference lines under trace. */
+    function drawReferenceBaselines(ctxDest, waveKind, lo, hi, d) {
+      if (!d || waveKind === 'vol') return;
+      ctxDest.save();
+      ctxDest.beginPath();
+      ctxDest.rect(WAVE_PAD.l, WAVE_PAD.t, INNER_W, INNER_H);
+      ctxDest.clip();
+      if (waveKind === 'flow' && lo <= 0 && hi >= 0) {
+        const y0 = yOfWave(lo, hi, 0);
+        ctxDest.strokeStyle = 'rgba(148, 152, 162, 0.36)';
+        ctxDest.lineWidth = 1.45;
+        ctxDest.setLineDash([]);
+        ctxDest.beginPath();
+        ctxDest.moveTo(WAVE_PAD.l, y0);
+        ctxDest.lineTo(WAVE_PAD.l + INNER_W, y0);
+        ctxDest.stroke();
+      }
+      if (waveKind === 'paw') {
+        const peep = d.peep;
+        if (lo <= peep && hi >= peep) {
+          const yp = yOfWave(lo, hi, peep);
+          ctxDest.strokeStyle = 'rgba(148, 152, 162, 0.36)';
+          ctxDest.lineWidth = 1.45;
+          ctxDest.beginPath();
+          ctxDest.moveTo(WAVE_PAD.l, yp);
+          ctxDest.lineTo(WAVE_PAD.l + INNER_W, yp);
+          ctxDest.stroke();
+        }
+      }
+      ctxDest.restore();
     }
 
     /**
@@ -429,8 +483,8 @@
       for (let i = 0; i <= steps; i++) {
         const px = i === steps ? toPx : fromPx + (dPx * i) / steps;
         const xPlot = cursorXFromSweepPx(px);
-        const ph = (px / CYCLE_W) % 1;
-        const t = ph * d.bp;
+        const u = (px / CYCLE_W) % 1;
+        const t = sweepLinearToPhysPhase(u, d) * d.bp;
         const y = yOf(sampleAtT(t));
         if (!open || xPlot < prevX - 0.5) {
           if (open) bx.stroke();
@@ -459,7 +513,7 @@
       let sampleAtT;
       if (waveKind === 'paw') {
         stroke = 'rgba(255, 220, 150, 0.65)';
-        sampleAtT = t => genPressure(t, dBase, mode);
+        sampleAtT = t => genPressure(t, dBase, mode, Rb);
       } else if (waveKind === 'flow') {
         stroke = 'rgba(160, 220, 255, 0.65)';
         sampleAtT = t => genFlow(t, dBase, mode, Rb);
@@ -480,7 +534,8 @@
       ctxDest.lineCap = 'round';
       ctxDest.beginPath();
       for (let i = 0; i < nPts; i++) {
-        const t = (i / nPts) * d.bp;
+        const u = i / nPts;
+        const t = sweepLinearToPhysPhase(u, d) * d.bp;
         const x = crisp(WAVE_PAD.l + (i / nSeg) * INNER_W);
         const y = yOf(sampleAtT(t));
         if (i === 0) ctxDest.moveTo(x, y);
@@ -491,10 +546,11 @@
       ctxDest.restore();
     }
 
-    function compositeWaveToScreen(bufEl, ctxDest, lo, hi, waveKind, sweepPx) {
+    function compositeWaveToScreen(bufEl, ctxDest, lo, hi, waveKind, sweepPx, d) {
       ctxDest.fillStyle = BG;
       ctxDest.fillRect(0, 0, WAVE_W, WAVE_H);
       drawGridIntoDest(ctxDest);
+      drawReferenceBaselines(ctxDest, waveKind, lo, hi, d);
       drawBaselineUnderlay(ctxDest, waveKind, lo, hi);
       ctxDest.drawImage(bufEl, 0, 0, WAVE_W, WAVE_H);
       const sx = cursorXFromSweepPx(sweepPx);
@@ -592,24 +648,25 @@
       const innerH = cssH - pad.t - pad.b;
       const dBase = calcDerived(vent, BASELINE_PATIENT);
 
-      function buildPts(dIn) {
+      function buildPts(dIn, R_pt) {
         const out = [];
         const steps = 160;
         const tf = dIn.ti / dIn.bp;
         for (let i = 0; i < steps; i++) {
-          const t = (i / steps) * dIn.bp;
+          const u = i / steps;
+          const t = sweepLinearToPhysPhase(u, dIn) * dIn.bp;
           const phase = (t % dIn.bp) / dIn.bp;
           const insp = phase < tf;
           out.push({
             v: genVolume(t, dIn, mode),
-            p: genPressure(t, dIn, mode),
+            p: genPressure(t, dIn, mode, R_pt),
             insp,
           });
         }
         return out;
       }
 
-      const pts = buildPts(d);
+      const pts = buildPts(d, patient.resistance);
       const maxV = Math.max(d.tv_mL, dBase.tv_mL, 1) * 1.15;
       const maxP = Math.max(d.pip, d.plat, dBase.pip, dBase.plat, 1) * 1.12;
       const xOf = v =>
@@ -664,7 +721,7 @@
       }
 
       if (patientDiffersFromBaseline()) {
-        const basePts = buildPts(dBase);
+        const basePts = buildPts(dBase, BASELINE_PATIENT.resistance);
         const bInsp = basePts.filter(pt => pt.insp);
         const bExp = basePts.filter(pt => !pt.insp);
         seg(bInsp, 'rgba(255, 210, 120, 0.75)', true, true);
@@ -673,12 +730,12 @@
       seg(inspPts, '#ffcc00', false, false);
       seg(expPts, '#00ccff', false, false);
 
-      const ph = ((sweepPhase % 1) + 1) % 1;
-      const tDot = ph * d.bp;
+      const uDot = ((sweepPhase % 1) + 1) % 1;
+      const tDot = sweepLinearToPhysPhase(uDot, d) * d.bp;
       const phaseNorm = (tDot % d.bp) / d.bp;
       const dotInsp = phaseNorm < d.ti / d.bp;
       const vd = genVolume(tDot, d, mode);
-      const pd = genPressure(tDot, d, mode);
+      const pd = genPressure(tDot, d, mode, patient.resistance);
       const xd = xOf(vd);
       const yd = yOf(pd);
       ctx.fillStyle = dotInsp ? '#ffcc00' : '#00ddff';
@@ -760,7 +817,7 @@
           fromPx,
           toPx,
           d,
-          t => genPressure(t, d, mode)
+          t => genPressure(t, d, mode, R)
         );
         drawSweepSegment(
           ctxBufFlow,
@@ -788,13 +845,13 @@
 
       if (showWaves) {
         if (els.cPaw && ctxPaw) {
-          compositeWaveToScreen(bufPawEl, ctxPaw, sweepRange.paw.lo, sweepRange.paw.hi, 'paw', newTotal);
+          compositeWaveToScreen(bufPawEl, ctxPaw, sweepRange.paw.lo, sweepRange.paw.hi, 'paw', newTotal, d);
         }
         if (els.cFlow && ctxFlow) {
-          compositeWaveToScreen(bufFlowEl, ctxFlow, sweepRange.flow.lo, sweepRange.flow.hi, 'flow', newTotal);
+          compositeWaveToScreen(bufFlowEl, ctxFlow, sweepRange.flow.lo, sweepRange.flow.hi, 'flow', newTotal, d);
         }
         if (els.cVol && ctxVol) {
-          compositeWaveToScreen(bufVolEl, ctxVol, sweepRange.vol.lo, sweepRange.vol.hi, 'vol', newTotal);
+          compositeWaveToScreen(bufVolEl, ctxVol, sweepRange.vol.lo, sweepRange.vol.hi, 'vol', newTotal, d);
         }
       }
       if (showPv && els.cPv && ctxPv) {
@@ -814,9 +871,9 @@
       const showPv = pvPanel && !pvPanel.hidden;
       const sweepPhase = (sweepTotalPx / CYCLE_W) % 1;
       if (showWaves && ctxBufPaw && ctxPaw) {
-        compositeWaveToScreen(bufPawEl, ctxPaw, sweepRange.paw.lo, sweepRange.paw.hi, 'paw', sweepTotalPx);
-        compositeWaveToScreen(bufFlowEl, ctxFlow, sweepRange.flow.lo, sweepRange.flow.hi, 'flow', sweepTotalPx);
-        compositeWaveToScreen(bufVolEl, ctxVol, sweepRange.vol.lo, sweepRange.vol.hi, 'vol', sweepTotalPx);
+        compositeWaveToScreen(bufPawEl, ctxPaw, sweepRange.paw.lo, sweepRange.paw.hi, 'paw', sweepTotalPx, d);
+        compositeWaveToScreen(bufFlowEl, ctxFlow, sweepRange.flow.lo, sweepRange.flow.hi, 'flow', sweepTotalPx, d);
+        compositeWaveToScreen(bufVolEl, ctxVol, sweepRange.vol.lo, sweepRange.vol.hi, 'vol', sweepTotalPx, d);
       }
       if (showPv && els.cPv && ctxPv) {
         drawPV(ctxPv, PV_W, PV_H, d, vent.mode, patient, sweepPhase);

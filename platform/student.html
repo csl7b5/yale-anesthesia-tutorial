@@ -61,6 +61,40 @@
 
     <div class="dash-section">
       <h2 class="dash-section__title">Account Settings</h2>
+      <p style="font-size:0.82rem;color:#58687a;margin:0 0 0.75rem">How you appear on your dashboard and to instructors.</p>
+      <form id="profile-form" style="display:flex;flex-direction:column;gap:0.5rem;max-width:420px;margin-bottom:1.25rem">
+        <label style="font-size:0.78rem;font-weight:600;color:#374151">Preferred name</label>
+        <input id="profile-name" type="text" maxlength="120" placeholder="Your name"
+               style="padding:0.45rem 0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.85rem;font-family:inherit" />
+        <label style="font-size:0.78rem;font-weight:600;color:#374151">School / program</label>
+        <input id="profile-school" type="text" maxlength="160" placeholder="e.g. Yale School of Medicine" list="profile-school-list"
+               style="padding:0.45rem 0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.85rem;font-family:inherit" />
+        <datalist id="profile-school-list">
+          <option value="Yale School of Medicine"></option>
+          <option value="Yale Physician Associate Program"></option>
+          <option value="Yale School of Nursing"></option>
+          <option value="Visiting / other institution"></option>
+        </datalist>
+        <label style="font-size:0.78rem;font-weight:600;color:#374151">Year / training</label>
+        <select id="profile-training"
+                style="padding:0.45rem 0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.85rem;font-family:inherit;max-width:100%">
+          <option value="">Not specified</option>
+          <option value="Pre-med">Pre-med</option>
+          <option value="Pre-Clinical">Pre-Clinical</option>
+          <option value="Clerkship">Clerkship</option>
+          <option value="Subintern/Advanced Rotations">Subintern/Advanced Rotations</option>
+          <option value="Research Year">Research Year</option>
+          <option value="Intern">Intern</option>
+          <option value="CA-1 and Beyond">CA-1 and Beyond</option>
+        </select>
+        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+          <button type="submit"
+                  style="padding:0.45rem 1rem;border:none;border-radius:6px;background:var(--accent);color:#fff;font-size:0.85rem;font-weight:600;font-family:inherit;cursor:pointer">
+            Save profile
+          </button>
+          <span id="profile-save-status" style="font-size:0.82rem"></span>
+        </div>
+      </form>
       <p style="font-size:0.82rem;color:#58687a;margin:0 0 0.6rem">Set or update your password so you can sign in without a magic link.</p>
       <form id="set-pw-form" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap">
         <input id="new-pw" type="password" placeholder="New password (min 6 chars)" minlength="6" required
@@ -88,6 +122,44 @@
         'Welcome back, ' + (profile.display_name || 'Student');
       const meta = [profile.institution, profile.training_level].filter(Boolean).join(' · ');
       document.getElementById('welcome-meta').textContent = meta;
+
+      document.getElementById('profile-name').value = profile.display_name || '';
+      document.getElementById('profile-school').value = profile.institution || '';
+
+      (function initTrainingSelect() {
+        const sel = document.getElementById('profile-training');
+        const allowed = Array.from(sel.options)
+          .map(o => o.value)
+          .filter(Boolean);
+        const tl = profile.training_level;
+        sel.value = tl && allowed.includes(tl) ? tl : '';
+      })();
+
+      document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('profile-name').value.trim();
+        const school = document.getElementById('profile-school').value.trim();
+        const training = document.getElementById('profile-training').value.trim();
+        const st = document.getElementById('profile-save-status');
+        st.textContent = 'Saving…';
+        st.style.color = '#58687a';
+        const { error } = await SB.updateProfile({
+          display_name: name || null,
+          institution: school || 'Yale',
+          training_level: training || null,
+        });
+        if (error) {
+          st.textContent = error.message || 'Could not save';
+          st.style.color = '#d44';
+          return;
+        }
+        st.textContent = 'Saved.';
+        st.style.color = '#2a7';
+        document.getElementById('welcome-name').textContent =
+          'Welcome back, ' + (name || 'Student');
+        const m = [school || 'Yale', training].filter(Boolean).join(' · ');
+        document.getElementById('welcome-meta').textContent = m;
+      });
 
       // Fetch completed scenarios
       const { data: attempts } = await SB.client
