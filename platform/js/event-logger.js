@@ -336,6 +336,8 @@
           event_type: 'controlled_cell_open',
           item_type: 'medication',
           item_id: medId || (idx != null ? 'controlled_idx_' + idx : null),
+          drawer_type: 'cabinet',
+          drawer_id: 'controlled_rack',
           extra: { controlled_index: idx != null ? parseInt(idx, 10) : null },
         });
       });
@@ -348,18 +350,39 @@
       const tile = medTile || equipTile;
       if (!tile) return;
       const type = medTile ? 'medication' : 'equipment';
-      const itemId = medTile ? tile.dataset.medId : tile.dataset.itemId;
+      const itemId =
+        (medTile && (medTile.dataset.medId || medTile.getAttribute('data-med-id'))) ||
+        (equipTile && (equipTile.dataset.itemId || equipTile.getAttribute('data-item-id'))) ||
+        '';
       if (!itemId) return;
       const key = type + '_' + itemId;
       const isRepeat = viewedItems.has(key);
       viewedItems.add(key);
       detailItemId = itemId;
+      const itemName =
+        tile.querySelector('.med-tile__name, .equip-tile__name')?.textContent?.trim() || null;
+      const modalContentsEl = document.getElementById('modal-contents');
+      const ctxActive =
+        modalContentsEl &&
+        modalContentsEl.open &&
+        contentsCtx &&
+        contentsCtx.drawerId != null
+          ? contentsCtx
+          : null;
       logPyxis({
         event_type: 'item_detail_view',
         item_type: type,
         item_id: itemId,
+        drawer_id: ctxActive ? ctxActive.drawerId : null,
+        drawer_type: ctxActive ? ctxActive.drawerType : null,
         is_repeat: isRepeat,
         session_unique_items: viewedItems.size,
+        extra: Object.assign(
+          { item_name: itemName },
+          ctxActive
+            ? { parent_drawer_id: ctxActive.drawerId, parent_drawer_type: ctxActive.drawerType }
+            : {},
+        ),
       });
     });
 
@@ -369,9 +392,20 @@
         detailTimer = Date.now();
       } else if (detailTimer != null) {
         const dwell = Math.round((Date.now() - detailTimer) / 1000);
+        const mc = document.getElementById('modal-contents');
+        const id = detailItemId || '';
+        const fromDrawerGrid =
+          mc &&
+          mc.open &&
+          contentsCtx &&
+          id &&
+          !String(id).startsWith('supply:') &&
+          id !== 'volatile_agents';
         logPyxis({
           event_type: 'item_detail_dwell',
           item_id: detailItemId || null,
+          drawer_id: fromDrawerGrid ? contentsCtx.drawerId : null,
+          drawer_type: fromDrawerGrid ? contentsCtx.drawerType : null,
           dwell_seconds: dwell,
         });
         detailTimer = null;
@@ -382,6 +416,8 @@
       logPyxis({
         event_type: 'back_to_drawer',
         item_id: detailItemId || null,
+        drawer_id: contentsCtx ? contentsCtx.drawerId : null,
+        drawer_type: contentsCtx ? contentsCtx.drawerType : null,
       });
     });
 

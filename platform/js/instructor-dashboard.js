@@ -46,6 +46,58 @@
     return row ? row.label : (drawerId || '—');
   }
 
+  /** Pretty-print stored item ids (metoprolol → Metoprolol) when we don't load data.js */
+  function formatItemIdLabel(itemId) {
+    if (!itemId) return '—';
+    if (String(itemId).startsWith('supply:')) return itemId.slice(7).replace(/-/g, ' ');
+    return String(itemId)
+      .replace(/_/g, ' ')
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  function parseExtra(ex) {
+    if (ex == null) return {};
+    if (typeof ex === 'string') {
+      try {
+        return JSON.parse(ex);
+      } catch {
+        return {};
+      }
+    }
+    return typeof ex === 'object' ? ex : {};
+  }
+
+  /** Parent drawer / context for an item event (DB columns or legacy extra.*) */
+  function getItemParentLabel(e) {
+    if (e.drawer_type === 'cabinet' && e.drawer_id === 'controlled_rack') {
+      return 'Controlled substance rack';
+    }
+    if (e.drawer_type && e.drawer_id) {
+      return getDrawerLabel(e.drawer_type, e.drawer_id);
+    }
+    const ex = parseExtra(e.extra);
+    if (ex.parent_drawer_type && ex.parent_drawer_id) {
+      return getDrawerLabel(ex.parent_drawer_type, ex.parent_drawer_id);
+    }
+    return '—';
+  }
+
+  function getItemDisplayName(e) {
+    const ex = parseExtra(e.extra);
+    if (ex.item_name && String(ex.item_name).trim()) return String(ex.item_name).trim();
+    return formatItemIdLabel(e.item_id);
+  }
+
+  /** Match item_detail_dwell to item rows: drawer + item_id (type not stored on dwell) */
+  function dwellTripleKey(e) {
+    return [e.drawer_type || '', e.drawer_id || '', e.item_id || ''].join('::');
+  }
+
+  function viewAggKey(e) {
+    return [e.drawer_type || '', e.drawer_id || '', e.item_type || '', e.item_id || ''].join('::');
+  }
+
   /* ── DOM refs ───────────────────────────────────────────────────────── */
   const $  = (id) => document.getElementById(id);
   const $$ = (sel) => document.querySelectorAll(sel);
@@ -491,6 +543,58 @@
       }
       pyxisHtml += '</tbody></table>';
     }
+
+    const upxDwell = upx.filter(e => e.event_type === 'item_detail_dwell' && e.item_id && e.dwell_seconds != null);
+    const dwellL = {};
+    for (const ev of upxDwell) {
+      const tk = dwellTripleKey(ev);
+      if (!dwellL[tk]) dwellL[tk] = [];
+      dwellL[tk].push(ev.dwell_seconds);
+    }
+    const byIL = {};
+    function bumpL(e, isControlled) {
+      const k = viewAggKey(e);
+      if (!byIL[k]) {
+        byIL[k] = {
+          sample: e,
+          item_type: e.item_type || (isControlled ? 'medication' : ''),
+          item_id: e.item_id,
+          views: 0,
+          repeats: 0,
+        };
+      }
+      byIL[k].views++;
+      if (e.is_repeat === true || e.is_repeat === 'true') byIL[k].repeats++;
+    }
+    for (const e of upx.filter(x => x.event_type === 'item_detail_view' && x.item_id)) bumpL(e, false);
+    for (const e of upx.filter(x => x.event_type === 'controlled_cell_open' && x.item_id)) bumpL(e, true);
+    const itemSorted = Object.values(byIL).sort((a, b) => b.views - a.views);
+
+    pyxisHtml += '<h3 class="dash-section__title" style="margin:1rem 0 0.5rem;font-size:0.85rem">Medications &amp; equipment (detail modals)</h3>';
+    if (!itemSorted.length) {
+      pyxisHtml +=
+        '<p class="dash-empty">No per-item opens in this range (signed-in Pyxis use only).</p>';
+    } else {
+      pyxisHtml +=
+        '<table class="inst-table"><thead><tr><th>Parent context</th><th>Item</th><th>Type</th><th>ID</th><th>Views</th><th>Repeats</th><th>Median dwell (s)</th></tr></thead><tbody>';
+      for (const r of itemSorted) {
+        const ev = r.sample;
+        const tk = dwellTripleKey(ev);
+        const dl = dwellL[tk];
+        const md = dl && dl.length ? median(dl).toFixed(1) : '—';
+        pyxisHtml += `<tr>
+          <td>${esc(getItemParentLabel(ev))}</td>
+          <td><strong>${esc(getItemDisplayName(ev))}</strong></td>
+          <td>${esc(r.item_type || '—')}</td>
+          <td><code style="font-size:0.78rem">${esc(r.item_id)}</code></td>
+          <td>${r.views}</td>
+          <td>${r.repeats}</td>
+          <td>${md}</td>
+        </tr>`;
+      }
+      pyxisHtml += '</tbody></table>';
+    }
+
     $('learner-pyxis').innerHTML = pyxisHtml;
   }
 
@@ -586,6 +690,67 @@
       }
       bhtml += '</tbody></table>';
       $('pyxis-supply-table').innerHTML = bhtml;
+    }
+
+    // Per-medication / per-equipment: item_detail_view + controlled_cell_open, keyed by drawer + type + id
+    const itemDetailEv = fpx.filter(e => e.event_type === 'item_detail_view' && e.item_id);
+    const controlledEv = fpx.filter(e => e.event_type === 'controlled_cell_open' && e.item_id);
+    const dwellEv = fpx.filter(e => e.event_type === 'item_detail_dwell' && e.item_id && e.dwell_seconds != null);
+    const dwellByTriple = {};
+    for (const ev of dwellEv) {
+      const tk = dwellTripleKey(ev);
+      if (!dwellByTriple[tk]) dwellByTriple[tk] = [];
+      dwellByTriple[tk].push(ev.dwell_seconds);
+    }
+
+    const byItemAgg = {};
+    function bumpViewRow(e, isControlled) {
+      const k = viewAggKey(e);
+      if (!byItemAgg[k]) {
+        byItemAgg[k] = {
+          sample: e,
+          item_type: e.item_type || (isControlled ? 'medication' : ''),
+          item_id: e.item_id,
+          views: 0,
+          users: new Set(),
+          repeats: 0,
+        };
+      }
+      byItemAgg[k].views++;
+      byItemAgg[k].users.add(e.user_id);
+      if (e.is_repeat === true || e.is_repeat === 'true') byItemAgg[k].repeats++;
+    }
+    for (const e of itemDetailEv) bumpViewRow(e, false);
+    for (const e of controlledEv) bumpViewRow(e, true);
+
+    const itemRows = Object.values(byItemAgg).sort((a, b) => b.views - a.views);
+    if (!itemRows.length) {
+      $('pyxis-items-table').innerHTML =
+        '<p class="dash-empty">No per-item data yet. Students must be <strong>signed in</strong> and open a drug or equipment tile (e.g. Metoprolol) from a drawer. If the table stays empty, confirm migration <code>012_create_pyxis_events.sql</code> is applied in Supabase.</p>';
+    } else {
+      let ihtml =
+        '<table class="inst-table"><thead><tr><th>Parent drawer / context</th><th>Item</th><th>Type</th><th>ID</th><th>Views</th><th>Learners</th><th>Repeat views</th><th>Median modal dwell (s)</th></tr></thead><tbody>';
+      for (const r of itemRows) {
+        const ev = r.sample;
+        const parent = esc(getItemParentLabel(ev));
+        const name = esc(getItemDisplayName(ev));
+        const tk = dwellTripleKey(ev);
+        const dwellList = dwellByTriple[tk];
+        const medDwell =
+          dwellList && dwellList.length ? median(dwellList).toFixed(1) : '—';
+        ihtml += `<tr>
+          <td>${parent}</td>
+          <td><strong>${name}</strong></td>
+          <td>${esc(r.item_type || '—')}</td>
+          <td><code style="font-size:0.78rem">${esc(r.item_id)}</code></td>
+          <td>${r.views}</td>
+          <td>${r.users.size}</td>
+          <td>${r.repeats}</td>
+          <td>${medDwell}</td>
+        </tr>`;
+      }
+      ihtml += '</tbody></table>';
+      $('pyxis-items-table').innerHTML = ihtml;
     }
   }
 
