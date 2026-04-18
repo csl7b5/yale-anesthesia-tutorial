@@ -1438,7 +1438,8 @@
      AI CHAT
      ───────────────────────────────────────────────────────────────────────── */
   function initVentChat() {
-    var AUTH_URL = 'platform/auth.html';
+    var AUTH_URL =
+      location.pathname.indexOf('/ventilator') >= 0 ? '../platform/auth.html' : 'platform/auth.html';
 
     var panel      = document.getElementById('chat-panel');
     var messagesEl = document.getElementById('chat-messages');

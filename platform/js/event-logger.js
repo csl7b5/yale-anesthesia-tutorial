@@ -28,13 +28,18 @@
 
   // ── Auth-aware nav ──────────────────────────────────────────────────────
 
+  function platformDashPrefix() {
+    return location.pathname.indexOf('/ventilator') >= 0 ? '../platform/' : 'platform/';
+  }
+
   function updateNav(user, role) {
     const signInLinks = document.querySelectorAll('.site-nav__tab--signin');
+    const pre = platformDashPrefix();
     signInLinks.forEach(link => {
       if (user) {
         const dest = (role === 'instructor' || role === 'admin')
-          ? 'platform/instructor.html'
-          : 'platform/student.html';
+          ? pre + 'instructor.html'
+          : pre + 'student.html';
         link.href = dest;
         link.textContent = 'My Dashboard';
       }

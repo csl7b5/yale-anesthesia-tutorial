@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      var p = location.pathname;
+      var href = "/";
+      if (p.indexOf("/yale-anesthesia-tutorial/") === 0 || p === "/yale-anesthesia-tutorial") {
+        href = "/yale-anesthesia-tutorial/";
+      }
+      var b = document.createElement("base");
+      b.href = href;
+      var first = document.head.firstChild;
+      document.head.insertBefore(b, first ? first.nextSibling : null);
+    })();
+  </script>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5K3TTD09E"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E5K3TTD09E');
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Interactive ventilator simulator for Yale anesthesia students. Practice VCV and PCV modes, work through clinical scenarios, and learn monitor interpretation." />
+  <title>Interactive Ventilator — Anesthesia Playground, Yale School of Medicine</title>
+  <link rel="canonical" href="https://anesthesia.guide/ventilator/" />
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://anesthesia.guide/ventilator/" />
+  <meta property="og:title"       content="Interactive Ventilator — Anesthesia Playground, Yale School of Medicine" />
+  <meta property="og:description" content="Practice ventilator management with realistic clinical scenarios and interactive monitor tutorials." />
+  <meta property="og:site_name"   content="Yale Anesthesia Playground" />
+  <meta property="og:image"       content="https://anesthesia.guide/bannerimage.png" />
+  <meta property="og:image:width"  content="924" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"   content="Interactive ventilator simulator — Anesthesia Playground" />
+  <!-- Twitter/X Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Interactive Ventilator — Yale Anesthesia Playground" />
+  <meta name="twitter:description" content="Practice ventilator management with realistic clinical scenarios." />
+  <meta name="twitter:image"       content="https://anesthesia.guide/bannerimage.png" />
+  <link rel="icon" href="../favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="../css/ventilator.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://anesthesia.guide/#website",
+        "name": "Yale Anesthesia Playground",
+        "alternateName": "Anesthesia Playground",
+        "url": "https://anesthesia.guide/",
+        "description": "Interactive anesthesia learning tool for Yale medical students.",
+        "inLanguage": "en-US"
+      },
+      {
+        "@type": "LearningResource",
+        "@id": "https://anesthesia.guide/ventilator/#resource",
+        "url": "https://anesthesia.guide/ventilator/",
+        "name": "Interactive Ventilator — Anesthesia Playground, Yale School of Medicine",
+        "description": "Interactive ventilator simulator for Yale anesthesia students. Practice VCV and PCV modes, work through clinical scenarios, and learn monitor interpretation.",
+        "learningResourceType": "Simulation",
+        "educationalLevel": "Medical student",
+        "isPartOf": { "@id": "https://anesthesia.guide/#website" }
+      }
+    ]
+  }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+</head>
+<body class="vent-page">
+<div class="app">
+
+  <!-- ── Navigation ──────────────────────────────────────────────────────── -->
+  <nav class="site-nav" aria-label="Site navigation">
+    <div class="site-nav__inner">
+      <span class="site-nav__brand">
+        <img src="../favicon.png" alt="" class="site-nav__brand-logo" width="42" height="42" decoding="async" />
+        Anesthesia Playground
+      </span>
+      <div class="site-nav__tabs" role="tablist">
+        <a href="../pyxis/" class="site-nav__tab" role="tab" aria-selected="false">Interactive Pyxis</a>
+        <a href="../ventilator/" class="site-nav__tab site-nav__tab--active" role="tab" aria-selected="true">Interactive Ventilator</a>
+        <a href="../teams/" class="site-nav__tab" role="tab" aria-selected="false">Meet Your Team</a>
+        <a href="../platform/auth.html" class="site-nav__tab site-nav__tab--signin" role="tab" aria-selected="false">Sign In</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Workstation ─────────────────────────────────────────────────────── -->
+  <main class="vent-workstation" aria-label="Anesthesia workstation simulation">
+
+    <!-- Intro card -->
+    <div class="vent-intro-card">
+      <h1>Interactive Ventilator</h1>
+      <p>
+        An <strong class="vent-intro-card__accent">anesthesia workstation simulator</strong> for medical students learning ventilator and anesthetic physiology.
+        This is a <strong class="vent-intro-card__accent">work-in-progress</strong>. We are constantly improving the model, fine-tuning dynamics, and pursuing clinical reality.
+      </p>
+    </div>
+
+    <!-- Alarm banner -->
+    <div class="vent-alarm-banner" id="alarm-banner" aria-live="polite"></div>
+
+    <!-- Workstation grid: Vitals | BIS+Vent | Controls -->
+    <div class="workstation-grid">
+
+      <!-- ════════════════════════════════════════════════════════════════════
+           VITALS MONITOR  (left, large)
+           ════════════════════════════════════════════════════════════════════ -->
+      <section class="mon-shell mon-shell--vitals" aria-label="Patient vitals monitor">
+        <div class="mon-bezel">
+          <div class="mon-brand">GE Datex-Ohmeda · Patient Monitor</div>
+          <div class="mon-screen" id="vitals-screen">
+
+            <!-- ECG row -->
+            <div class="wave-row" data-color="#00e676">
+              <div class="wave-tag" style="color:#00e676">II</div>
+              <canvas class="wave-canvas" id="canvas-ecg"></canvas>
+              <button class="wave-num wave-num--trig" style="color:#00e676" id="trig-ecg" aria-label="Open ECG tutorial" title="Click to learn about ECG">
+                <div class="wn-big" id="num-hr">72</div>
+                <div class="wn-unit">HR bpm</div>
+                <div class="wn-st">
+                  <span id="st-ii">II: 0.0</span>
+                  <span id="st-v5">V5: 0.0</span>
+                  <span id="st-avf">aVF: 0.1</span>
+                </div>
+                <div class="wn-trig-hint">▶ Learn</div>
+              </button>
+            </div>
+
+            <!-- ABP row -->
+            <div class="wave-row" data-color="#ff4c4c">
+              <div class="wave-tag" style="color:#ff4c4c">ABP</div>
+              <canvas class="wave-canvas" id="canvas-abp"></canvas>
+              <button class="wave-num wave-num--trig" style="color:#ff4c4c" id="trig-abp" aria-label="Open A-line tutorial" title="Click to learn about arterial lines">
+                <div class="wn-big" id="num-abp-sys">118</div>
+                <div class="wn-sub" id="num-abp-map">/ 72 (88)</div>
+                <div class="wn-unit">mmHg</div>
+                <div class="wn-trig-hint">▶ Learn</div>
+              </button>
+            </div>
+
+            <!-- SpO2 row -->
+            <div class="wave-row" data-color="#00e5ff">
+              <div class="wave-tag" style="color:#00e5ff">SpO₂</div>
+              <canvas class="wave-canvas" id="canvas-spo2"></canvas>
+              <button class="wave-num wave-num--trig" style="color:#00e5ff" id="trig-spo2" aria-label="Open SpO2 tutorial" title="Click to learn about pulse oximetry">
+                <div class="wn-big" id="num-spo2">99</div>
+                <div class="wn-unit">SpO₂ %</div>
+                <div class="wn-trig-hint">▶ Learn</div>
+              </button>
+            </div>
+
+            <!-- EtCO2 row -->
+            <div class="wave-row" data-color="#ffee00">
+              <div class="wave-tag" style="color:#ffee00">CO₂</div>
+              <canvas class="wave-canvas" id="canvas-etco2"></canvas>
+              <button class="wave-num wave-num--trig" style="color:#ffee00" id="trig-etco2" aria-label="Open capnography tutorial" title="Click to learn about capnography">
+                <div class="wn-big" id="num-etco2">36</div>
+                <div class="wn-unit">EtCO₂ mmHg</div>
+                <div class="wn-rr" id="num-rr">RR 12</div>
+                <div class="wn-trig-hint">▶ Learn</div>
+              </button>
+            </div>
+
+            <!-- Bottom bar: NIBP · Temp · Gas -->
+            <div class="vitals-bar">
+              <div class="vb-cell">
+                <div class="vb-label">NIBP</div>
+                <div class="vb-val vb-val--red">
+                  <span id="nibp-sys">118</span>/<span id="nibp-dia">72</span>
+                </div>
+                <div class="vb-map">(<span id="nibp-map">88</span>)</div>
+                <div class="vb-unit">mmHg</div>
+              </div>
+              <div class="vb-cell">
+                <div class="vb-label">TEMP</div>
+                <div class="vb-val"><span id="num-temp">36.8</span></div>
+                <div class="vb-unit">°C</div>
+              </div>
+              <div class="vb-cell vb-cell--gas">
+                <div class="vb-label">GAS / AGENT</div>
+                <div class="vb-gas-row"><span class="vbg-k">MAC</span><span class="vbg-v" id="num-mac">0.95</span></div>
+                <div class="vb-gas-row"><span class="vbg-k">EtO₂</span><span class="vbg-v" id="num-eto2">52%</span></div>
+                <div class="vb-gas-row"><span class="vbg-k">Sevo</span><span class="vbg-v" id="num-sevo">2.1%</span></div>
+              </div>
+            </div>
+
+          </div><!-- /mon-screen -->
+        </div><!-- /mon-bezel -->
+      </section>
+
+      <!-- ════════════════════════════════════════════════════════════════════
+           MIDDLE COLUMN  (BIS + Ventilator)
+           ════════════════════════════════════════════════════════════════════ -->
+      <div class="mid-col">
+
+        <!-- ── BIS Monitor ────────────────────────────────────────────────── -->
+        <section class="mon-shell mon-shell--bis" aria-label="BIS monitor">
+          <div class="mon-bezel">
+            <div class="mon-brand">Aspect Medical · BIS Monitor</div>
+            <div class="mon-screen" id="bis-screen">
+              <div class="bis-top">
+                <div class="bis-left">
+                  <button type="button" class="bis-trig" id="trig-bis" aria-label="Open BIS tutorial" title="Click to learn about BIS">
+                    <div class="bis-num" id="num-bis">46</div>
+                    <div class="bis-label">BIS</div>
+                    <div class="bis-meta">
+                      <span id="bis-sr">SR 0%</span> · <span id="bis-emg">EMG 42dB</span>
+                    </div>
+                    <div class="bis-trig-hint">▶ Learn</div>
+                  </button>
+                </div>
+                <div class="bis-right">
+                  <div class="bis-eeg-tag">EEG</div>
+                  <canvas id="canvas-eeg"></canvas>
+                </div>
+              </div>
+              <div class="bis-spectral-wrap">
+                <canvas id="canvas-spectral"></canvas>
+                <div class="spectral-axis">
+                  <span>δ 1–4 Hz</span><span>θ 4–8 Hz</span><span>α 8–13 Hz</span><span>β 13–30 Hz</span>
+                </div>
+                <button type="button" class="bis-spectral-trig" id="trig-spectral" aria-label="Open spectral heatmap tutorial" title="Interactive δ θ α β heatmap">▶ Spectral heatmap</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Ventilator Monitor ─────────────────────────────────────────── -->
+        <section class="mon-shell mon-shell--vent" aria-label="Ventilator monitor">
+          <div class="mon-bezel">
+            <div class="mon-brand">Dräger Zeus · Ventilator</div>
+            <div class="mon-screen" id="vent-screen">
+
+              <div class="vent-top">
+
+                <!-- Waveforms -->
+                <div class="vent-waves">
+                  <div class="vent-wave-row">
+                    <div class="vent-wave-lbl" style="color:#ffcc00">Paw<br><small>cmH₂O</small></div>
+                    <canvas id="canvas-pressure"></canvas>
+                  </div>
+                  <div class="vent-wave-row">
+                    <div class="vent-wave-lbl" style="color:#00ccff">Flow<br><small>L/min</small></div>
+                    <canvas id="canvas-flow"></canvas>
+                  </div>
+                  <div class="vent-wave-row">
+                    <div class="vent-wave-lbl" style="color:#00ff99">Vol<br><small>mL</small></div>
+                    <canvas id="canvas-volume"></canvas>
+                  </div>
+                </div>
+
+                <!-- Numeric panel -->
+                <div class="vent-nums">
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">TVset</div><div class="vn-val" id="vn-tv-set">480</div><div class="vn-unit">mL</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">TVexp</div><div class="vn-val" id="vn-tv-exp">478</div><div class="vn-unit">mL</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">RR</div><div class="vn-val" id="vn-rr">12</div><div class="vn-unit">br/min</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">MV</div><div class="vn-val" id="vn-mv">5.8</div><div class="vn-unit">L/min</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">PIP</div><div class="vn-val" id="vn-pip">22</div><div class="vn-unit">cmH₂O</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">Pplat</div><div class="vn-val" id="vn-plat">18</div><div class="vn-unit">cmH₂O</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">PEEP</div><div class="vn-val" id="vn-peep">5</div><div class="vn-unit">cmH₂O</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">Pmean</div><div class="vn-val" id="vn-pmean">10</div><div class="vn-unit">cmH₂O</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell"><div class="vn-lbl">FiO₂</div><div class="vn-val" id="vn-fio2">50%</div></div>
+                    <div class="vn-cell"><div class="vn-lbl">EtCO₂</div><div class="vn-val" id="vn-etco2-vent">36</div><div class="vn-unit">mmHg</div></div>
+                  </div>
+                  <div class="vn-pair">
+                    <div class="vn-cell" title="Auto-PEEP: air trapping when expiratory time is too short">
+                      <div class="vn-lbl">autoPEEP</div><div class="vn-val vn-val--warn" id="vn-autoPEEP">0</div><div class="vn-unit">cmH₂O</div>
+                    </div>
+                    <div class="vn-cell" title="RC expiratory time constant = Resistance × Compliance">
+                      <div class="vn-lbl">τ exp</div><div class="vn-val" id="vn-tau">0.25</div><div class="vn-unit">s</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- P-V Loop -->
+              <div class="vent-pv-row">
+                <div class="vent-pv-label">
+                  <span>P-V</span><span class="vent-pv-sublabel">Loop</span>
+                </div>
+                <canvas id="canvas-pv"></canvas>
+                <div class="pv-legend">
+                  <span class="pv-leg-item" style="color:#ffcc00">▸ Insp</span>
+                  <span class="pv-leg-item" style="color:#00ccff">◂ Exp</span>
+                </div>
+              </div>
+
+              <!-- Mode bar -->
+              <div class="vent-mode-bar">
+                <span class="mode-chip" id="mode-chip">VC-CMV</span>
+                <span class="mode-detail" id="mode-detail">TV 480 mL · RR 12 · PEEP 5 · FiO₂ 50%</span>
+                <button type="button" class="vent-wave-tut-trig" id="trig-ventwaves" aria-label="Open Paw, Flow, Volume and P–V loop tutorial" title="Interactive waveforms and mechanics">▶ Waveforms &amp; P–V</button>
+              </div>
+
+            </div><!-- /mon-screen -->
+          </div>
+        </section>
+
+      </div><!-- /mid-col -->
+
+      <!-- ════════════════════════════════════════════════════════════════════
+           RIGHT COLUMN  (Controls)
+           ════════════════════════════════════════════════════════════════════ -->
+      <div class="ctrl-col">
+
+      <!-- Ventilator Settings -->
+      <div class="ctrl-card">
+        <div class="ctrl-card__title">Ventilator Settings</div>
+
+        <div class="mode-toggle">
+          <button class="mode-btn mode-btn--on" id="btn-vc" type="button">Volume Control</button>
+          <button class="mode-btn" id="btn-pc" type="button">Pressure Control</button>
+        </div>
+
+        <!-- VC-only -->
+        <div id="vc-only">
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Tidal Volume (mL)</label>
+            <input type="range" class="ctrl-range" id="sl-tv" min="200" max="800" step="10" value="480" />
+            <span class="ctrl-val" id="lbl-tv">480</span>
+          </div>
+        </div>
+
+        <!-- PC-only -->
+        <div id="pc-only" hidden>
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Insp. Pressure above PEEP (cmH₂O)</label>
+            <input type="range" class="ctrl-range" id="sl-pip" min="5" max="40" step="1" value="10" />
+            <span class="ctrl-val" id="lbl-pip">10</span>
+          </div>
+        </div>
+
+        <!-- Shared sliders -->
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Resp. Rate (br/min)</label>
+          <input type="range" class="ctrl-range" id="sl-rr" min="4" max="30" step="1" value="12" />
+          <span class="ctrl-val" id="lbl-rr">12</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">PEEP (cmH₂O)</label>
+          <input type="range" class="ctrl-range" id="sl-peep" min="0" max="20" step="1" value="5" />
+          <span class="ctrl-val" id="lbl-peep">5</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">FiO₂ (%)</label>
+          <input type="range" class="ctrl-range" id="sl-fio2" min="21" max="100" step="1" value="50" />
+          <span class="ctrl-val" id="lbl-fio2">50</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Inspiratory Time (s)</label>
+          <input type="range" class="ctrl-range" id="sl-ti" min="0.4" max="2.5" step="0.1" value="1.0" />
+          <span class="ctrl-val" id="lbl-ti">1.0</span>
+        </div>
+      </div>
+
+      <!-- Patient Physiology -->
+      <div class="ctrl-card">
+        <div class="ctrl-card__title">Patient Physiology</div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Compliance (mL/cmH₂O)</label>
+          <input type="range" class="ctrl-range" id="sl-compliance" min="10" max="100" step="5" value="50" />
+          <span class="ctrl-val" id="lbl-compliance">50</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Resistance (cmH₂O/L/s)</label>
+          <input type="range" class="ctrl-range" id="sl-resistance" min="2" max="30" step="1" value="5" />
+          <span class="ctrl-val" id="lbl-resistance">5</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">CO₂ Production (mL/min)</label>
+          <input type="range" class="ctrl-range" id="sl-co2prod" min="50" max="500" step="10" value="200" />
+          <span class="ctrl-val" id="lbl-co2prod">200</span>
+        </div>
+        <div class="ctrl-row">
+          <label class="ctrl-lbl">Circuit Leak (%)</label>
+          <input type="range" class="ctrl-range" id="sl-leak" min="0" max="50" step="1" value="0" />
+          <span class="ctrl-val" id="lbl-leak">0</span>
+        </div>
+      </div>
+
+      <!-- Alarms -->
+      <div class="ctrl-card ctrl-card--alarms">
+        <div class="ctrl-card__title">Active Alarms</div>
+        <div class="alarm-list" id="alarm-list">
+          <div class="alarm-none">No active alarms</div>
+        </div>
+      </div>
+
+      <!-- Train-of-Four mini card -->
+      <div class="ctrl-card ctrl-card--tof" id="tof-card" tabindex="0" role="button" aria-label="Open Train-of-Four tutorial monitor">
+        <div class="ctrl-card__title tof-card-title">
+          Train-of-Four
+          <span class="tof-mini-badge" id="tof-mini-badge">4/4</span>
+        </div>
+        <canvas class="tof-mini-canvas" id="tof-mini-canvas" height="40"></canvas>
+        <div class="tof-mini-footer">
+          <span class="tof-mini-depth tof-depth--ok" id="tof-mini-depth">No Block</span>
+          <span class="tof-mini-hint">↗ Open tutorial</span>
+        </div>
+      </div>
+
+      </div><!-- /ctrl-col -->
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         TRAIN-OF-FOUR MODAL
+         ══════════════════════════════════════════════════════════════════════ -->
+    <dialog class="tof-modal" id="tof-modal">
+      <div class="tof-modal-inner">
+        <div class="tof-modal-header">
+          <div class="tof-modal-title-block">
+            <span class="tof-device-brand">NMT Monitor · Train-of-Four</span>
+            <span class="tof-device-sub">Peripheral Nerve Stimulator — Educational Tutorial</span>
+          </div>
+          <button class="tof-close-btn" id="tof-close-btn" type="button">✕</button>
+        </div>
+
+        <div class="tof-modal-body">
+
+          <!-- LEFT: trace + numerics + interpretation -->
+          <div class="tof-left">
+            <div class="tof-screen">
+              <canvas id="tof-canvas" height="130"></canvas>
+            </div>
+            <div class="tof-numerics">
+              <div class="tof-num-cell">
+                <div class="tof-num-label">TOF Count</div>
+                <div class="tof-num-value" id="tof-count">4/4</div>
+              </div>
+              <div class="tof-num-cell">
+                <div class="tof-num-label">TOF Ratio</div>
+                <div class="tof-num-value" id="tof-ratio">1.00</div>
+              </div>
+              <div class="tof-num-cell tof-num-cell--depth">
+                <div class="tof-num-label">Block Depth</div>
+                <div class="tof-depth-badge tof-depth--ok" id="tof-depth">No Block</div>
+              </div>
+            </div>
+            <div class="tof-interp" id="tof-interp">
+              No meaningful neuromuscular blockade. Normal response.
+            </div>
+          </div>
+
+          <!-- RIGHT: controls + explainer + quiz -->
+          <div class="tof-right">
+
+            <div class="tof-controls-section">
+              <div class="tof-section-title">Block State</div>
+              <div class="tof-btns" id="tof-preset-btns"><!-- injected by JS --></div>
+            </div>
+
+            <div class="tof-controls-section">
+              <div class="tof-section-title">Drug Demonstration</div>
+              <div class="tof-btns" id="tof-drug-btns"><!-- injected by JS --></div>
+            </div>
+
+            <div class="tof-explainer">
+              <div class="tof-explainer-title">What is Train-of-Four?</div>
+              <div class="tof-explainer-text">
+                Four supramaximal stimuli at 2 Hz are applied to a peripheral nerve (usually the ulnar nerve at the wrist).
+                The resulting muscle twitches are measured. <strong>Fade</strong> — where later twitches are progressively weaker — is the hallmark of nondepolarizing blockade.
+                The <strong>TOF ratio</strong> (T4 ÷ T1) below 0.9 indicates residual paralysis even when all four twitches are visible.
+              </div>
+            </div>
+
+            <div class="tof-quiz-wrap">
+              <div class="tof-quiz" id="tof-quiz"><!-- injected by JS --></div>
+            </div>
+
+          </div><!-- /tof-right -->
+        </div><!-- /tof-modal-body -->
+      </div><!-- /tof-modal-inner -->
+    </dialog>
+
+    </div><!-- /workstation-grid -->
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         CLINICAL SCENARIOS
+         ══════════════════════════════════════════════════════════════════════ -->
+    <div class="scenario-trigger-row">
+      <button id="scenario-open-btn" class="scenario-trigger-btn" type="button">
+        ▶ Clinical Scenarios — Test Your Knowledge
+      </button>
+    </div>
+
+    <div class="scenario-panel" id="scenario-panel" hidden>
+
+      <!-- Scenario selection view -->
+      <div id="scen-select">
+        <div class="scen-select__header">
+          <h2>Clinical Scenarios</h2>
+          <p>Each scenario initializes the monitors to reflect a real clinical situation.
+             Answer the questions to guide management — the monitors will respond to your choices.</p>
+          <button class="scen-close-btn" id="scen-panel-close-btn" type="button">✕</button>
+        </div>
+        <div class="scen-cards" id="scen-cards"><!-- injected by JS --></div>
+      </div>
+
+      <!-- Active scenario view -->
+      <div id="scen-active" hidden>
+        <div class="scen-active__header">
+          <div class="scen-active__left">
+            <span class="scen-badge" id="scen-badge">Emergency</span>
+            <span class="scen-title" id="scen-title">Scenario</span>
+          </div>
+          <div class="scen-active__right">
+            <span class="scen-phase scen-phase--deterioration" id="scen-phase">Deterioration</span>
+            <span class="scen-step-label" id="scen-step">Step 1 of 2</span>
+            <button class="scen-exit-btn" id="scen-exit-btn" type="button">✕ Exit</button>
+          </div>
+        </div>
+        <div class="scen-active__body">
+          <div class="scen-context" id="scen-context"></div>
+          <div class="scen-monitor-clue" id="scen-monitor-clue" hidden>
+            <span class="scen-clue-icon">⬡</span>
+            <span id="scen-clue-text"></span>
+          </div>
+          <div class="scen-qa" id="scen-qa"><!-- question + choices injected here --></div>
+        </div>
+      </div>
+
+      <!-- Resolution view -->
+      <div id="scen-resolution" hidden>
+        <div class="scen-resolution__icon">✓</div>
+        <h3 id="scen-resolution-title"></h3>
+        <p id="scen-resolution-text"></p>
+        <div class="scen-resolution__actions">
+          <button class="mode-btn mode-btn--on" id="scen-restart-btn" type="button">Try Another Scenario</button>
+        </div>
+      </div>
+
+    </div><!-- /scenario-panel -->
+
+  </main><!-- /workstation -->
+</div><!-- /app -->
+
+<!-- ── AI Chat (floating) ──────────────────────────────────────────────── -->
+<button id="vent-ai-btn" class="vent-ai-btn" type="button" aria-expanded="false">
+  <span class="vent-ai-dot" aria-hidden="true"></span>Ask AI
+</button>
+
+<div class="chat-panel" id="chat-panel" aria-hidden="true" role="complementary"
+     aria-label="Anesthesia AI assistant">
+  <header class="chat-panel__header">
+    <div class="chat-panel__title-group">
+      <span class="chat-panel__online-dot" aria-hidden="true"></span>
+      <span class="chat-panel__title">Your Attending (Available)</span>
+    </div>
+    <button type="button" class="chat-panel__header-btn" id="chat-key-btn"
+            title="Change API key" aria-label="Change API key">⚙</button>
+    <button type="button" class="chat-panel__header-btn chat-panel__close"
+            id="chat-close" aria-label="Close AI assistant">×</button>
+  </header>
+  <div class="chat-panel__messages" id="chat-messages"
+       role="log" aria-live="polite" aria-label="Chat messages"></div>
+  <footer class="chat-panel__footer">
+    <input type="text" id="chat-input" class="chat-panel__input"
+           placeholder="Ask about ventilation, physiology, scenarios…"
+           autocomplete="off" maxlength="500" aria-label="Chat message input">
+    <button type="button" class="chat-panel__send" id="chat-send" aria-label="Send">↑</button>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     MONITOR TUTORIAL MODALS
+     ══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ECG Tutorial -->
+<dialog class="mon-tut" id="tut-ecg">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">5-Lead ECG Monitoring in the OR</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-ecg">×</button>
+    </header>
+    <div class="mon-tut__wave-section">
+      <canvas class="mon-tut__canvas" id="tut-ecg-canvas" width="700" height="160"></canvas>
+    </div>
+    <div class="mon-tut__stats-row">
+      <div class="mon-tut__nums">
+        <div class="tut-nrow"><span class="tut-nk">HR</span><span class="tut-nv" id="tut-ecg-hr" style="color:#00e676">72</span><span class="tut-nu">bpm</span></div>
+        <div class="tut-nrow"><span class="tut-nk">ST II</span><span class="tut-nv" style="color:#00e676">0.0</span><span class="tut-nu">mm</span></div>
+        <div class="tut-nrow"><span class="tut-nk">ST V5</span><span class="tut-nv" style="color:#00e676">0.0</span><span class="tut-nu">mm</span></div>
+      </div>
+      <div class="mon-tut__interp" id="tut-ecg-interp">Regular rate and rhythm. Clear P wave before every QRS. Rate 60–100 bpm. Normal intraoperative finding.</div>
+    </div>
+    <div class="mon-tut__selector-row">
+      <label class="mon-tut__select-label" for="tut-ecg-select">Common OR Rhythms</label>
+      <select class="mon-tut__select" id="tut-ecg-select">
+        <option value="normal">Normal Sinus Rhythm</option>
+        <option value="tach">Sinus Tachycardia</option>
+        <option value="brady">Sinus Bradycardia</option>
+        <option value="afib">Atrial Fibrillation</option>
+        <option value="flutter">Atrial Flutter (2:1 Block)</option>
+        <option value="vtach">Ventricular Tachycardia</option>
+      </select>
+    </div>
+    <div class="mon-tut__teach-section">
+      <h3 class="mon-tut__section-title">Key Teaching Points</h3>
+      <ul class="mon-tut__teach-list">
+        <li>HR is derived from the <strong>RR interval</strong> — the distance between two consecutive R peaks</li>
+        <li><strong>Lead II</strong> is the primary intraoperative lead for rhythm detection; P waves are largest here</li>
+        <li><strong>V5</strong> is the most sensitive single lead for detecting myocardial ischemia</li>
+        <li>ST changes &gt;1 mm (elevation or depression) suggest ischemia — inform your attending</li>
+        <li>Always confirm a monitor rhythm with a <strong>pulse check</strong> before treating</li>
+      </ul>
+    </div>
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-ecg">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-ecg">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- A-Line Tutorial -->
+<dialog class="mon-tut" id="tut-abp">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">Arterial Line Waveform Interpretation</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-abp">×</button>
+    </header>
+    <div class="mon-tut__wave-section">
+      <canvas class="mon-tut__canvas" id="tut-abp-canvas" width="700" height="160"></canvas>
+    </div>
+    <div class="mon-tut__stats-row">
+      <div class="mon-tut__nums">
+        <div class="tut-nrow"><span class="tut-nk">SBP</span><span class="tut-nv" id="tut-abp-sys" style="color:#ff4c4c">118</span><span class="tut-nu">mmHg</span></div>
+        <div class="tut-nrow"><span class="tut-nk">DBP</span><span class="tut-nv" id="tut-abp-dia" style="color:#ff4c4c">72</span><span class="tut-nu">mmHg</span></div>
+        <div class="tut-nrow"><span class="tut-nk">MAP</span><span class="tut-nv" id="tut-abp-map" style="color:#ff4c4c">88</span><span class="tut-nu">mmHg</span></div>
+      </div>
+      <div class="mon-tut__interp" id="tut-abp-interp">Normal arterial waveform. Brisk upstroke, clear dicrotic notch, normal pulse pressure (~46 mmHg). Waveform is reliable.</div>
+    </div>
+    <div class="mon-tut__selector-row">
+      <label class="mon-tut__select-label" for="tut-abp-select">Waveform Pattern</label>
+      <select class="mon-tut__select" id="tut-abp-select">
+        <option value="normal">Normal</option>
+        <option value="hypotension">Hypotension — Low Amplitude</option>
+        <option value="dampened">Dampened Waveform (Line Issue)</option>
+        <option value="hyperdynamic">Hyperdynamic — Wide Pulse Pressure</option>
+        <option value="overdamped">Overdamped — Unreliable Reading</option>
+      </select>
+    </div>
+    <div class="mon-tut__teach-section">
+      <h3 class="mon-tut__section-title">Key Teaching Points</h3>
+      <ul class="mon-tut__teach-list">
+        <li>Waveform shape reflects <strong>stroke volume + vascular resistance</strong> in real time</li>
+        <li><strong>MAP</strong> is most clinically relevant — goal ≥65 mmHg to ensure organ perfusion</li>
+        <li>The <strong>dicrotic notch</strong> marks aortic valve closure and separates systole from diastole</li>
+        <li>Pulse pressure (SBP–DBP) reflects stroke volume; wide = hyperdynamic, narrow = low SV</li>
+        <li>A dampened waveform may be a <strong>line problem</strong> — flush and check before treating the patient</li>
+      </ul>
+    </div>
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-abp">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-abp">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- SpO2 Tutorial -->
+<dialog class="mon-tut" id="tut-spo2">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">Pulse Oximetry and Pleth Waveform</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-spo2">×</button>
+    </header>
+    <div class="mon-tut__wave-section">
+      <canvas class="mon-tut__canvas" id="tut-spo2-canvas" width="700" height="160"></canvas>
+    </div>
+    <div class="mon-tut__stats-row">
+      <div class="mon-tut__nums">
+        <div class="tut-nrow"><span class="tut-nk">SpO₂</span><span class="tut-nv" id="tut-spo2-val" style="color:#00e5ff">99</span><span class="tut-nu">%</span></div>
+        <div class="tut-nrow"><span class="tut-nk">PI</span><span class="tut-nv" id="tut-spo2-pi" style="color:#00e5ff">2.4</span><span class="tut-nu">%</span></div>
+      </div>
+      <div class="mon-tut__interp" id="tut-spo2-interp">Normal pleth. Good amplitude, regular peaks, strong perfusion index. SpO₂ 99% is accurate and reliable.</div>
+    </div>
+    <div class="mon-tut__selector-row">
+      <label class="mon-tut__select-label" for="tut-spo2-select">Clinical Scenario</label>
+      <select class="mon-tut__select" id="tut-spo2-select">
+        <option value="normal">Normal Perfusion</option>
+        <option value="lowperf">Low Perfusion — Shock / Low CO</option>
+        <option value="vasoconstriction">Vasoconstriction (e.g., Vasopressors)</option>
+        <option value="motion">Motion Artifact</option>
+      </select>
+    </div>
+    <div class="mon-tut__teach-section">
+      <h3 class="mon-tut__section-title">Key Teaching Points</h3>
+      <ul class="mon-tut__teach-list">
+        <li>SpO₂ reflects <strong>oxygen saturation</strong> — it does NOT reflect ventilation (use EtCO₂ for that)</li>
+        <li>Pleth <strong>amplitude</strong> is your perfusion indicator — a flat wave is a red flag regardless of the number</li>
+        <li><strong>"Good number ≠ good perfusion"</strong> — vasoconstricted patients can read 99% while hypoperfused</li>
+        <li>SpO₂ lags actual arterial saturation by <strong>30–60 seconds</strong> — act early if the trend is downward</li>
+        <li>A noisy or absent waveform means the reading is unreliable — reposition the probe first</li>
+      </ul>
+    </div>
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-spo2">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-spo2">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- BIS / Processed EEG Tutorial -->
+<dialog class="mon-tut" id="tut-bis">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">BIS &amp; Processed EEG in the OR</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-bis">×</button>
+    </header>
+    <div class="mon-tut__wave-section">
+      <canvas class="mon-tut__canvas" id="tut-bis-canvas" width="700" height="160"></canvas>
+    </div>
+    <div class="mon-tut__stats-row">
+      <div class="mon-tut__nums">
+        <div class="tut-nrow"><span class="tut-nk">BIS</span><span class="tut-nv" id="tut-bis-val" style="color:#00e676">48</span></div>
+        <div class="tut-nrow"><span class="tut-nk">SR</span><span class="tut-nv" id="tut-bis-sr" style="color:#94a3b8">0</span><span class="tut-nu">%</span></div>
+        <div class="tut-nrow"><span class="tut-nk">EMG</span><span class="tut-nv" id="tut-bis-emg" style="color:#94a3b8">40</span><span class="tut-nu">dB</span></div>
+      </div>
+      <div class="mon-tut__interp" id="tut-bis-interp">General anesthesia — BIS in the target range (~40–60). Low suppression ratio; EMG quiet. EEG shows mixed frequencies without burst-suppression pattern.</div>
+    </div>
+    <div class="mon-tut__selector-row">
+      <label class="mon-tut__select-label" for="tut-bis-select">Clinical Pattern</label>
+      <select class="mon-tut__select" id="tut-bis-select">
+        <option value="maintenance">Adequate Anesthesia (Maintenance)</option>
+        <option value="light">Light Anesthesia / Emerging</option>
+        <option value="deep">Deep Anesthesia</option>
+        <option value="burst">Burst Suppression</option>
+        <option value="emg">EMG / Electrocautery Artifact</option>
+      </select>
+    </div>
+    <div class="mon-tut__teach-section">
+      <h3 class="mon-tut__section-title">Spectral heatmap (δ, θ, α, β)</h3>
+      <p class="mon-tut__bis-spectral-cta-text">The strip under the EEG shows how <strong>relative power</strong> in each band changes over time. Open the interactive viewer to scroll through clinical scenarios and explore each band.</p>
+      <button type="button" class="mon-tut__spectral-open" id="bis-open-spectral">Open spectral heatmap tutorial</button>
+    </div>
+    <div class="mon-tut__teach-section">
+      <h3 class="mon-tut__section-title">Key Teaching Points</h3>
+      <ul class="mon-tut__teach-list">
+        <li><strong>BIS</strong> is a proprietary index (0–100) derived from EEG — lower values generally reflect deeper hypnotic effect; typical general anesthesia targets are often <strong>40–60</strong> (follow institutional protocol)</li>
+        <li><strong>Suppression ratio (SR)</strong> reports the proportion of “flat” EEG — elevated SR indicates profound cortical suppression; interpret alongside hemodynamics and agent dosing</li>
+        <li><strong>EMG</strong> from frontal electrodes can reflect facial muscle tone or <strong>artifact</strong> (cautery, poor contact) — high EMG may falsely lower BIS or mask a light state</li>
+        <li>BIS is <strong>not a substitute</strong> for clinical assessment; false highs and lows occur (e.g., EMG, ketamine, nitrous, neurological conditions)</li>
+        <li>Use BIS as one part of <strong>multimodal</strong> monitoring together with vital signs, end-tidal agent, and clinical signs of depth and awareness risk</li>
+      </ul>
+    </div>
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-bis">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-bis">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- Spectral EEG heatmap (interactive) -->
+<dialog class="mon-tut mon-tut--wide tut-spectral-dialog" id="tut-spectral">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div>
+        <p class="mon-tut__eyebrow">Monitor Tutorial</p>
+        <h2 class="mon-tut__title">Spectral EEG heatmap (δ · θ · α · β)</h2>
+      </div>
+      <button class="mon-tut__close" data-tut-close="tut-spectral">×</button>
+    </header>
+    <p class="tut-spectral__intro">Each <strong>horizontal band</strong> is a frequency range. <strong>Time scrolls</strong> left to right (newer toward the right). <strong>Color intensity</strong> uses the same scale in every row: dark / cool = lower relative power, bright / warm = higher (see the scale at the right of the heatmap). <strong>Click δ, θ, α, or β</strong> for a band note, then <strong>Clinical scenario</strong> for how the pattern fits the setting.</p>
+    <div class="tut-spectral__main">
+      <div class="tut-spectral__band-labels" role="tablist" aria-label="EEG frequency bands">
+        <button type="button" class="tut-spectral__band tut-spectral__band--active" data-band="delta" aria-selected="true">δ<span class="tut-spectral__band-hz">1–4 Hz</span></button>
+        <button type="button" class="tut-spectral__band" data-band="theta" aria-selected="false">θ<span class="tut-spectral__band-hz">4–8 Hz</span></button>
+        <button type="button" class="tut-spectral__band" data-band="alpha" aria-selected="false">α<span class="tut-spectral__band-hz">8–13 Hz</span></button>
+        <button type="button" class="tut-spectral__band" data-band="beta" aria-selected="false">β<span class="tut-spectral__band-hz">13–30 Hz</span></button>
+      </div>
+      <div class="tut-spectral__canvas-wrap">
+        <div class="tut-spectral__hm-stage">
+          <canvas class="tut-spectral__canvas" id="tut-spectral-canvas" width="700" height="160" role="img" aria-label="Animated spectral power heatmap"></canvas>
+          <div class="tut-spectral__time-hint">Time →</div>
+        </div>
+        <div class="tut-spectral__colorbar" role="img" aria-label="Color scale: dark cool colors lower power, bright warm colors higher power">
+          <span class="tut-spectral__colorbar-hi">High</span>
+          <span class="tut-spectral__colorbar-lo">Low</span>
+        </div>
+      </div>
+    </div>
+    <div class="tut-spectral__panel tut-spectral__panel--wave">
+      <h3 class="tut-spectral__panel-title">Wave description</h3>
+      <p class="tut-spectral__wave-text" id="tut-spectral-band-blurb"></p>
+    </div>
+    <div class="tut-spectral__panel tut-spectral__panel--scenario">
+      <h3 class="tut-spectral__panel-title">Clinical scenario</h3>
+      <div class="mon-tut__selector-row tut-spectral__scenario-row">
+        <label class="mon-tut__select-label" for="tut-spectral-select">Pattern</label>
+        <select class="mon-tut__select" id="tut-spectral-select">
+          <option value="maintenance">Adequate Anesthesia (Maintenance)</option>
+          <option value="light">Light Anesthesia / Emerging</option>
+          <option value="deep">Deep Anesthesia</option>
+          <option value="burst">Burst Suppression</option>
+          <option value="emg">EMG / Electrocautery Artifact</option>
+        </select>
+      </div>
+      <p class="tut-spectral__scenario-text" id="tut-spectral-scenario-blurb"></p>
+    </div>
+    <p class="tut-spectral__footnote">Bands are approximate; real devices differ in filtering and scaling. Use the heatmap as <strong>context</strong> for depth and artifact, not as a stand-alone diagnosis.</p>
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-spectral">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-spectral">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- Ventilator waveforms & P–V tutorial -->
+<dialog class="mon-tut mon-tut--wide vent-tut-dialog" id="tut-ventwaves">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div>
+        <p class="mon-tut__eyebrow">Ventilator Tutorial</p>
+        <h2 class="mon-tut__title">Paw, Flow, Volume &amp; P–V Loop</h2>
+      </div>
+      <button type="button" class="mon-tut__close" data-tut-close="tut-ventwaves" aria-label="Close">×</button>
+    </header>
+    <p class="vent-tut__lead">One-breath traces use the same simplified physics as the main simulator. Change <strong>mode</strong>, <strong>timing</strong>, and <strong>lung mechanics</strong>, or pick a <strong>preset</strong>, and watch how pressure, flow, volume, and the P–V loop respond.</p>
+    <div class="vent-tut__layout">
+      <aside class="vent-tut__aside">
+        <div class="mon-tut__selector-row vent-tut__preset-row">
+          <label class="mon-tut__select-label" for="vent-tut-preset">Preset scenario</label>
+          <select class="mon-tut__select" id="vent-tut-preset">
+            <option value="normal">Normal lungs &amp; airways</option>
+            <option value="obstructive">Obstructive / bronchospasm</option>
+            <option value="restrictive">Restrictive lungs</option>
+            <option value="leak">Circuit leak</option>
+            <option value="air_trapping">Air trapping / auto-PEEP risk</option>
+            <option value="pc_mild">PC-CMV (softer lungs)</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div id="vent-tut-preset-blurb" class="vent-tut__preset-blurb" aria-live="polite"></div>
+        <div class="vent-tut__mode">
+          <button type="button" id="vent-tut-btn-vc" class="vent-tut__mode-btn vent-tut__mode-btn--on">VC-CMV</button>
+          <button type="button" id="vent-tut-btn-pc" class="vent-tut__mode-btn">PC-CMV</button>
+        </div>
+        <div class="vent-tut__ctrl-block">
+          <div id="vent-tut-vc-only" class="ctrl-row">
+            <label class="ctrl-lbl">Tidal volume (mL)</label>
+            <input type="range" class="ctrl-range" id="vent-tut-tv" min="200" max="800" step="10" value="480" />
+            <span class="ctrl-val" id="vent-tut-lbl-tv">480</span>
+          </div>
+          <div id="vent-tut-pc-only" class="ctrl-row" hidden>
+            <label class="ctrl-lbl">Insp. ΔP above PEEP (cmH₂O)</label>
+            <input type="range" class="ctrl-range" id="vent-tut-pip" min="5" max="40" step="1" value="12" />
+            <span class="ctrl-val" id="vent-tut-lbl-pip">12</span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Resp. rate (br/min)</label>
+            <input type="range" class="ctrl-range" id="vent-tut-rr" min="4" max="30" step="1" value="12" />
+            <span class="ctrl-val" id="vent-tut-lbl-rr">12</span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">PEEP (cmH₂O)</label>
+            <input type="range" class="ctrl-range" id="vent-tut-peep" min="0" max="20" step="1" value="5" />
+            <span class="ctrl-val" id="vent-tut-lbl-peep">5</span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Inspiratory time (s)</label>
+            <input type="range" class="ctrl-range" id="vent-tut-ti" min="0.4" max="2.5" step="0.1" value="1.0" />
+            <span class="ctrl-val" id="vent-tut-lbl-ti">1.00</span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Compliance (mL/cmH₂O)</label>
+            <input type="range" class="ctrl-range" id="vent-tut-c" min="10" max="100" step="5" value="50" />
+            <span class="ctrl-val" id="vent-tut-lbl-c">50</span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Resistance (cmH₂O/L/s)</label>
+            <input type="range" class="ctrl-range" id="vent-tut-r" min="2" max="30" step="1" value="8" />
+            <span class="ctrl-val" id="vent-tut-lbl-r">8</span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-lbl">Circuit leak (%)</label>
+            <input type="range" class="ctrl-range" id="vent-tut-leak" min="0" max="50" step="1" value="0" />
+            <span class="ctrl-val" id="vent-tut-lbl-leak">0</span>
+          </div>
+        </div>
+      </aside>
+      <div class="vent-tut__main">
+        <div id="vent-tut-readouts" class="vent-tut__readouts"></div>
+        <div class="vent-tut__tabs" id="tut-ventwaves-tabs" role="tablist" aria-label="Waveform view">
+          <button type="button" class="vent-tut__tab vent-tut__tab--active" data-tab="waves" role="tab" aria-selected="true">Time waveforms</button>
+          <button type="button" class="vent-tut__tab" data-tab="pv" role="tab" aria-selected="false">P–V loop</button>
+        </div>
+        <div class="vent-tut__panel" data-panel="waves">
+          <div class="vent-tut__wave-stack">
+            <div class="vent-tut__wave-row">
+              <span class="vent-tut__wave-lbl" style="color:#ffcc00">Paw<br><small>cmH₂O</small></span>
+              <canvas id="vent-tut-canvas-paw" width="620" height="128" role="img" aria-label="Airway pressure waveform"></canvas>
+            </div>
+            <div class="vent-tut__wave-row">
+              <span class="vent-tut__wave-lbl" style="color:#00ccff">Flow<br><small>L/min</small></span>
+              <canvas id="vent-tut-canvas-flow" width="620" height="128" role="img" aria-label="Flow waveform"></canvas>
+            </div>
+            <div class="vent-tut__wave-row">
+              <span class="vent-tut__wave-lbl" style="color:#00ff99">Volume<br><small>mL</small></span>
+              <canvas id="vent-tut-canvas-vol" width="620" height="128" role="img" aria-label="Volume waveform"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="vent-tut__panel" data-panel="pv" hidden>
+          <div class="vent-tut__pv-wrap">
+            <canvas id="vent-tut-canvas-pv" width="320" height="200" role="img" aria-label="Pressure volume loop"></canvas>
+            <div class="vent-tut__pv-legend">
+              <span style="color:#ffcc00">▸ Insp</span>
+              <span style="color:#00ccff">◂ Exp</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="vent-tut__dashed-note">Dashed lines represent baseline normal physiology (C&nbsp;=&nbsp;50&nbsp;mL/cmH₂O, R&nbsp;=&nbsp;8&nbsp;cmH₂O/L/s) at the same ventilator settings.</p>
+    <footer class="mon-tut__foot">
+      <button type="button" class="mon-tut__foot-btn" data-tut-reset="tut-ventwaves">Reset</button>
+      <button type="button" class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-ventwaves">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- Capnography Tutorial (wide, tabbed) -->
+<dialog class="mon-tut mon-tut--wide" id="tut-etco2">
+  <div class="mon-tut__inner">
+    <header class="mon-tut__head">
+      <div><p class="mon-tut__eyebrow">Monitor Tutorial</p><h2 class="mon-tut__title">Capnography &amp; Gas Monitoring</h2></div>
+      <button class="mon-tut__close" data-tut-close="tut-etco2">×</button>
+    </header>
+    <div class="mon-tut__tabs" id="tut-etco2-tabs">
+      <button class="mon-tut__tab mon-tut__tab--active" data-tab="basics">Capnogram Basics</button>
+      <button class="mon-tut__tab" data-tab="patterns">Pathologic Patterns</button>
+      <button class="mon-tut__tab" data-tab="gasmon">Gas Monitoring</button>
+      <button class="mon-tut__tab" data-tab="volatile">Volatile &amp; O₂</button>
+    </div>
+
+    <!-- Tab: Basics -->
+    <div class="mon-tut__tab-panel" id="tut-etco2-basics">
+      <div class="mon-tut__wave-section">
+        <canvas class="mon-tut__canvas" id="tut-etco2-canvas-basics" width="700" height="160"></canvas>
+      </div>
+      <div class="mon-tut__stats-row">
+        <div class="mon-tut__nums">
+          <div class="tut-nrow"><span class="tut-nk">EtCO₂</span><span class="tut-nv" style="color:#ffee00">36</span><span class="tut-nu">mmHg</span></div>
+          <div class="tut-nrow"><span class="tut-nk">RR</span><span class="tut-nv" style="color:#ffee00">12</span><span class="tut-nu">/min</span></div>
+        </div>
+        <div class="mon-tut__capno-phases">
+          <span class="cphs cphs--i">I — Dead space</span>
+          <span class="cphs cphs--ii">II — Upstroke</span>
+          <span class="cphs cphs--iii">III — Plateau</span>
+          <span class="cphs cphs--down">↓ Inspiration</span>
+        </div>
+      </div>
+      <div class="mon-tut__teach-section">
+        <h3 class="mon-tut__section-title">The Capnogram</h3>
+        <ul class="mon-tut__teach-list">
+          <li><strong>Phase I</strong> — Inspiratory baseline: dead space ventilation, CO₂ ≈ 0 mmHg</li>
+          <li><strong>Phase II</strong> — Expiratory upstroke: mixing of dead space and alveolar gas, CO₂ rises sharply</li>
+          <li><strong>Phase III</strong> — Alveolar plateau: CO₂-rich gas; EtCO₂ is measured at the very end of this phase</li>
+          <li><strong>Downstroke</strong> — Inspiration begins; fresh gas washes CO₂ back to zero immediately</li>
+          <li>Normal EtCO₂: <strong>35–45 mmHg</strong>. Reflects both <em>ventilation</em> and <em>perfusion</em></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tab: Patterns -->
+    <div class="mon-tut__tab-panel" id="tut-etco2-patterns" hidden>
+      <div class="mon-tut__wave-section">
+        <canvas class="mon-tut__canvas" id="tut-etco2-canvas-patterns" width="700" height="160"></canvas>
+      </div>
+      <div class="mon-tut__stats-row">
+        <div class="mon-tut__nums">
+          <div class="tut-nrow"><span class="tut-nk">EtCO₂</span><span class="tut-nv" id="tut-etco2-val" style="color:#ffee00">36</span><span class="tut-nu">mmHg</span></div>
+          <div class="tut-nrow"><span class="tut-nk">RR</span><span class="tut-nv" id="tut-etco2-rr" style="color:#ffee00">12</span><span class="tut-nu">/min</span></div>
+        </div>
+        <div class="mon-tut__interp" id="tut-etco2-interp">Normal capnogram. Clear phases I–III, sharp downstroke. EtCO₂ 35–45 mmHg indicates adequate ventilation and perfusion.</div>
+      </div>
+      <div class="mon-tut__selector-row">
+        <label class="mon-tut__select-label" for="tut-etco2-select">Pathologic Pattern</label>
+        <select class="mon-tut__select" id="tut-etco2-select">
+          <option value="normal">Normal Capnogram</option>
+          <option value="hypovent">Hypoventilation — Elevated EtCO₂</option>
+          <option value="hypervent">Hyperventilation — Low EtCO₂</option>
+          <option value="bronchospasm">Bronchospasm — Shark-Fin Pattern</option>
+          <option value="curare">Curare Cleft — Spontaneous Breath During NMB</option>
+          <option value="esophageal">Esophageal Intubation — Flat Line</option>
+          <option value="lowco">Low Cardiac Output — Sudden EtCO₂ Drop</option>
+          <option value="rebreathing">Rebreathing — Elevated Baseline</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tab: Gas Monitoring -->
+    <div class="mon-tut__tab-panel" id="tut-etco2-gasmon" hidden>
+      <div class="mon-tut__gas-panel">
+        <div class="mon-tut__gas-traces">
+          <div class="mon-tut__gas-row">
+            <span class="mon-tut__gas-label" style="color:#ffee00">CO₂</span>
+            <canvas class="mon-tut__gas-canvas" id="tut-gas-co2" width="440" height="72"></canvas>
+            <div class="mon-tut__gas-vals">
+              <div class="tut-nrow"><span class="tut-nk">EtCO₂</span><span class="tut-nv" id="tut-gas-etco2" style="color:#ffee00">36</span><span class="tut-nu">mmHg</span></div>
+            </div>
+          </div>
+          <div class="mon-tut__gas-row">
+            <span class="mon-tut__gas-label" style="color:#00e5ff">O₂</span>
+            <canvas class="mon-tut__gas-canvas" id="tut-gas-o2" width="440" height="72"></canvas>
+            <div class="mon-tut__gas-vals">
+              <div class="tut-nrow"><span class="tut-nk">FiO₂</span><span class="tut-nv" id="tut-gas-fio2" style="color:#00e5ff">60</span><span class="tut-nu">%</span></div>
+              <div class="tut-nrow"><span class="tut-nk">EtO₂</span><span class="tut-nv" id="tut-gas-eto2" style="color:#00e5ff">52</span><span class="tut-nu">%</span></div>
+            </div>
+          </div>
+          <div class="mon-tut__gas-row">
+            <span class="mon-tut__gas-label" style="color:#c084fc">Sevo</span>
+            <canvas class="mon-tut__gas-canvas" id="tut-gas-sevo" width="440" height="72"></canvas>
+            <div class="mon-tut__gas-vals">
+              <div class="tut-nrow"><span class="tut-nk">FiSevo</span><span class="tut-nv" id="tut-gas-fisevo" style="color:#c084fc">2.3</span><span class="tut-nu">%</span></div>
+              <div class="tut-nrow"><span class="tut-nk">EtSevo</span><span class="tut-nv" id="tut-gas-etsevo" style="color:#c084fc">2.1</span><span class="tut-nu">%</span></div>
+              <div class="tut-nrow"><span class="tut-nk">MAC</span><span class="tut-nv" id="tut-gas-mac" style="color:#c084fc">0.95</span><span class="tut-nu"></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="mon-tut__gas-teach">
+          <label class="mon-tut__select-label" for="tut-gas-select">Gas Scenario</label>
+          <select class="mon-tut__select" id="tut-gas-select">
+            <option value="maintenance">Steady-State Maintenance</option>
+            <option value="induction">Induction (FiSevo Rising)</option>
+            <option value="emergence">Emergence (Agent Washout)</option>
+            <option value="rebreathing">Rebreathing / Absorber Issue</option>
+            <option value="lowco">Low Cardiac Output</option>
+          </select>
+          <div class="mon-tut__interp" id="tut-gas-interp">Steady-state maintenance. FiSevo and EtSevo are close — the patient has equilibrated. EtCO₂ and EtO₂ are within normal range.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Volatile & O2 -->
+    <div class="mon-tut__tab-panel" id="tut-etco2-volatile" hidden>
+      <div class="mon-tut__vol-grid">
+        <div class="mon-tut__vol-card">
+          <h3 class="mon-tut__vol-title" style="color:#ffee00">CO₂ — Ventilation &amp; Perfusion</h3>
+          <p>EtCO₂ is not just "how well they're breathing." It also reflects cardiac output. A sudden drop in EtCO₂ with unchanged ventilation settings should prompt you to think about <strong>pulmonary embolism, cardiac arrest, or severe hypotension</strong>.</p>
+          <p>Normal EtCO₂: <strong>35–45 mmHg</strong>. Arterial CO₂ (PaCO₂) runs ~5 mmHg higher due to dead space.</p>
+        </div>
+        <div class="mon-tut__vol-card">
+          <h3 class="mon-tut__vol-title" style="color:#00e5ff">O₂ — Inspired vs. End-Tidal</h3>
+          <p>FiO₂ is what you <em>deliver</em>. EtO₂ is what the patient <em>exhales</em>. The difference reflects oxygen consumption and circuit efficiency.</p>
+          <p>A large FiO₂–EtO₂ gap suggests <strong>high metabolic demand or circuit issues</strong>. EtO₂ typically runs 8–15% below FiO₂ at steady state.</p>
+        </div>
+        <div class="mon-tut__vol-card">
+          <h3 class="mon-tut__vol-title" style="color:#c084fc">Volatile — Inspired vs. End-Tidal Sevo</h3>
+          <p>The vaporizer sets FiSevo. EtSevo is the clinically meaningful number — it most closely reflects <strong>brain concentration and anesthetic depth</strong>.</p>
+          <p>During <strong>induction</strong>: FiSevo rises first, EtSevo lags. During <strong>emergence</strong>: EtSevo falls as agent washes out. BIS changes follow with an additional delay.</p>
+        </div>
+        <div class="mon-tut__vol-card">
+          <h3 class="mon-tut__vol-title" style="color:#a3e635">MAC — Minimum Alveolar Concentration</h3>
+          <p>MAC is the alveolar concentration at which 50% of patients do not move to a surgical incision. It is <strong>additive</strong> — sevo + N₂O reduces required sevo concentration.</p>
+          <p>Maintenance target: <strong>0.8–1.3 MAC</strong>. Values &lt;0.7 MAC significantly increase the risk of intraoperative awareness.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mon-tut__foot">
+      <button class="mon-tut__foot-btn" data-tut-reset="tut-etco2">Reset</button>
+      <button class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-tut-close="tut-etco2">Close</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- ── Fixed disclaimer widget ──────────────────────────────────────────── -->
+<div class="disclaimer-widget" role="complementary" aria-label="Educational disclaimer">
+  <div class="disclaimer-widget__tab" aria-hidden="true">⚕ Educational Sources and Disclaimer</div>
+  <div class="disclaimer-widget__panel">
+    <div class="disclaimer-widget__inner">
+      <p class="disclaimer-widget__heading">Educational Resource — Not for Clinical Decision-Making</p>
+      <p class="disclaimer-widget__text">
+        This tool is designed exclusively for medical students on anesthesiology rotations to build context around
+        what they observe in the OR. The information presented, including drug doses, mechanisms, and clinical pearls
+        , is meant to supplement direct teaching, not replace it.
+        It should <strong>never be relied upon as the sole basis for patient care decisions.</strong>
+        Always conduct your own research, defer to your supervising attendings, follow local protocols and formularies,
+        and exercise clinical judgment adapted to each patient.
+      </p>
+      <p class="disclaimer-widget__source">Informed by attending faculty, ASA/AHA/ACC guidelines, FDA labeling, peer-reviewed literature, and the <strong>Manual of Clinical Anesthesiology</strong> by Chu, Traynor, and Kurup.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Fixed feedback widget (right side) ──────────────────────────────── -->
+<div class="feedback-widget" id="feedback-widget" role="complementary" aria-label="Share feedback">
+  <div class="feedback-widget__panel">
+    <div class="feedback-widget__inner">
+      <div class="feedback-widget__header">
+        <span class="feedback-widget__title">📝 Website Feedback</span>
+        <div class="feedback-widget__actions">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSc27Ic13RxeNzyR7CU9cGFNYJV1PdYIiwMpdytQK4e_eM158Q/viewform"
+             target="_blank" rel="noopener" class="feedback-widget__newtab"
+             title="Open in new tab to preserve your answers while navigating">↗ Open in new tab</a>
+          <button class="feedback-widget__close" aria-label="Close feedback panel">×</button>
+        </div>
+      </div>
+      <p class="feedback-widget__hint">Tip: use "Open in new tab" above if you plan to navigate between pages while filling this out.</p>
+      <iframe
+        src="https://docs.google.com/forms/d/e/1FAIpQLSc27Ic13RxeNzyR7CU9cGFNYJV1PdYIiwMpdytQK4e_eM158Q/viewform?embedded=true"
+        class="feedback-widget__iframe"
+        frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+    </div>
+  </div>
+  <button class="feedback-widget__tab" id="feedback-tab" aria-label="Open feedback form" aria-expanded="false">
+    📝 Share Feedback
+  </button>
+</div>
+
+<!-- ── Debrief modal ──────────────────────────────────────────────────────── -->
+<dialog id="debrief-modal" class="debrief-dialog">
+  <div class="debrief-dialog__inner">
+    <div class="debrief-dialog__header">
+      <h2 class="debrief-dialog__title">Scenario Debrief</h2>
+      <button class="debrief-dialog__close" id="debrief-close" aria-label="Close debrief">×</button>
+    </div>
+
+    <p class="debrief-dialog__summary" id="debrief-summary"></p>
+
+    <div class="debrief-dialog__row">
+      <div class="debrief-dialog__col">
+        <h3 class="debrief-dialog__label debrief-dialog__label--good">Strengths</h3>
+        <ul class="debrief-dialog__list" id="debrief-strengths"></ul>
+      </div>
+      <div class="debrief-dialog__col">
+        <h3 class="debrief-dialog__label debrief-dialog__label--gap">Areas to Review</h3>
+        <ul class="debrief-dialog__list" id="debrief-gaps"></ul>
+      </div>
+    </div>
+
+    <div class="debrief-dialog__steps" id="debrief-steps"></div>
+
+    <div class="debrief-dialog__section">
+      <h3 class="debrief-dialog__label">High-Yield Teaching Points</h3>
+      <ul class="debrief-dialog__teaching" id="debrief-teaching"></ul>
+    </div>
+
+    <div class="debrief-dialog__section" id="debrief-drill-section" hidden>
+      <h3 class="debrief-dialog__label">Quick Drill</h3>
+      <p class="debrief-dialog__drill-prompt" id="debrief-drill-prompt"></p>
+      <div class="debrief-dialog__drill-choices" id="debrief-drill-choices"></div>
+      <p class="debrief-dialog__drill-feedback" id="debrief-drill-feedback" hidden></p>
+    </div>
+
+    <div class="debrief-dialog__section" id="debrief-signin-prompt" hidden>
+      <p class="debrief-dialog__signin-text">
+        <a href="../platform/auth.html">Sign in</a> to save your debrief and track your progress over time.
+      </p>
+    </div>
+  </div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../platform/js/supabase-client.js"></script>
+<script src="../platform/js/ai-chat.js"></script>
+<script src="../js/ventilator.js"></script>
+<script src="../js/monitor-tutorial.js"></script>
+<script src="../js/ventilator-wave-tutorial.js"></script>
+<script src="../js/analytics.js"></script>
+<script src="../platform/js/debrief-data.js"></script>
+<script src="../platform/js/debrief-engine.js"></script>
+<script src="../platform/js/event-logger.js"></script>
+<script src="../platform/js/debrief-ui.js"></script>
+</body>
+</html>

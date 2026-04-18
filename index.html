@@ -2,6 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var href = "/";
+        if (p.indexOf("/yale-anesthesia-tutorial/") === 0 || p === "/yale-anesthesia-tutorial") {
+          href = "/yale-anesthesia-tutorial/";
+        }
+        var b = document.createElement("base");
+        b.href = href;
+        var first = document.head.firstChild;
+        document.head.insertBefore(b, first ? first.nextSibling : null);
+      })();
+    </script>
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5K3TTD09E"></script>
     <script>
@@ -13,14 +26,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team." />
     <title>Anesthesia Playground - Yale School of Medicine</title>
-    <link rel="canonical" href="https://csl7b5.github.io/yale-anesthesia-tutorial/index.html" />
+    <link rel="canonical" href="https://anesthesia.guide/" />
     <!-- Open Graph -->
     <meta property="og:type"        content="website" />
-    <meta property="og:url"         content="https://csl7b5.github.io/yale-anesthesia-tutorial/index.html" />
+    <meta property="og:url"         content="https://anesthesia.guide/" />
     <meta property="og:title"       content="Anesthesia Playground — Yale School of Medicine" />
     <meta property="og:description" content="Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team." />
     <meta property="og:site_name"   content="Yale Anesthesia Playground" />
-    <meta property="og:image"       content="https://csl7b5.github.io/yale-anesthesia-tutorial/bannerimage.png" />
+    <meta property="og:image"       content="https://anesthesia.guide/bannerimage.png" />
     <meta property="og:image:width"  content="924" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt"   content="Anesthesia Playground — Yale School of Medicine, medical student learning" />
@@ -28,7 +41,7 @@
     <meta name="twitter:card"        content="summary_large_image" />
     <meta name="twitter:title"       content="Anesthesia Playground — Yale School of Medicine" />
     <meta name="twitter:description" content="Interactive anesthesia learning tool for Yale medical students." />
-    <meta name="twitter:image"       content="https://csl7b5.github.io/yale-anesthesia-tutorial/bannerimage.png" />
+    <meta name="twitter:image"       content="https://anesthesia.guide/bannerimage.png" />
     <link rel="icon" href="favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
     <link rel="stylesheet" href="css/styles.css" />
@@ -38,20 +51,20 @@
       "@graph": [
         {
           "@type": "WebSite",
-          "@id": "https://csl7b5.github.io/yale-anesthesia-tutorial/#website",
+          "@id": "https://anesthesia.guide/#website",
           "name": "Yale Anesthesia Playground",
           "alternateName": "Anesthesia Playground",
-          "url": "https://csl7b5.github.io/yale-anesthesia-tutorial/",
+          "url": "https://anesthesia.guide/",
           "description": "Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team.",
           "inLanguage": "en-US"
         },
         {
           "@type": "WebPage",
-          "@id": "https://csl7b5.github.io/yale-anesthesia-tutorial/index.html#webpage",
-          "url": "https://csl7b5.github.io/yale-anesthesia-tutorial/index.html",
+          "@id": "https://anesthesia.guide/#webpage",
+          "url": "https://anesthesia.guide/",
           "name": "Anesthesia Playground — Yale School of Medicine",
           "description": "Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team.",
-          "isPartOf": { "@id": "https://csl7b5.github.io/yale-anesthesia-tutorial/#website" }
+          "isPartOf": { "@id": "https://anesthesia.guide/#website" }
         }
       ]
     }
@@ -70,7 +83,7 @@
           <div class="site-nav__tabs" role="tablist">
             <button class="site-nav__tab site-nav__tab--active" role="tab"
                     aria-selected="true" data-page="tour">Interactive Pyxis</button>
-            <a href="ventilator.html" class="site-nav__tab" role="tab"
+            <a href="ventilator/" class="site-nav__tab" role="tab"
                     aria-selected="false" style="text-decoration:none">Interactive Ventilator</a>
             <button class="site-nav__tab" role="tab"
                     aria-selected="false" data-page="about">Meet Your Team</button>

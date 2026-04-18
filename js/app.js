@@ -483,17 +483,44 @@
     if (target) target.classList.add("page-section--active");
   }
 
+  function apgPathPage() {
+    var p = location.pathname.replace(/\/+$/, "");
+    if (/\/pyxis(\/index\.html)?$/.test(p) || p.endsWith("/pyxis")) return "tour";
+    if (/\/teams(\/index\.html)?$/.test(p) || p.endsWith("/teams")) return "about";
+    return null;
+  }
+
+  // Support deep-linking from other pages (e.g. ventilator → index#about)
+  if (window.location.hash === "#about") {
+    activatePage("about");
+    history.replaceState({ apg: "about" }, "", "teams/");
+  } else {
+    var pathPage = apgPathPage();
+    if (pathPage) activatePage(pathPage);
+  }
+
+  // Hide /index.html in the address bar (use trailing slash or bare path)
+  (function () {
+    var path = location.pathname;
+    if (/\/index\.html$/.test(path)) {
+      history.replaceState(null, "", path.replace(/\/index\.html$/, "/"));
+    }
+  })();
+
   document.querySelectorAll(".site-nav__tab").forEach(function (tab) {
     tab.addEventListener("click", function () {
-      if (tab.dataset.page) activatePage(tab.dataset.page);
+      if (!tab.dataset.page) return;
+      activatePage(tab.dataset.page);
+      if (tab.dataset.page === "tour") history.pushState({ apg: "tour" }, "", "pyxis/");
+      if (tab.dataset.page === "about") history.pushState({ apg: "about" }, "", "teams/");
     });
   });
 
-  // Support deep-linking from other pages (e.g. ventilator.html → index.html#about)
-  if (window.location.hash === "#about") {
-    activatePage("about");
-    history.replaceState(null, "", window.location.pathname);
-  }
+  window.addEventListener("popstate", function () {
+    var pg = apgPathPage();
+    if (pg) activatePage(pg);
+    else activatePage("tour");
+  });
 
   // ── Responsive cabinet scaling ───────────────────────────────────────────
   (function scaleCabinet() {

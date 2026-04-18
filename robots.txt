@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://csl7b5.github.io/yale-anesthesia-tutorial/sitemap.xml
+Sitemap: https://anesthesia.guide/sitemap.xml
