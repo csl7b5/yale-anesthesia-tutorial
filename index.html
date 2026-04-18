@@ -21,7 +21,9 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-E5K3TTD09E');
+      gtag('config', 'G-E5K3TTD09E', {
+        linker: { domains: ['anesthesia.guide', 'csl7b5.github.io'] },
+      });
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team." />

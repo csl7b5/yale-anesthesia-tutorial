@@ -4,18 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>My Dashboard — Anesthesia Playground</title>
+  <link rel="canonical" href="https://anesthesia.guide/platform/student.html" />
+  <meta name="description" content="Your Anesthesia Playground dashboard — scenario history, performance summary, and account settings." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://anesthesia.guide/platform/student.html" />
+  <meta property="og:title" content="My Dashboard — Anesthesia Playground" />
+  <meta property="og:description" content="Student dashboard — scenarios, activity, and account settings." />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5K3TTD09E"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E5K3TTD09E', {
+      linker: { domains: ['anesthesia.guide', 'csl7b5.github.io'] },
+    });
+  </script>
   <link rel="icon" href="../favicon.png" type="image/png" />
   <link rel="stylesheet" href="css/dashboard.css" />
 </head>
 <body data-required-role="student">
 
   <nav class="dash-nav">
-    <a href="../index.html" class="dash-nav__brand">
+    <a href="../" class="dash-nav__brand">
       <img src="../favicon.png" alt="" class="dash-nav__brand-logo" width="38" height="38" decoding="async" />
       Anesthesia Playground
     </a>
     <div class="dash-nav__actions">
-      <a href="../index.html" class="dash-nav__link">← Back to Simulator</a>
+      <a href="../" class="dash-nav__link">← Back to Simulator</a>
       <button class="dash-nav__btn" onclick="SB.signOut()">Sign Out</button>
     </div>
   </nav>
