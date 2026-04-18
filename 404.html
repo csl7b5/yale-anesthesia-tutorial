@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      var p = location.pathname;
+      var href = '/';
+      if (p.indexOf('/yale-anesthesia-tutorial/') === 0 || p === '/yale-anesthesia-tutorial') {
+        href = '/yale-anesthesia-tutorial/';
+      }
+      var b = document.createElement('base');
+      b.href = href;
+      document.head.insertBefore(b, document.head.firstChild);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page not found — Anesthesia Playground</title>
+  <meta name="description" content="That page doesn’t exist. Return to the Anesthesia Playground home, Pyxis, ventilator simulator, or sign-in." />
+  <meta name="robots" content="noindex" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-0SRTKDGM7W"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-0SRTKDGM7W', {
+      linker: { domains: ['anesthesia.guide', 'csl7b5.github.io'] },
+    });
+    gtag('event', 'page_not_found', { page_location: location.href });
+  </script>
+  <link rel="icon" href="favicon.png" type="image/png" />
+  <link rel="stylesheet" href="platform/css/dashboard.css" />
+  <style>
+    .err404-links { margin-top: 1.25rem; text-align: left; font-size: 0.88rem; line-height: 1.7; }
+    .err404-links a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .err404-links a:hover { text-decoration: underline; }
+    .err404-links li { margin: 0.35rem 0; }
+  </style>
+</head>
+<body class="auth-ready">
+  <nav class="dash-nav">
+    <a href="https://anesthesia.guide/" class="dash-nav__brand">
+      <img src="favicon.png" alt="" class="dash-nav__brand-logo" width="38" height="38" decoding="async" />
+      Anesthesia Playground
+    </a>
+  </nav>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <h1 class="auth-card__title">Page not found</h1>
+      <p class="auth-card__subtitle">
+        The link may be broken or the page may have moved. Try a link below, or use the
+        <a href="https://csl7b5.github.io/yale-anesthesia-tutorial/" style="color:var(--accent);font-weight:600">GitHub Pages site</a>
+        if an old bookmark still points there.
+      </p>
+      <ul class="err404-links" style="list-style:none;padding:0;margin:0">
+        <li><a href="https://anesthesia.guide/">Home — Anesthesia Playground</a></li>
+        <li><a href="https://anesthesia.guide/pyxis/">Interactive Pyxis</a></li>
+        <li><a href="https://anesthesia.guide/ventilator/">Interactive Ventilator</a></li>
+        <li><a href="https://anesthesia.guide/teams/">Meet Your Team</a></li>
+        <li><a href="https://anesthesia.guide/platform/auth.html">Sign in</a></li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

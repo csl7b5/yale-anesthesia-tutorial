@@ -71,6 +71,43 @@
       ]
     }
     </script>
+    <script>
+      (function () {
+        var p = location.pathname;
+        var d = document.querySelector('meta[name="description"]');
+        var ogd = document.querySelector('meta[property="og:description"]');
+        var twd = document.querySelector('meta[name="twitter:description"]');
+        var canon = document.querySelector('link[rel="canonical"]');
+        var ogu = document.querySelector('meta[property="og:url"]');
+        var ogt = document.querySelector('meta[property="og:title"]');
+        var twt = document.querySelector('meta[name="twitter:title"]');
+        if (p.indexOf('/teams') !== -1) {
+          var tt = 'Meet Your Team — Anesthesia Playground';
+          var cc =
+            'Meet the Yale anesthesia team: faculty, residents, students, and how to connect with the department.';
+          document.title = tt;
+          if (d) d.setAttribute('content', cc);
+          if (ogd) ogd.setAttribute('content', cc);
+          if (twd) twd.setAttribute('content', cc);
+          if (canon) canon.setAttribute('href', 'https://anesthesia.guide/teams/');
+          if (ogu) ogu.setAttribute('content', 'https://anesthesia.guide/teams/');
+          if (ogt) ogt.setAttribute('content', tt);
+          if (twt) twt.setAttribute('content', tt);
+        } else if (p.indexOf('/pyxis') !== -1) {
+          var tp = 'Interactive Pyxis — Anesthesia Playground';
+          var cp =
+            'Virtual anesthesia Pyxis: where controlled medications and OR supplies live, with student-focused cheatsheets and exploration.';
+          document.title = tp;
+          if (d) d.setAttribute('content', cp);
+          if (ogd) ogd.setAttribute('content', cp);
+          if (twd) twd.setAttribute('content', cp);
+          if (canon) canon.setAttribute('href', 'https://anesthesia.guide/pyxis/');
+          if (ogu) ogu.setAttribute('content', 'https://anesthesia.guide/pyxis/');
+          if (ogt) ogt.setAttribute('content', tp);
+          if (twt) twt.setAttribute('content', tp);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div class="app">
