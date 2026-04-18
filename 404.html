@@ -4,13 +4,16 @@
   <meta charset="UTF-8" />
   <script>
     (function () {
-      var p = location.pathname;
-      var href = '/';
-      if (p.indexOf('/yale-anesthesia-tutorial/') === 0 || p === '/yale-anesthesia-tutorial') {
-        href = '/yale-anesthesia-tutorial/';
-      }
       var b = document.createElement('base');
-      b.href = href;
+      if (location.protocol === 'file:') {
+        b.href = new URL('.', location.href).href;
+      } else {
+        var p = location.pathname;
+        b.href =
+          p.indexOf('/yale-anesthesia-tutorial/') === 0 || p === '/yale-anesthesia-tutorial'
+            ? '/yale-anesthesia-tutorial/'
+            : '/';
+      }
       document.head.insertBefore(b, document.head.firstChild);
     })();
   </script>
