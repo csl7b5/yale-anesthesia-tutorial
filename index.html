@@ -122,7 +122,17 @@
             <img src="favicon.png" alt="" class="site-nav__brand-logo" width="42" height="42" decoding="async" />
             Anesthesia Playground
           </span>
-          <div class="site-nav__tabs" role="tablist">
+          <button
+            type="button"
+            class="site-nav__menu-btn"
+            id="site-nav-toggle"
+            aria-expanded="false"
+            aria-controls="site-nav-menu"
+            aria-label="Open menu"
+          >
+            <span class="site-nav__menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+          </button>
+          <div class="site-nav__tabs" id="site-nav-menu" role="tablist">
             <button class="site-nav__tab site-nav__tab--active" role="tab"
                     aria-selected="true" data-page="tour">Interactive Pyxis</button>
             <a href="ventilator/" class="site-nav__tab" role="tab"
@@ -442,6 +452,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/site-nav-mobile.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="platform/js/supabase-client.js"></script>
     <script src="platform/js/ai-chat.js"></script>

@@ -89,7 +89,17 @@
         <img src="../favicon.png" alt="" class="site-nav__brand-logo" width="42" height="42" decoding="async" />
         Anesthesia Playground
       </span>
-      <div class="site-nav__tabs" role="tablist">
+      <button
+        type="button"
+        class="site-nav__menu-btn"
+        id="site-nav-toggle-vent"
+        aria-expanded="false"
+        aria-controls="site-nav-menu-vent"
+        aria-label="Open menu"
+      >
+        <span class="site-nav__menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+      <div class="site-nav__tabs" id="site-nav-menu-vent" role="tablist">
         <a href="../pyxis/" class="site-nav__tab" role="tab" aria-selected="false">Interactive Pyxis</a>
         <a href="../ventilator/" class="site-nav__tab site-nav__tab--active" role="tab" aria-selected="true">Interactive Ventilator</a>
         <a href="../teams/" class="site-nav__tab" role="tab" aria-selected="false">Meet Your Team</a>
@@ -114,6 +124,7 @@
     <div class="vent-alarm-banner" id="alarm-banner" aria-live="polite"></div>
 
     <!-- Workstation grid: Vitals | BIS+Vent | Controls -->
+    <div class="vent-workstation__grid-wrap">
     <div class="workstation-grid">
 
       <!-- ════════════════════════════════════════════════════════════════════
@@ -495,6 +506,7 @@
     </dialog>
 
     </div><!-- /workstation-grid -->
+    </div><!-- /vent-workstation__grid-wrap -->
 
     <!-- ══════════════════════════════════════════════════════════════════════
          CLINICAL SCENARIOS
@@ -1173,6 +1185,7 @@
   </div>
 </dialog>
 
+<script src="../js/site-nav-mobile.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../platform/js/supabase-client.js"></script>
 <script src="../platform/js/ai-chat.js"></script>

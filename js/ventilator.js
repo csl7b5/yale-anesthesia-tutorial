@@ -2005,9 +2005,60 @@
   /* ─────────────────────────────────────────────────────────────────────────
      INIT
      ───────────────────────────────────────────────────────────────────────── */
+  /* ── Narrow viewports: shrink fixed ~1055px grid to fit width (after canvases size at full res) */
+  const WORKSTATION_GRID_INVARIANT_PX = 1055;
+
+  function initWorkstationFit() {
+    const wrap = document.querySelector('.vent-workstation__grid-wrap');
+    const grid = document.querySelector('.workstation-grid');
+    if (!wrap || !grid) return;
+
+    const mqWide = window.matchMedia('(min-width: 1101px)');
+
+    function apply() {
+      grid.style.removeProperty('transform');
+      grid.style.removeProperty('transform-origin');
+      wrap.style.removeProperty('min-height');
+
+      if (mqWide.matches) {
+        grid.style.removeProperty('zoom');
+        wrap.style.removeProperty('overflow-x');
+        return;
+      }
+      const avail = wrap.clientWidth;
+      if (avail < 48) {
+        requestAnimationFrame(apply);
+        return;
+      }
+      const z = Math.min(1, avail / WORKSTATION_GRID_INVARIANT_PX);
+      grid.style.zoom = String(z);
+      wrap.style.overflowX = 'visible';
+
+      /* If zoom doesn’t affect layout (some Firefox / edge cases), fall back to transform + height */
+      requestAnimationFrame(() => {
+        if (z >= 0.999) return;
+        const laidOutW = grid.getBoundingClientRect().width;
+        if (laidOutW <= avail + 6) return;
+        grid.style.removeProperty('zoom');
+        grid.style.transformOrigin = 'top center';
+        grid.style.transform = 'scale(' + z + ')';
+        wrap.style.overflowX = 'hidden';
+        wrap.style.minHeight = grid.offsetHeight * z + 'px';
+      });
+    }
+
+    apply();
+    window.addEventListener('resize', apply, { passive: true });
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => requestAnimationFrame(apply));
+      ro.observe(wrap);
+    }
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(() => {
       initCanvases();
+      initWorkstationFit();
       initControls();
       initVentChat();
       initTOF();

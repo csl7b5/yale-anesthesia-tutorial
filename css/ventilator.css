@@ -28,7 +28,7 @@ html { scrollbar-gutter: stable; }
   min-width: 0;           /* prevents flex-child min-content expansion */
   margin: 0 auto;
   padding: 1.25rem 1.25rem 2rem;
-  overflow-x: hidden;     /* clip any residual horizontal overflow without scroll */
+  overflow-x: hidden;     /* desktop: clip; narrow viewports override below */
 }
 
 /* ── Alarm banner ────────────────────────────────────────────────────────── */
@@ -55,6 +55,34 @@ html { scrollbar-gutter: stable; }
   align-items: stretch;
   width: max-content;
   margin: 0 auto 10px;
+}
+
+/* ~1055px fixed grid — JS sets zoom on .workstation-grid after canvases init; CSS supports fallback scroll */
+.vent-workstation__grid-wrap {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 1100px) {
+  .vent-workstation {
+    overflow-x: visible;
+  }
+  .vent-workstation__grid-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  /* Swipes on waveforms hit canvas first; let them bubble as scroll to the wrap (no-JS / zoom lag) */
+  .workstation-grid canvas {
+    pointer-events: none;
+  }
+}
+@media (max-width: 960px) {
+  .vent-page .app {
+    overflow-x: visible;
+  }
 }
 
 /* ── Monitor shell — light chassis; .mon-screen = black display (waveforms match canvas #000) ─ */
