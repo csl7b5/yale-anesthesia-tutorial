@@ -1935,6 +1935,76 @@ body {
   min-height: 0;
 }
 
+/* Disclaimer + feedback: fluid width and type on small screens (tab strip ~2.25rem) */
+@media (max-width: 960px) {
+  .disclaimer-widget:hover .disclaimer-widget__panel {
+    width: min(330px, calc(100vw - 2.75rem));
+  }
+  /* No max-width:100% here — panel is width:0 when closed; % resolves to 0 and caps inner at 0,
+     which blows out text height and stretches the vertical tab the full viewport. */
+  .disclaimer-widget__panel {
+    min-width: 0;
+  }
+  .disclaimer-widget__inner {
+    width: min(330px, calc(100vw - 2.75rem));
+    max-width: none;
+    padding: clamp(0.65rem, 3.5vw, 1rem) clamp(0.75rem, 3vw, 1.1rem);
+    gap: clamp(0.35rem, 2vw, 0.45rem);
+  }
+  .disclaimer-widget__tab {
+    padding: clamp(0.55rem, 3.5vw, 1rem) clamp(0.3rem, 1.4vw, 0.45rem);
+    font-size: clamp(0.5rem, 2.6vw, 0.62rem);
+    letter-spacing: clamp(0.07em, 0.45vw, 0.12em);
+  }
+  .disclaimer-widget__heading {
+    font-size: clamp(0.56rem, 3vw, 0.68rem);
+  }
+  .disclaimer-widget__text {
+    font-size: clamp(0.66rem, 3.2vw, 0.775rem);
+  }
+  .disclaimer-widget__source {
+    font-size: clamp(0.56rem, 2.9vw, 0.68rem);
+  }
+
+  .feedback-widget.is-open .feedback-widget__panel {
+    width: min(540px, calc(100vw - 2.75rem));
+  }
+  .feedback-widget__panel {
+    min-width: 0;
+  }
+  .feedback-widget__inner {
+    width: min(540px, calc(100vw - 2.75rem));
+    max-width: none;
+    height: min(65dvh, 520px);
+    padding: clamp(0.55rem, 3vw, 0.75rem) clamp(0.6rem, 2.5vw, 0.85rem);
+    gap: clamp(0.3rem, 2vw, 0.4rem);
+  }
+  .feedback-widget__tab {
+    padding: clamp(0.55rem, 3.5vw, 1rem) clamp(0.3rem, 1.4vw, 0.45rem);
+    font-size: clamp(0.5rem, 2.6vw, 0.62rem);
+    letter-spacing: clamp(0.07em, 0.45vw, 0.12em);
+  }
+  .feedback-widget__header {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .feedback-widget__title {
+    font-size: clamp(0.6rem, 3vw, 0.72rem);
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .feedback-widget__newtab {
+    font-size: clamp(0.56rem, 2.9vw, 0.68rem);
+    white-space: normal;
+  }
+  .feedback-widget__hint {
+    font-size: clamp(0.54rem, 2.7vw, 0.62rem);
+  }
+  .feedback-widget__close {
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+  }
+}
+
 /* ── Monitor AI button (inside cabinet-scale) ───────────────────────────── */
 
 .monitor__ai-btn {
