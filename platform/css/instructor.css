@@ -93,6 +93,30 @@ body[data-required-role="instructor"] .dashboard-main {
 /* Hint text */
 .inst-hint { font-size: 0.82rem; color: #6b7280; margin: 0.3rem 0 0.8rem; }
 
+.inst-account-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0.35rem 0 0.15rem;
+}
+#inst-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 1rem;
+}
+.inst-profile-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+.inst-profile-save-status {
+  font-size: 0.82rem;
+}
+
 /* Tables */
 .inst-table {
   width: 100%;

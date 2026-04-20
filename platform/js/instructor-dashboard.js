@@ -128,29 +128,83 @@
     el.removeAttribute('open');
   }
 
+  function applyWelcomeHeader(profile) {
+    const h = $('welcome-name');
+    const m = $('welcome-meta');
+    if (!h) return;
+    const name = profile?.display_name?.trim();
+    h.textContent = name ? `Welcome, ${name}` : 'Instructor Dashboard';
+    if (m) {
+      const aff = profile?.institution?.trim();
+      if (aff) {
+        m.textContent = aff;
+        m.removeAttribute('hidden');
+      } else {
+        m.textContent = '';
+        m.setAttribute('hidden', '');
+      }
+    }
+  }
+
   /* ── Init ───────────────────────────────────────────────────────────── */
   async function init() {
     const user = await SB.getUser();
     if (!user) return;
     const profile = await SB.getProfile();
-    if (profile?.display_name) {
-      $('welcome-name').textContent = `Welcome, ${profile.display_name}`;
-    }
+    if (profile) applyWelcomeHeader(profile);
 
     setupTabs();
     setupCohortModal();
     $('cohort-modal-close')?.addEventListener('click', () => {
       document.getElementById('cohort-modal')?.close();
     });
-    window.openAccountModal = () => openModalSafe($('account-modal'));
+    window.openAccountModal = async () => {
+      const p = await SB.getProfile();
+      if (p) {
+        const n = $('inst-profile-name');
+        const a = $('inst-profile-affiliation');
+        if (n) n.value = p.display_name || '';
+        if (a) a.value = p.institution || '';
+        const st = $('inst-profile-save-status');
+        if (st) st.textContent = '';
+      }
+      openModalSafe($('account-modal'));
+    };
     window.closeAccountModal = () => closeModalSafe($('account-modal'));
-    $('btn-account-settings')?.addEventListener('click', window.openAccountModal);
+    $('btn-account-settings')?.addEventListener('click', () => window.openAccountModal());
     $('btn-apply-filters').addEventListener('click', applyFilters);
     $('btn-export-attempts').addEventListener('click', () => exportCSV('attempts'));
     $('btn-export-steps').addEventListener('click', () => exportCSV('steps'));
     $('btn-export-tutorials').addEventListener('click', () => exportCSV('tutorials'));
     $('btn-export-pyxis')?.addEventListener('click', () => exportCSV('pyxis'));
     $('learner-select').addEventListener('change', onLearnerChange);
+
+    $('inst-profile-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = $('inst-profile-name')?.value.trim() ?? '';
+      const aff = $('inst-profile-affiliation')?.value.trim() ?? '';
+      const st = $('inst-profile-save-status');
+      if (st) {
+        st.textContent = 'Saving…';
+        st.style.color = '#58687a';
+      }
+      const { data, error } = await SB.updateProfile({
+        display_name: name || null,
+        institution: aff || 'Yale',
+      });
+      if (error) {
+        if (st) {
+          st.textContent = error.message || 'Could not save';
+          st.style.color = '#d44';
+        }
+        return;
+      }
+      if (st) {
+        st.textContent = 'Saved.';
+        st.style.color = '#2a7';
+      }
+      applyWelcomeHeader(data);
+    });
 
     // Password update
     $('set-pw-form')?.addEventListener('submit', async (e) => {

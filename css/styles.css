@@ -1389,6 +1389,76 @@ body {
 }
 
 
+.about-page__row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Meet Your Team: attendings + students on one horizontal row (two sections) */
+.about-page__row--split {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1.5rem 2rem;
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 3.5rem;
+  box-sizing: border-box;
+  padding: 0 0.5rem;
+}
+
+.about-page__row--split > .about-page__group {
+  margin-bottom: 0;
+  width: auto; /* override .about-page__group 100% so both columns share one row */
+}
+
+/* Attendings: wide enough for three 152px bubbles + 2× column-gap (2rem) in one row */
+.about-page__row--split > .about-page__group:not(#students-group) {
+  flex: 0 1 auto;
+  box-sizing: border-box;
+  min-width: 520px;
+  max-width: 600px;
+  width: min(600px, 100%);
+}
+
+/* Students: narrower column while the roster is small */
+.about-page__row--split > #students-group {
+  flex: 0 1 260px;
+  max-width: 280px;
+  min-width: 200px;
+}
+
+/* Stack when viewport can’t fit both columns (~600 + gap + 280 + padding) */
+@media (max-width: 960px) {
+  .about-page__row--split {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+  }
+  .about-page__row--split > .about-page__group {
+    max-width: 920px;
+    width: 100%;
+  }
+  .about-page__row--split > .about-page__group:not(#students-group) {
+    min-width: 0;
+    max-width: 920px;
+    width: 100%;
+  }
+  .about-page__row--split > #students-group {
+    flex: 1 1 auto;
+    max-width: 920px;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 .about-page__group {
   display: flex;
   flex-direction: column;

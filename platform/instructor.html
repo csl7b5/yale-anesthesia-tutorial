@@ -42,6 +42,7 @@
     <!-- ── Welcome + filters ────────────────────────────────────────────── -->
     <div class="dash-welcome">
       <h1 class="dash-welcome__name" id="welcome-name">Instructor Dashboard</h1>
+      <p class="dash-welcome__meta" id="welcome-meta" hidden></p>
       <div class="inst-filters">
         <div class="inst-filter-group">
           <label class="inst-filter-label">Cohort</label>
@@ -228,6 +229,23 @@
   <dialog id="account-modal">
     <div style="min-width:320px;max-width:480px;padding:0.4rem">
       <h3 style="margin:0 0 0.4rem;font-size:1rem">Account Settings</h3>
+      <p class="inst-hint" style="margin-top:0">How you appear in the dashboard header.</p>
+      <form id="inst-profile-form">
+        <label class="inst-account-label" for="inst-profile-name">Preferred name</label>
+        <input id="inst-profile-name" type="text" maxlength="120" class="inst-input" placeholder="Your name" autocomplete="name" />
+        <label class="inst-account-label" for="inst-profile-affiliation">Affiliation / institution</label>
+        <input id="inst-profile-affiliation" type="text" maxlength="160" class="inst-input" placeholder="e.g. Yale School of Medicine" list="inst-profile-school-list" autocomplete="organization" />
+        <datalist id="inst-profile-school-list">
+          <option value="Yale School of Medicine"></option>
+          <option value="Yale Physician Associate Program"></option>
+          <option value="Yale School of Nursing"></option>
+          <option value="Visiting / other institution"></option>
+        </datalist>
+        <div class="inst-profile-form__actions">
+          <button type="submit" class="inst-btn">Save profile</button>
+          <span id="inst-profile-save-status" class="inst-profile-save-status"></span>
+        </div>
+      </form>
       <p class="inst-hint">Set or update your password so you can sign in without a magic link.</p>
       <form id="set-pw-form" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap">
         <input id="new-pw" type="password" placeholder="New password (min 6 chars)" minlength="6" required class="inst-input" style="width:100%;margin-bottom:0" />
