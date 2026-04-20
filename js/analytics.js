@@ -315,6 +315,26 @@
         });
       });
 
+    document.addEventListener('ventwave_focus_preset', (e) => {
+      const d = e.detail || {};
+      track('ventwaves_preset_linked', {
+        preset: d.preset || null,
+        source: d.source || 'tutorial',
+        scenario_id: d.scenario_id || null,
+        step_index: d.step_index ?? null,
+      });
+    });
+
+    document.addEventListener('ventwave_quiz_answered', (e) => {
+      const d = e.detail || {};
+      track('ventwaves_quiz_answer', {
+        preset: d.preset || null,
+        selected_index: d.selected_index ?? null,
+        correct_index: d.correct_index ?? null,
+        is_correct: !!d.is_correct,
+      });
+    });
+
     // ── Tutorial reset buttons ────────────────────────────────────────────────
     document.addEventListener('click', e => {
       const btn = e.target.closest('[data-tut-reset]');

@@ -127,34 +127,242 @@
         'Moderate compliance and resistance. VC delivers set TV with a **PIP–Pplat gap** from airway resistance; expiratory flow decays with the **RC time constant (τ = R×C)**.',
       vent: { mode: 'VC', tv: 480, pip: 12, rr: 12, peep: 5, ti: 1.0 },
       patient: Object.assign({}, BASELINE_PATIENT),
+      recognition: {
+        cues: [
+          'PIP and Pplat are both moderate with only a small peak-to-plateau gap.',
+          'Expiratory flow reaches baseline before the next inspiration.',
+          'P-V loop has expected width without dramatic rightward shift.',
+        ],
+        diagnosis: 'Baseline mechanics with no dominant obstructive or restrictive signature.',
+        immediateMove: 'Use this as the visual anchor before comparing disease patterns.',
+      },
+      quiz: {
+        question: 'Which statement best matches this baseline pattern?',
+        choices: [
+          'High resistance with dynamic hyperinflation',
+          'Severely reduced compliance requiring high driving pressure',
+          'Near-normal mechanics with complete exhalation',
+          'Large circuit leak causing major inspired-expired mismatch',
+        ],
+        correctIndex: 2,
+        explanation: 'Normal mechanics show moderate pressures and complete return of flow to zero before the next breath.',
+      },
     },
-    obstructive: {
-      label: 'Obstructive / bronchospasm',
+    reduced_compliance_ards: {
+      label: 'Reduced compliance: ARDS',
       blurb:
-        '**High airway resistance** widens PIP–Pplat and **limits peak expiratory flow** while **prolonging** the expiratory tail (often still below baseline at end-expiration). Lower RR lengthens Te; treat bronchospasm, not just the ventilator numbers.',
+        '**Very low compliance** shifts pressure upward for the same TV: both **PIP and Pplat rise** while the peak-to-plateau gap stays relatively modest if resistance is unchanged.',
+      vent: { mode: 'VC', tv: 440, pip: 12, rr: 18, peep: 10, ti: 1.0 },
+      patient: { compliance: 18, resistance: 10, leak: 0 },
+      recognition: {
+        cues: [
+          'Paw trace rides high with elevated plateau pressure.',
+          'PIP and Pplat both increase (not just PIP alone).',
+          'Flow may still return to baseline; obstruction is not the dominant problem.',
+        ],
+        diagnosis: 'Reduced compliance (stiff lungs), consistent with ARDS physiology.',
+        immediateMove: 'Lower injurious VT, optimize PEEP, and monitor driving pressure/plateau.',
+      },
+      quiz: {
+        question: 'In this ARDS-like pattern, which pressure relationship is expected?',
+        choices: [
+          'PIP rises while plateau stays low and unchanged',
+          'Both PIP and plateau rise because compliance is reduced',
+          'Pressures normalize because resistance is low',
+          'Only expiratory flow changes; pressure remains unaffected',
+        ],
+        correctIndex: 1,
+        explanation: 'Low compliance raises alveolar pressure requirements, so both peak and plateau pressures trend upward.',
+      },
+    },
+    reduced_compliance_pneumonia: {
+      label: 'Reduced compliance: severe pneumonia',
+      blurb:
+        'Patchy stiff lung units in severe pneumonia produce a **compliance-limited** profile similar to ARDS but often less extreme: elevated plateau pressure with relatively preserved resistive gap.',
+      vent: { mode: 'VC', tv: 450, pip: 12, rr: 16, peep: 8, ti: 1.0 },
+      patient: { compliance: 24, resistance: 10, leak: 0 },
+      recognition: {
+        cues: [
+          'Plateau pressure remains elevated for delivered volume.',
+          'Peak-to-plateau gap is present but not the main abnormality.',
+          'P-V loop appears steeper/right-shifted versus normal.',
+        ],
+        diagnosis: 'Reduced compliance from parenchymal disease (e.g., severe pneumonia).',
+        immediateMove: 'Prioritize lung-protective settings and reassess oxygenation strategy.',
+      },
+      quiz: {
+        question: 'Which interpretation fits this severe-pneumonia mechanics pattern?',
+        choices: [
+          'Primary airway obstruction is the key driver',
+          'Compliance loss is dominant and plateau pressure rises',
+          'Large circuit leak is causing all abnormalities',
+          'Normal mechanics with only RR artifact',
+        ],
+        correctIndex: 1,
+        explanation: 'In compliance-dominant disease, plateau pressure rises with volume delivery even when resistance is not markedly elevated.',
+      },
+    },
+    reduced_compliance_edema: {
+      label: 'Reduced compliance: pulmonary edema',
+      blurb:
+        'Pulmonary edema creates **stiff, fluid-loaded lungs**: pressure requirements rise for volume delivery, with elevated plateau and mean airway pressure patterns.',
+      vent: { mode: 'VC', tv: 420, pip: 12, rr: 18, peep: 10, ti: 1.0 },
+      patient: { compliance: 21, resistance: 11, leak: 0 },
+      recognition: {
+        cues: [
+          'Both peak and plateau pressures trend upward.',
+          'Higher baseline pressure burden (PEEP + reduced compliance).',
+          'Flow shape is not classic obstructive shark-fin dominance.',
+        ],
+        diagnosis: 'Compliance-limited physiology consistent with pulmonary edema patterning.',
+        immediateMove: 'Protective ventilation, optimize PEEP and hemodynamics, treat underlying cause.',
+      },
+      quiz: {
+        question: 'What waveform clue most supports pulmonary-edema-type reduced compliance?',
+        choices: [
+          'Large isolated peak pressure jump with low plateau',
+          'High plateau pressure with generally elevated Paw profile',
+          'Major inspired-expired volume mismatch from leak',
+          'Near-zero airway pressures throughout',
+        ],
+        correctIndex: 1,
+        explanation: 'Fluid-stiff lungs require higher alveolar pressures, so plateau and overall Paw profile rise.',
+      },
+    },
+    obstructive_bronchospasm: {
+      label: 'Obstruction: bronchospasm',
+      blurb:
+        '**High airway resistance** widens PIP–Pplat and **limits peak expiratory flow** while **prolonging** the expiratory tail (often still below baseline at end-expiration).',
       vent: { mode: 'VC', tv: 480, pip: 12, rr: 11, peep: 5, ti: 1.0 },
       patient: { compliance: 50, resistance: 32, leak: 0 },
+      recognition: {
+        cues: [
+          'Large peak-to-plateau pressure gap (resistive load).',
+          'Expiratory flow decays slowly and may not reach zero by next breath.',
+          'Loop and flow morphology suggest prolonged time constants.',
+        ],
+        diagnosis: 'Obstructive physiology from bronchospasm.',
+        immediateMove: 'Bronchodilate, deepen anesthetic as needed, and extend expiratory time (lower RR).',
+      },
+      quiz: {
+        question: 'Which finding is most specific for bronchospasm-type obstruction here?',
+        choices: [
+          'High plateau with minimal peak-plateau difference',
+          'Large PIP-Pplat gap with delayed expiratory flow return',
+          'Equal inspired and expired volume mismatch',
+          'Very low airway pressures overall',
+        ],
+        correctIndex: 1,
+        explanation: 'Obstruction primarily raises resistive pressure, widening PIP-Pplat and slowing expiratory emptying.',
+      },
     },
-    restrictive: {
-      label: 'Restrictive lungs',
+    obstructive_mucus_plug: {
+      label: 'Obstruction: mucus plug',
       blurb:
-        '**Very low compliance** drives **Pplat and PIP** up for the same delivered TV (VC). The **PIP–Pplat gap stays modest** (resistance is normal) — the story is **stiff lungs** and **driving pressure**, not obstruction.',
-      vent: { mode: 'VC', tv: 480, pip: 12, rr: 14, peep: 5, ti: 1.0 },
-      patient: { compliance: 16, resistance: 8, leak: 0 },
+        'A mucus plug causes **localized airway narrowing/occlusion**, often producing a resistive pressure rise with delayed expiratory emptying similar to other obstructive patterns.',
+      vent: { mode: 'VC', tv: 470, pip: 12, rr: 12, peep: 5, ti: 1.0 },
+      patient: { compliance: 46, resistance: 28, leak: 0 },
+      recognition: {
+        cues: [
+          'Peak pressure rises more than plateau pressure.',
+          'Expiratory flow tail is prolonged with slower return toward baseline.',
+          'Pattern resembles obstruction despite relatively preserved compliance.',
+        ],
+        diagnosis: 'Airway obstruction pattern compatible with mucus plugging.',
+        immediateMove: 'Suction/clear airway and reassess breath-to-breath resistance profile.',
+      },
+      quiz: {
+        question: 'A likely first troubleshooting action for this mucus-plug pattern is:',
+        choices: [
+          'Increase RR to wash out CO2',
+          'Perform airway clearance/suction and reassess mechanics',
+          'Drop PEEP to zero immediately',
+          'Ignore pressures because plateau is normal',
+        ],
+        correctIndex: 1,
+        explanation: 'Mucus plugs are mechanical airway problems; airway clearance is a key early intervention.',
+      },
+    },
+    obstructive_kinked_ett: {
+      label: 'Obstruction: kinked ETT',
+      blurb:
+        'A kinked ETT acutely increases airway resistance: expect **higher peak pressure**, widened peak-to-plateau gap, and impaired expiratory flow return.',
+      vent: { mode: 'VC', tv: 470, pip: 12, rr: 12, peep: 5, ti: 1.0 },
+      patient: { compliance: 50, resistance: 35, leak: 0 },
+      recognition: {
+        cues: [
+          'Abruptly widened peak-to-plateau gap.',
+          'Flow waveform demonstrates obstructive expiratory limitation.',
+          'Compliance-related signs are less dominant than resistive changes.',
+        ],
+        diagnosis: 'Mechanical airway obstruction, classically kinked or partially occluded ETT.',
+        immediateMove: 'Check tube patency/position and relieve obstruction immediately.',
+      },
+      quiz: {
+        question: 'This pattern should prompt which immediate bedside check?',
+        choices: [
+          'Trend BIS first before touching airway',
+          'Verify endotracheal tube patency and circuit integrity',
+          'Increase tidal volume to force recruitment',
+          'Switch to APRV immediately',
+        ],
+        correctIndex: 1,
+        explanation: 'A sudden resistive pattern warrants immediate tube/circuit troubleshooting before complex mode changes.',
+      },
     },
     leak: {
       label: 'Circuit leak',
       blurb:
-        'A **large leak** means exhaled TV tracks **below** inspired TV — the **volume waveform** does not return to the same baseline each cycle. Waveform shapes for pressure/flow may look surprisingly normal; suspect leak when MV alarms fire.',
+        'A **large leak** means exhaled TV tracks **below** inspired TV — the **volume waveform** does not return to the same baseline each cycle. Pressure/flow may look deceptively normal.',
       vent: { mode: 'VC', tv: 480, pip: 12, rr: 12, peep: 5, ti: 1.0 },
       patient: { compliance: 50, resistance: 8, leak: 0.45 },
+      recognition: {
+        cues: [
+          'Inspired and expired volume mismatch is prominent.',
+          'Waveform pressure shape may remain fairly preserved.',
+          'Volume trace baseline behavior appears inconsistent over cycles.',
+        ],
+        diagnosis: 'Circuit/airway leak rather than pure resistance or compliance failure.',
+        immediateMove: 'Check cuff/circuit connections and resolve leak source.',
+      },
+      quiz: {
+        question: 'Which clue most strongly points toward leak physiology?',
+        choices: [
+          'Large PIP-Pplat gap with severe flow delay',
+          'High plateau pressure with stiff-loop signature',
+          'Persistent inspired-expired volume mismatch',
+          'Normal volume behavior with isolated EtCO2 drift',
+        ],
+        correctIndex: 2,
+        explanation: 'Large inspired-expired volume mismatch is a hallmark of leak states.',
+      },
     },
     air_trapping: {
       label: 'Air trapping / risk of auto-PEEP',
       blurb:
-        '**Obstruction + short Te** (high RR, long Ti): expiratory flow is **still negative** when the next breath begins — **auto-PEEP** stacks. The flow trace “never settles” to zero before inspiration.',
+        '**Obstruction + short Te** (high RR, long Ti): expiratory flow is **still negative** when the next breath begins — **auto-PEEP** stacks. The flow trace never fully settles to zero.',
       vent: { mode: 'VC', tv: 480, pip: 12, rr: 24, peep: 5, ti: 1.2 },
       patient: { compliance: 50, resistance: 30, leak: 0 },
+      recognition: {
+        cues: [
+          'Next inspiration begins before expiratory flow reaches zero.',
+          'Higher effective end-expiratory pressure builds breath-to-breath.',
+          'Pattern worsens with faster rate or longer inspiratory time.',
+        ],
+        diagnosis: 'Dynamic hyperinflation with auto-PEEP risk.',
+        immediateMove: 'Reduce RR and/or shorten Ti to lengthen expiratory time.',
+      },
+      quiz: {
+        question: 'Best ventilator adjustment for this air-trapping pattern?',
+        choices: [
+          'Increase RR to improve minute ventilation',
+          'Lengthen expiratory time by lowering RR',
+          'Increase leak percentage',
+          'Ignore because plateau is unchanged',
+        ],
+        correctIndex: 1,
+        explanation: 'Auto-PEEP improves by giving lungs more time to exhale (lower RR and longer Te).',
+      },
     },
     pc_mild: {
       label: 'Pressure control — variable TV',
@@ -162,7 +370,32 @@
         '**PC-CMV** holds a **pressure target** (ΔP above PEEP); **TV is not fixed** — it falls out of compliance, Ti, and resistance. Compare to VC where TV is set and pressures swing with mechanics.',
       vent: { mode: 'PC', tv: 480, pip: 16, rr: 12, peep: 5, ti: 1.0 },
       patient: { compliance: 55, resistance: 10, leak: 0 },
+      recognition: {
+        cues: [
+          'Pressure waveform follows pressure-target shape rather than fixed flow pattern.',
+          'Delivered volume varies with mechanics and inspiratory time.',
+          'Flow decelerates during inspiration in pressure-targeted breaths.',
+        ],
+        diagnosis: 'Pressure-targeted ventilation with mechanics-dependent tidal volume.',
+        immediateMove: 'Monitor TV/exhaled volume closely when compliance or resistance changes.',
+      },
+      quiz: {
+        question: 'In PC-CMV, what primarily determines delivered tidal volume?',
+        choices: [
+          'Set VT slider only',
+          'Patient mechanics plus pressure target and inspiratory time',
+          'PEEP alone',
+          'Flow trigger threshold only',
+        ],
+        correctIndex: 1,
+        explanation: 'Pressure control sets pressure, so delivered volume depends on compliance, resistance, and time at pressure.',
+      },
     },
+  };
+
+  const PRESET_ALIASES = {
+    obstructive: 'obstructive_bronchospasm',
+    restrictive: 'reduced_compliance_ards',
   };
 
   function initVentWaveTutorial() {
@@ -175,6 +408,12 @@
     const els = {
       preset: document.getElementById('vent-tut-preset'),
       presetBlurb: document.getElementById('vent-tut-preset-blurb'),
+      recCues: document.getElementById('vent-tut-recognition-cues'),
+      recDx: document.getElementById('vent-tut-recognition-dx'),
+      recAction: document.getElementById('vent-tut-recognition-action'),
+      quizQuestion: document.getElementById('vent-tut-quiz-question'),
+      quizChoices: document.getElementById('vent-tut-quiz-choices'),
+      quizFeedback: document.getElementById('vent-tut-quiz-feedback'),
       modeVc: document.getElementById('vent-tut-btn-vc'),
       modePc: document.getElementById('vent-tut-btn-pc'),
       vcOnly: document.getElementById('vent-tut-vc-only'),
@@ -219,7 +458,7 @@
     }
 
     const WAVE_W = 620;
-    const WAVE_H = 128;
+    const WAVE_H = 160;
     const PV_W = 320;
     const PV_H = 200;
     let ctxPaw;
@@ -616,6 +855,89 @@
       set(els.leak, Math.round(patient.leak * 100), els.lblLeak);
     }
 
+    let activePresetKey = 'normal';
+
+    function normalizePresetKey(key) {
+      return PRESET_ALIASES[key] || key;
+    }
+
+    function clearQuiz() {
+      if (els.quizQuestion) {
+        els.quizQuestion.textContent = 'Pick a preset to start the recognition check.';
+      }
+      if (els.quizChoices) els.quizChoices.innerHTML = '';
+      if (els.quizFeedback) {
+        els.quizFeedback.textContent = '';
+        els.quizFeedback.hidden = true;
+      }
+    }
+
+    function renderRecognition(key) {
+      if (!els.recCues || !els.recDx || !els.recAction) return;
+      if (key === 'custom') {
+        els.recCues.innerHTML = '<li>Build your own pattern by changing resistance, compliance, leak, and timing.</li>';
+        els.recDx.textContent = 'Custom mechanics playground.';
+        els.recAction.textContent = 'Compare your custom trace against baseline and decide if it is resistance-, compliance-, or leak-dominant.';
+        return;
+      }
+      const p = PRESETS[key];
+      if (!p || !p.recognition) {
+        els.recCues.innerHTML = '';
+        els.recDx.textContent = '-';
+        els.recAction.textContent = '-';
+        return;
+      }
+      els.recCues.innerHTML = p.recognition.cues.map((c) => `<li>${c}</li>`).join('');
+      els.recDx.textContent = p.recognition.diagnosis;
+      els.recAction.textContent = p.recognition.immediateMove;
+    }
+
+    function emitQuizAnswered(payload) {
+      document.dispatchEvent(new CustomEvent('ventwave_quiz_answered', { detail: payload }));
+    }
+
+    function renderQuiz(key) {
+      if (!els.quizQuestion || !els.quizChoices || !els.quizFeedback) return;
+      if (key === 'custom') {
+        clearQuiz();
+        return;
+      }
+      const p = PRESETS[key];
+      if (!p || !p.quiz) {
+        clearQuiz();
+        return;
+      }
+      els.quizQuestion.textContent = p.quiz.question;
+      els.quizFeedback.textContent = '';
+      els.quizFeedback.hidden = true;
+      els.quizChoices.innerHTML = '';
+      p.quiz.choices.forEach((choiceText, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'vent-tut__quiz-choice';
+        btn.textContent = choiceText;
+        btn.dataset.choiceIdx = String(idx);
+        btn.addEventListener('click', () => {
+          const isCorrect = idx === p.quiz.correctIndex;
+          els.quizChoices.querySelectorAll('.vent-tut__quiz-choice').forEach((b, i) => {
+            b.disabled = true;
+            b.classList.remove('vent-tut__quiz-choice--correct', 'vent-tut__quiz-choice--wrong');
+            if (i === p.quiz.correctIndex) b.classList.add('vent-tut__quiz-choice--correct');
+            else if (i === idx) b.classList.add('vent-tut__quiz-choice--wrong');
+          });
+          els.quizFeedback.hidden = false;
+          els.quizFeedback.innerHTML = `${isCorrect ? '<strong>Correct.</strong>' : '<strong>Not quite.</strong>'} ${p.quiz.explanation}`;
+          emitQuizAnswered({
+            preset: key,
+            selected_index: idx,
+            correct_index: p.quiz.correctIndex,
+            is_correct: isCorrect,
+          });
+        });
+        els.quizChoices.appendChild(btn);
+      });
+    }
+
     function presetBlurbHtml(key) {
       if (!els.presetBlurb) return;
       if (key === 'custom') {
@@ -629,14 +951,18 @@
       els.presetBlurb.innerHTML = h;
     }
 
-    function applyPreset(key) {
+    function applyPreset(rawKey) {
+      const key = normalizePresetKey(rawKey);
       const p = PRESETS[key];
       if (!p) return;
+      activePresetKey = key;
       vent = Object.assign({}, p.vent);
       patient = Object.assign({}, p.patient);
       if (els.preset) els.preset.value = key;
       syncUI();
       presetBlurbHtml(key);
+      renderRecognition(key);
+      renderQuiz(key);
       redraw();
     }
 
@@ -915,7 +1241,10 @@
           else lbl.textContent = el.value;
         }
         if (els.preset) els.preset.value = 'custom';
+        activePresetKey = 'custom';
         presetBlurbHtml('custom');
+        renderRecognition('custom');
+        clearQuiz();
         redraw();
       });
     }
@@ -926,7 +1255,10 @@
       els.modePc?.classList.remove('vent-tut__mode-btn--on');
       syncUI();
       if (els.preset) els.preset.value = 'custom';
+      activePresetKey = 'custom';
       presetBlurbHtml('custom');
+      renderRecognition('custom');
+      clearQuiz();
       redraw();
     });
     els.modePc?.addEventListener('click', () => {
@@ -935,7 +1267,10 @@
       els.modeVc?.classList.remove('vent-tut__mode-btn--on');
       syncUI();
       if (els.preset) els.preset.value = 'custom';
+      activePresetKey = 'custom';
       presetBlurbHtml('custom');
+      renderRecognition('custom');
+      clearQuiz();
       redraw();
     });
 
@@ -949,9 +1284,12 @@
     wireSlider(els.leak, els.lblLeak);
 
     els.preset?.addEventListener('change', () => {
-      const v = els.preset.value;
+      const v = normalizePresetKey(els.preset.value);
       if (v === 'custom') {
+        activePresetKey = 'custom';
         presetBlurbHtml('custom');
+        renderRecognition('custom');
+        clearQuiz();
         return;
       }
       applyPreset(v);
@@ -975,8 +1313,15 @@
     dialog.addEventListener('toggle', e => {
       if (e.newState === 'open') {
         syncUI();
-        if (els.preset && els.preset.value && els.preset.value !== 'custom') presetBlurbHtml(els.preset.value);
-        else presetBlurbHtml('custom');
+        if (activePresetKey === 'custom') {
+          presetBlurbHtml('custom');
+          renderRecognition('custom');
+          clearQuiz();
+        } else {
+          presetBlurbHtml(activePresetKey);
+          renderRecognition(activePresetKey);
+          renderQuiz(activePresetKey);
+        }
         sweepReset();
         readStateFromUI();
         updateReadouts(calcDerived(vent, patient), vent.mode);
@@ -993,6 +1338,15 @@
 
     dialog.querySelector('[data-tut-reset="tut-ventwaves"]')?.addEventListener('click', () => {
       applyPreset('normal');
+    });
+
+    document.addEventListener('ventwave_focus_preset', (ev) => {
+      const requested = normalizePresetKey(ev?.detail?.preset || 'normal');
+      if (!dialog.open) dialog.showModal();
+      if (!PRESETS[requested]) return;
+      applyPreset(requested);
+      const wavesTab = dialog.querySelector('.vent-tut__tab[data-tab="waves"]');
+      if (wavesTab) wavesTab.click();
     });
 
     document.getElementById('trig-ventwaves')?.addEventListener('click', () => dialog.showModal());

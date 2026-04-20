@@ -170,8 +170,8 @@ window.DEBRIEF_DATA = {
       'Understand why decreasing respiratory rate is critical in obstructive physiology',
     ],
     stepDomains: [
-      ['airway_resistance', 'ventilator_waveforms', 'bronchospasm_treatment'],
-      ['time_constant_physiology', 'auto_peep', 'ventilator_management'],
+      ['airway_resistance', 'ventilator_waveforms', 'waveform_pattern_recognition', 'bronchospasm_treatment'],
+      ['time_constant_physiology', 'auto_peep', 'waveform_pattern_recognition', 'ventilator_management'],
     ],
     teachingPoints: {
       airway_resistance: [
@@ -181,6 +181,10 @@ window.DEBRIEF_DATA = {
       ventilator_waveforms: [
         'Expiratory flow not returning to zero before the next breath = incomplete exhalation = air trapping.',
         'Capnogram shark-fin: the upsloping Phase III reflects uneven time constants across obstructed lung units.',
+      ],
+      waveform_pattern_recognition: [
+        'Resistance-dominant obstruction raises PIP more than plateau pressure; compliance-dominant disease raises both.',
+        'When expiratory flow remains below zero at next inspiration, dynamic hyperinflation/auto-PEEP is still active even if pressures are improving.',
       ],
       bronchospasm_treatment: [
         'β₂ agonists (salbutamol/albuterol) relax airway smooth muscle directly. Give via MDI into the circuit or nebulizer.',
@@ -237,6 +241,19 @@ window.DEBRIEF_DATA = {
           ],
           correct_index: 1,
           explanation: 'Slower RR extends expiratory time, allowing the lungs to empty before the next breath. Faster RR worsens air trapping. Accept transient hypercapnia.',
+        },
+      ],
+      waveform_pattern_recognition: [
+        {
+          prompt: 'Which waveform pair most strongly suggests persistent obstructive physiology?',
+          choices: [
+            { text: 'High plateau pressure with minimal peak-plateau difference and full exhalation' },
+            { text: 'Large peak-plateau gap plus expiratory flow that fails to return to baseline' },
+            { text: 'Normal pressure curve with only low EtCO2' },
+            { text: 'Equal inspired/expired volume mismatch only' },
+          ],
+          correct_index: 1,
+          explanation: 'Obstruction is recognized by a resistive pressure gap and delayed expiratory emptying (flow not reaching zero).',
         },
       ],
     },

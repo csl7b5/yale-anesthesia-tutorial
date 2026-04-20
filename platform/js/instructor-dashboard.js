@@ -602,6 +602,34 @@
         html += `<tr><td>${esc(r.monitor)}</td><td>${r.opens}</td><td>${r.totalEvents}</td><td>${r.uniqueUsers}</td><td>${r.avgDwell}</td></tr>`;
       }
       html += '</tbody></table>';
+
+      const quizRowsByPreset = {};
+      let linkedPresetCount = 0;
+      for (const ev of ft) {
+        if (ev.monitor === 'ventwaves' && ev.event_type === 'preset_selected' && ev.event_value) {
+          const pv = parseExtra(ev.event_value);
+          if (pv && pv.source === 'scenario') linkedPresetCount++;
+        }
+        if (ev.monitor !== 'ventwaves' || ev.event_type !== 'quiz_answer' || !ev.event_value) continue;
+        const qv = parseExtra(ev.event_value);
+        const preset = qv.preset || 'unknown';
+        if (!quizRowsByPreset[preset]) {
+          quizRowsByPreset[preset] = { preset, attempts: 0, correct: 0 };
+        }
+        quizRowsByPreset[preset].attempts++;
+        if (qv.is_correct === true) quizRowsByPreset[preset].correct++;
+      }
+      const quizRows = Object.values(quizRowsByPreset).sort((a, b) => b.attempts - a.attempts);
+      if (quizRows.length) {
+        html += `<h3 class="dash-section__title" style="margin:1rem 0 0.45rem;font-size:0.85rem">Ventilator pattern recognition</h3>`;
+        html += `<p class="inst-hint">Quiz attempts: ${quizRows.reduce((s, r) => s + r.attempts, 0)} · Scenario-linked wave preset opens: ${linkedPresetCount}</p>`;
+        html += '<table class="inst-table"><thead><tr><th>Preset</th><th>Quiz attempts</th><th>Correct</th><th>Accuracy</th></tr></thead><tbody>';
+        for (const r of quizRows) {
+          const acc = r.attempts ? ((r.correct / r.attempts) * 100).toFixed(0) + '%' : '—';
+          html += `<tr><td>${esc(r.preset)}</td><td>${r.attempts}</td><td>${r.correct}</td><td>${acc}</td></tr>`;
+        }
+        html += '</tbody></table>';
+      }
       $('tutorial-stats-container').innerHTML = html;
     }
 

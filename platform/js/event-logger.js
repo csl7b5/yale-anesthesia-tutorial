@@ -84,6 +84,31 @@
   // ── Ventilator page listeners ────────────────────────────────────────────
 
   function attachVentilatorListeners() {
+    function tutorialValue(v) {
+      if (v == null) return null;
+      if (typeof v === 'string') return v;
+      try {
+        return JSON.stringify(v);
+      } catch {
+        return String(v);
+      }
+    }
+
+    function logTutorial(monitor, eventType, eventValue, extra) {
+      const row = Object.assign(
+        {
+          user_id: userId,
+          session_id: sessionId,
+          monitor: monitor,
+          event_type: eventType,
+        },
+        extra || {}
+      );
+      const ev = tutorialValue(eventValue);
+      if (ev != null) row.event_value = ev;
+      if (currentAttemptId) row.scenario_attempt_id = currentAttemptId;
+      insert('tutorial_events', row);
+    }
 
     // Scenario started (clicking a scenario card)
     document.addEventListener('click', async (e) => {
@@ -171,12 +196,7 @@
     ['ecg', 'abp', 'spo2', 'bis', 'spectral', 'etco2', 'ventwaves'].forEach(monitorId => {
       // Opened
       document.getElementById('trig-' + monitorId)?.addEventListener('click', () => {
-        insert('tutorial_events', {
-          user_id:    userId,
-          session_id: sessionId,
-          monitor:    monitorId,
-          event_type: 'opened',
-        });
+        logTutorial(monitorId, 'opened');
       });
     });
 
@@ -192,13 +212,7 @@
       ['vent-tut-preset',  'ventwaves'],
     ].forEach(([selId, monitor]) => {
       document.getElementById(selId)?.addEventListener('change', function () {
-        insert('tutorial_events', {
-          user_id:     userId,
-          session_id:  sessionId,
-          monitor:     monitor,
-          event_type:  'pathology_selected',
-          event_value: this.value,
-        });
+        logTutorial(monitor, 'pathology_selected', this.value);
       });
     });
 
@@ -207,13 +221,7 @@
       ?.querySelectorAll('.mon-tut__tab')
       .forEach(tab => {
         tab.addEventListener('click', () => {
-          insert('tutorial_events', {
-            user_id:     userId,
-            session_id:  sessionId,
-            monitor:     'etco2',
-            event_type:  'tab_switched',
-            event_value: tab.dataset.tab,
-          });
+          logTutorial('etco2', 'tab_switched', tab.dataset.tab);
         });
       });
 
@@ -221,36 +229,39 @@
       ?.querySelectorAll('.vent-tut__tab')
       .forEach(tab => {
         tab.addEventListener('click', () => {
-          insert('tutorial_events', {
-            user_id:     userId,
-            session_id:  sessionId,
-            monitor:     'ventwaves',
-            event_type:  'tab_switched',
-            event_value: tab.dataset.tab,
-          });
+          logTutorial('ventwaves', 'tab_switched', tab.dataset.tab);
         });
       });
 
+    document.addEventListener('ventwave_focus_preset', (e) => {
+      const d = e.detail || {};
+      logTutorial('ventwaves', 'preset_selected', {
+        preset: d.preset || null,
+        source: d.source || 'tutorial',
+        scenario_id: d.scenario_id || null,
+        step_index: d.step_index ?? null,
+      });
+    });
+
+    document.addEventListener('ventwave_quiz_answered', (e) => {
+      const d = e.detail || {};
+      logTutorial('ventwaves', 'quiz_answer', {
+        preset: d.preset || null,
+        selected_index: d.selected_index ?? null,
+        correct_index: d.correct_index ?? null,
+        is_correct: !!d.is_correct,
+      });
+    });
+
     // TOF tutorial
     document.getElementById('tof-card')?.addEventListener('click', () => {
-      insert('tutorial_events', {
-        user_id:    userId,
-        session_id: sessionId,
-        monitor:    'tof',
-        event_type: 'opened',
-      });
+      logTutorial('tof', 'opened');
     });
 
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('#tof-preset-btns button, #tof-drug-btns button');
       if (btn) {
-        insert('tutorial_events', {
-          user_id:     userId,
-          session_id:  sessionId,
-          monitor:     'tof',
-          event_type:  'preset_selected',
-          event_value: btn.textContent?.trim(),
-        });
+        logTutorial('tof', 'preset_selected', btn.textContent?.trim());
       }
     });
   }

@@ -548,6 +548,10 @@
           <div class="scen-monitor-clue" id="scen-monitor-clue" hidden>
             <span class="scen-clue-icon">⬡</span>
             <span id="scen-clue-text"></span>
+            <div class="scen-wave-hint" id="scen-wave-hint" hidden>
+              <span id="scen-wave-hint-text"></span>
+              <button class="scen-wave-hint__btn" id="scen-wave-hint-btn" type="button">Open linked wave pattern</button>
+            </div>
           </div>
           <div class="scen-qa" id="scen-qa"><!-- question + choices injected here --></div>
         </div>
@@ -850,20 +854,70 @@
     </header>
     <p class="vent-tut__lead">One-breath traces use the same simplified physics as the main simulator. Change <strong>mode</strong>, <strong>timing</strong>, and <strong>lung mechanics</strong>, or pick a <strong>preset</strong>, and watch how pressure, flow, volume, and the P–V loop respond.</p>
     <div class="vent-tut__layout">
-      <aside class="vent-tut__aside">
+      <aside class="vent-tut__aside vent-tut__aside--learn">
         <div class="mon-tut__selector-row vent-tut__preset-row">
           <label class="mon-tut__select-label" for="vent-tut-preset">Preset scenario</label>
           <select class="mon-tut__select" id="vent-tut-preset">
             <option value="normal">Normal lungs &amp; airways</option>
-            <option value="obstructive">Obstructive / bronchospasm</option>
-            <option value="restrictive">Restrictive lungs</option>
-            <option value="leak">Circuit leak</option>
+            <option value="reduced_compliance_ards">Reduced compliance: ARDS</option>
+            <option value="reduced_compliance_pneumonia">Reduced compliance: severe pneumonia</option>
+            <option value="reduced_compliance_edema">Reduced compliance: pulmonary edema</option>
+            <option value="obstructive_bronchospasm">Obstruction: bronchospasm</option>
+            <option value="obstructive_mucus_plug">Obstruction: mucus plug</option>
+            <option value="obstructive_kinked_ett">Obstruction: kinked ETT</option>
             <option value="air_trapping">Air trapping / auto-PEEP risk</option>
+            <option value="leak">Circuit leak</option>
             <option value="pc_mild">PC-CMV (softer lungs)</option>
             <option value="custom">Custom</option>
           </select>
         </div>
         <div id="vent-tut-preset-blurb" class="vent-tut__preset-blurb" aria-live="polite"></div>
+        <section class="vent-tut__recognition" aria-live="polite">
+          <h3 class="vent-tut__recognition-title">Pattern recognition</h3>
+          <ul class="vent-tut__recognition-cues" id="vent-tut-recognition-cues"></ul>
+          <p class="vent-tut__recognition-dx"><strong>Likely physiology:</strong> <span id="vent-tut-recognition-dx">-</span></p>
+          <p class="vent-tut__recognition-action"><strong>Immediate move:</strong> <span id="vent-tut-recognition-action">-</span></p>
+        </section>
+        <section class="vent-tut__quiz" aria-live="polite">
+          <h3 class="vent-tut__quiz-title">Quick check</h3>
+          <p class="vent-tut__quiz-question" id="vent-tut-quiz-question">Pick a preset to start the recognition check.</p>
+          <div class="vent-tut__quiz-choices" id="vent-tut-quiz-choices"></div>
+          <p class="vent-tut__quiz-feedback" id="vent-tut-quiz-feedback" hidden></p>
+        </section>
+      </aside>
+      <div class="vent-tut__main">
+        <div id="vent-tut-readouts" class="vent-tut__readouts"></div>
+        <div class="vent-tut__tabs" id="tut-ventwaves-tabs" role="tablist" aria-label="Waveform view">
+          <button type="button" class="vent-tut__tab vent-tut__tab--active" data-tab="waves" role="tab" aria-selected="true">Time waveforms</button>
+          <button type="button" class="vent-tut__tab" data-tab="pv" role="tab" aria-selected="false">P–V loop</button>
+        </div>
+        <div class="vent-tut__panel" data-panel="waves">
+          <div class="vent-tut__wave-stack">
+            <div class="vent-tut__wave-row">
+              <span class="vent-tut__wave-lbl" style="color:#ffcc00">Paw<br><small>cmH₂O</small></span>
+              <canvas id="vent-tut-canvas-paw" width="620" height="128" role="img" aria-label="Airway pressure waveform"></canvas>
+            </div>
+            <div class="vent-tut__wave-row">
+              <span class="vent-tut__wave-lbl" style="color:#00ccff">Flow<br><small>L/min</small></span>
+              <canvas id="vent-tut-canvas-flow" width="620" height="128" role="img" aria-label="Flow waveform"></canvas>
+            </div>
+            <div class="vent-tut__wave-row">
+              <span class="vent-tut__wave-lbl" style="color:#00ff99">Volume<br><small>mL</small></span>
+              <canvas id="vent-tut-canvas-vol" width="620" height="128" role="img" aria-label="Volume waveform"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="vent-tut__panel" data-panel="pv" hidden>
+          <div class="vent-tut__pv-wrap">
+            <canvas id="vent-tut-canvas-pv" width="320" height="200" role="img" aria-label="Pressure volume loop"></canvas>
+            <div class="vent-tut__pv-legend">
+              <span style="color:#ffcc00">▸ Insp</span>
+              <span style="color:#00ccff">◂ Exp</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="vent-tut__aside vent-tut__aside--controls">
         <div class="vent-tut__mode">
           <button type="button" id="vent-tut-btn-vc" class="vent-tut__mode-btn vent-tut__mode-btn--on">VC-CMV</button>
           <button type="button" id="vent-tut-btn-pc" class="vent-tut__mode-btn">PC-CMV</button>
@@ -911,38 +965,6 @@
           </div>
         </div>
       </aside>
-      <div class="vent-tut__main">
-        <div id="vent-tut-readouts" class="vent-tut__readouts"></div>
-        <div class="vent-tut__tabs" id="tut-ventwaves-tabs" role="tablist" aria-label="Waveform view">
-          <button type="button" class="vent-tut__tab vent-tut__tab--active" data-tab="waves" role="tab" aria-selected="true">Time waveforms</button>
-          <button type="button" class="vent-tut__tab" data-tab="pv" role="tab" aria-selected="false">P–V loop</button>
-        </div>
-        <div class="vent-tut__panel" data-panel="waves">
-          <div class="vent-tut__wave-stack">
-            <div class="vent-tut__wave-row">
-              <span class="vent-tut__wave-lbl" style="color:#ffcc00">Paw<br><small>cmH₂O</small></span>
-              <canvas id="vent-tut-canvas-paw" width="620" height="128" role="img" aria-label="Airway pressure waveform"></canvas>
-            </div>
-            <div class="vent-tut__wave-row">
-              <span class="vent-tut__wave-lbl" style="color:#00ccff">Flow<br><small>L/min</small></span>
-              <canvas id="vent-tut-canvas-flow" width="620" height="128" role="img" aria-label="Flow waveform"></canvas>
-            </div>
-            <div class="vent-tut__wave-row">
-              <span class="vent-tut__wave-lbl" style="color:#00ff99">Volume<br><small>mL</small></span>
-              <canvas id="vent-tut-canvas-vol" width="620" height="128" role="img" aria-label="Volume waveform"></canvas>
-            </div>
-          </div>
-        </div>
-        <div class="vent-tut__panel" data-panel="pv" hidden>
-          <div class="vent-tut__pv-wrap">
-            <canvas id="vent-tut-canvas-pv" width="320" height="200" role="img" aria-label="Pressure volume loop"></canvas>
-            <div class="vent-tut__pv-legend">
-              <span style="color:#ffcc00">▸ Insp</span>
-              <span style="color:#00ccff">◂ Exp</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
     <p class="vent-tut__dashed-note">Dashed lines represent baseline normal physiology (C&nbsp;=&nbsp;50&nbsp;mL/cmH₂O, R&nbsp;=&nbsp;8&nbsp;cmH₂O/L/s) at the same ventilator settings.</p>
     <footer class="mon-tut__foot">

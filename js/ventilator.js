@@ -941,6 +941,8 @@
         {
           phase    : 'Deterioration',
           clue     : 'Key clue: PIP ~40 cmH₂O while Pplat is only ~18 cmH₂O — peak-to-plateau gap of ~22 cmH₂O. A large gap means high airway resistance (not poor compliance). Expiratory flow does not return to zero before the next breath: air is trapping. Capnogram shows the obstructive "shark-fin" upslope.',
+          waveformTeachPreset: 'obstructive_bronchospasm',
+          waveformLearningObjective: 'Recognize resistance-dominant obstruction: widened PIP-Pplat gap with delayed expiratory flow return.',
           question : 'PIP is ~40 cmH₂O. Pplat is ~18 cmH₂O. The peak-to-plateau gap is ~22 cmH₂O, indicating high airway resistance. Expiratory flow does not return to zero before the next breath. EtCO₂ is 44 mmHg with an obstructive upsloping capnogram. SpO₂ is still 97%. What is the best next step?',
 
           /* Untreated: resistance worsens, SpO2 starts falling, HR rises from stress */
@@ -985,6 +987,8 @@
         {
           phase    : 'Intervention',
           clue     : 'Key clue: PIP is trending down as resistance improves, but the flow waveform still does not return to zero before the next breath — auto-PEEP persists. τ = R × C is still prolonged. The lung needs 3×τ to empty 95%. Slowing RR extends expiratory time and lets gas fully exit.',
+          waveformTeachPreset: 'air_trapping',
+          waveformLearningObjective: 'Identify dynamic hyperinflation and choose ventilator adjustments that restore full exhalation.',
           question : 'Bronchodilator and deeper sevo are working — PIP is trending down (from ~40 toward the low 20s). But the flow waveform still does not return to baseline before the next breath starts. What ventilator adjustment helps most with this remaining obstructive pattern?',
 
           /* Gradual ongoing improvement as bronchodilator continues to take effect */
@@ -1238,6 +1242,22 @@
     el.className = 'scen-phase scen-phase--' + key;
   }
 
+  function openLinkedVentWavePreset(preset, objective) {
+    const clean = (preset || '').trim();
+    if (!clean) return;
+    document.dispatchEvent(
+      new CustomEvent('ventwave_focus_preset', {
+        detail: {
+          preset: clean,
+          objective: objective || '',
+          source: 'scenario',
+          scenario_id: scenState.scenario?.id || null,
+          step_index: scenState.stepIdx,
+        },
+      })
+    );
+  }
+
   function renderScenStep() {
     const s    = scenState.scenario;
     const step = s.steps[scenState.stepIdx];
@@ -1251,9 +1271,22 @@
     // Update monitor clue box
     const clueBox  = $('scen-monitor-clue');
     const clueText = $('scen-clue-text');
+    const waveHint = $('scen-wave-hint');
+    const waveHintText = $('scen-wave-hint-text');
+    const waveHintBtn = $('scen-wave-hint-btn');
     if (clueText && step.clue) {
       clueText.textContent = step.clue;
       if (clueBox) clueBox.hidden = false;
+      if (waveHint && waveHintBtn && waveHintText) {
+        if (step.waveformTeachPreset) {
+          waveHint.hidden = false;
+          waveHintText.textContent = step.waveformLearningObjective || 'Open a linked waveform preset for pattern recognition.';
+          waveHintBtn.onclick = () => openLinkedVentWavePreset(step.waveformTeachPreset, step.waveformLearningObjective || '');
+        } else {
+          waveHint.hidden = true;
+          waveHintBtn.onclick = null;
+        }
+      }
     } else if (clueBox) {
       clueBox.hidden = true;
     }
