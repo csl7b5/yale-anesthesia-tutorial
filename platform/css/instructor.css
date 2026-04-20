@@ -36,7 +36,31 @@ body[data-required-role="instructor"] .dashboard-main {
   color: #1f2937;
 }
 .inst-select--wide { min-width: 260px; }
+.inst-select--filter { min-width: 10.5rem; max-width: 100%; }
 .inst-input { width: 100%; margin-bottom: 0.4rem; }
+.inst-input--inline {
+  width: auto;
+  min-width: 11rem;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+.inst-filter-group--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+}
+.inst-filter-group--stack > .inst-filter-label {
+  white-space: normal;
+  line-height: 1.2;
+}
+.inst-hint--tight {
+  margin: 0 0 0.5rem;
+}
+.inst-filters--learner-pick,
+.inst-filters--cohort-pick {
+  margin-top: 0.35rem;
+  margin-bottom: 0.65rem;
+}
 .inst-date { width: 140px; }
 
 .inst-btn {

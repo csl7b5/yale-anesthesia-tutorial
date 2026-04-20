@@ -25,6 +25,158 @@
   /** Cached filtered rows for learner tab (cohort + dates) */
   let __dashFiltered = { a: null, s: null, d: null, p: null };
 
+  const FILTER_TRAINING_NONE = '__training_none__';
+  const FILTER_AFFILIATION_NONE = '__affiliation_none__';
+
+  function collectTrainingLevels(profiles) {
+    const s = new Set();
+    for (const p of profiles) {
+      const t = (p.training_level || '').trim();
+      if (t) s.add(t);
+    }
+    return [...s].sort((a, b) => a.localeCompare(b));
+  }
+
+  function collectInstitutions(profiles) {
+    const s = new Set();
+    for (const p of profiles) {
+      const i = (p.institution || '').trim();
+      if (i) s.add(i);
+    }
+    return [...s].sort((a, b) => a.localeCompare(b));
+  }
+
+  function fillTrainingSelect(sel, profiles, preserveValue) {
+    if (!sel) return;
+    const cur = preserveValue != null ? preserveValue : sel.value;
+    sel.innerHTML = '';
+    sel.appendChild(new Option('All', 'all'));
+    if (profiles.some(p => !(p.training_level || '').trim())) {
+      sel.appendChild(new Option('Undesignated', FILTER_TRAINING_NONE));
+    }
+    for (const t of collectTrainingLevels(profiles)) {
+      sel.appendChild(new Option(t, t));
+    }
+    sel.value = [...sel.options].some(o => o.value === cur) ? cur : 'all';
+  }
+
+  function fillAffiliationSelect(sel, profiles, preserveValue) {
+    if (!sel) return;
+    const cur = preserveValue != null ? preserveValue : sel.value;
+    sel.innerHTML = '';
+    sel.appendChild(new Option('All', 'all'));
+    if (profiles.some(p => !(p.institution || '').trim())) {
+      sel.appendChild(new Option('Undesignated', FILTER_AFFILIATION_NONE));
+    }
+    for (const i of collectInstitutions(profiles)) {
+      sel.appendChild(new Option(i, i));
+    }
+    sel.value = [...sel.options].some(o => o.value === cur) ? cur : 'all';
+  }
+
+  function populateProfileFilterDropdowns() {
+    fillTrainingSelect($('filter-training'), allProfiles);
+    fillAffiliationSelect($('filter-affiliation'), allProfiles);
+    fillTrainingSelect($('learner-filter-training'), allProfiles);
+    fillAffiliationSelect($('learner-filter-affiliation'), allProfiles);
+    fillTrainingSelect($('cohort-add-filter-training'), allProfiles);
+    fillAffiliationSelect($('cohort-add-filter-affiliation'), allProfiles);
+  }
+
+  function profileMatchesTrainingPick(p, trainingVal) {
+    if (trainingVal === 'all') return true;
+    const tl = (p.training_level || '').trim();
+    if (trainingVal === FILTER_TRAINING_NONE) return !tl;
+    return tl === trainingVal;
+  }
+
+  function profileMatchesAffiliationPick(p, affiliationVal) {
+    if (affiliationVal === 'all') return true;
+    const ins = (p.institution || '').trim();
+    if (affiliationVal === FILTER_AFFILIATION_NONE) return !ins;
+    return ins === affiliationVal;
+  }
+
+  function profileMatchesNameSearch(p, q) {
+    if (!q) return true;
+    const name = (p.display_name || '').toLowerCase();
+    return name.includes(q) || String(p.id).toLowerCase().includes(q);
+  }
+
+  function computeFilteredUserIds() {
+    const cohortId = $('filter-cohort')?.value || 'all';
+    const training = $('filter-training')?.value || 'all';
+    const affiliation = $('filter-affiliation')?.value || 'all';
+
+    if (cohortId === 'all' && training === 'all' && affiliation === 'all') {
+      return null;
+    }
+
+    let pool = new Set(allProfiles.map(p => p.id));
+
+    if (cohortId !== 'all') {
+      const memberIds = new Set(
+        allMembers.filter(m => m.cohort_id === cohortId).map(m => m.user_id)
+      );
+      pool = new Set([...pool].filter(id => memberIds.has(id)));
+    }
+
+    if (training !== 'all') {
+      pool = new Set(
+        [...pool].filter((id) => {
+          const p = allProfiles.find(pr => pr.id === id);
+          return p && profileMatchesTrainingPick(p, training);
+        })
+      );
+    }
+
+    if (affiliation !== 'all') {
+      pool = new Set(
+        [...pool].filter((id) => {
+          const p = allProfiles.find(pr => pr.id === id);
+          return p && profileMatchesAffiliationPick(p, affiliation);
+        })
+      );
+    }
+
+    return pool;
+  }
+
+  function getProfilesMatchingGlobalUserFilter() {
+    if (filteredUserIds === null) return allProfiles.slice();
+    return allProfiles.filter(p => filteredUserIds.has(p.id));
+  }
+
+  function applyLearnerTabLocalFilters(profiles) {
+    const training = $('learner-filter-training')?.value || 'all';
+    const affiliation = $('learner-filter-affiliation')?.value || 'all';
+    const q = ($('learner-search-name')?.value || '').trim().toLowerCase();
+    return profiles.filter(
+      p =>
+        profileMatchesTrainingPick(p, training) &&
+        profileMatchesAffiliationPick(p, affiliation) &&
+        profileMatchesNameSearch(p, q)
+    );
+  }
+
+  function refreshLearnerDropdown() {
+    const base = getProfilesMatchingGlobalUserFilter();
+    const list = applyLearnerTabLocalFilters(base);
+    populateLearnerDropdown(list);
+  }
+
+  function applyCohortPickerFilters(profiles) {
+    const training = $('cohort-add-filter-training')?.value || 'all';
+    const affiliation = $('cohort-add-filter-affiliation')?.value || 'all';
+    const q = ($('cohort-add-search-name')?.value || '').trim().toLowerCase();
+    return profiles.filter(
+      p =>
+        profileMatchesTrainingPick(p, training) &&
+        profileMatchesAffiliationPick(p, affiliation) &&
+        profileMatchesNameSearch(p, q)
+    );
+  }
+
   /** Expected Pyxis drawers (keep in sync with js/data.js PYXIS_DRAWERS / LEFT / aux) */
   const PYXIS_CATALOG = [
     { type: 'main', id: 'induction', label: 'Induction' },
@@ -173,6 +325,29 @@
     window.closeAccountModal = () => closeModalSafe($('account-modal'));
     $('btn-account-settings')?.addEventListener('click', () => window.openAccountModal());
     $('btn-apply-filters').addEventListener('click', applyFilters);
+
+    let learnerSearchT;
+    $('learner-filter-training')?.addEventListener('change', refreshLearnerDropdown);
+    $('learner-filter-affiliation')?.addEventListener('change', refreshLearnerDropdown);
+    $('learner-search-name')?.addEventListener('input', () => {
+      clearTimeout(learnerSearchT);
+      learnerSearchT = setTimeout(refreshLearnerDropdown, 180);
+    });
+
+    let cohortSearchT;
+    ['cohort-add-filter-training', 'cohort-add-filter-affiliation'].forEach((id) => {
+      $(id)?.addEventListener('change', () => {
+        const cid = $('cohort-member-editor')?.dataset?.cohortId;
+        if (cid) populateAddUserDropdown(cid);
+      });
+    });
+    $('cohort-add-search-name')?.addEventListener('input', () => {
+      clearTimeout(cohortSearchT);
+      cohortSearchT = setTimeout(() => {
+        const cid = $('cohort-member-editor')?.dataset?.cohortId;
+        if (cid) populateAddUserDropdown(cid);
+      }, 180);
+    });
     $('btn-export-attempts').addEventListener('click', () => exportCSV('attempts'));
     $('btn-export-steps').addEventListener('click', () => exportCSV('steps'));
     $('btn-export-tutorials').addEventListener('click', () => exportCSV('tutorials'));
@@ -255,26 +430,17 @@
       pyxisEvents = pxRes.data || [];
     }
 
+    populateProfileFilterDropdowns();
     populateCohortDropdown();
-    populateLearnerDropdown(allProfiles);
     renderCohortList();
   }
 
   /* ── Filtering ──────────────────────────────────────────────────────── */
   function applyFilters() {
-    const cohortId  = $('filter-cohort').value;
     const startDate = $('filter-start').value;
     const endDate   = $('filter-end').value;
 
-    // Determine user set
-    if (cohortId === 'all') {
-      filteredUserIds = null;
-    } else {
-      const memberIds = allMembers
-        .filter(m => m.cohort_id === cohortId)
-        .map(m => m.user_id);
-      filteredUserIds = new Set(memberIds);
-    }
+    filteredUserIds = computeFilteredUserIds();
 
     // Filter attempts by user + date
     let fa = attempts;
@@ -299,10 +465,8 @@
 
     __dashFiltered = { a: fa, s: fs, d: fd, p: fpx };
 
-    // Update learner dropdown to filtered set
-    let visibleProfiles = allProfiles;
-    if (filteredUserIds) visibleProfiles = allProfiles.filter(p => filteredUserIds.has(p.id));
-    populateLearnerDropdown(visibleProfiles);
+    const visibleProfiles = getProfilesMatchingGlobalUserFilter();
+    refreshLearnerDropdown();
 
     renderOverview(fa, fs, ft, visibleProfiles);
     renderScenarios(fa, fs);
@@ -902,11 +1066,20 @@
     const currentMembers = cohortId
       ? new Set(allMembers.filter(m => m.cohort_id === cohortId).map(m => m.user_id))
       : new Set();
+    const pool = applyCohortPickerFilters(allProfiles)
+      .filter(p => !currentMembers.has(p.id))
+      .sort((a, b) => (a.display_name || '').localeCompare(b.display_name || ''));
+
     sel.innerHTML = '<option value="">— Add a learner —</option>';
-    for (const p of allProfiles) {
-      if (currentMembers.has(p.id)) continue;
+    for (const p of pool) {
+      const opt = document.createElement('option');
+      opt.value = p.id;
       const label = p.display_name || p.id.slice(0, 8);
-      sel.innerHTML += `<option value="${p.id}">${esc(label)}</option>`;
+      const sub = [(p.training_level || '').trim(), (p.institution || '').trim()]
+        .filter(Boolean)
+        .join(' · ');
+      opt.textContent = sub ? `${label} — ${sub}` : label;
+      sel.appendChild(opt);
     }
   }
 
@@ -963,11 +1136,20 @@
     const cur = sel.value;
     sel.innerHTML = '<option value="">— Choose a learner —</option>';
     for (const p of profiles) {
+      const opt = document.createElement('option');
+      opt.value = p.id;
       const label = p.display_name || p.id.slice(0, 8);
-      sel.innerHTML += `<option value="${p.id}">${esc(label)}</option>`;
+      const sub = [(p.training_level || '').trim(), (p.institution || '').trim()]
+        .filter(Boolean)
+        .join(' · ');
+      opt.textContent = sub ? `${label} — ${sub}` : label;
+      sel.appendChild(opt);
     }
     if (cur && profiles.some(p => p.id === cur)) sel.value = cur;
-    else { sel.value = ''; $('learner-detail').hidden = true; }
+    else {
+      sel.value = '';
+      $('learner-detail').hidden = true;
+    }
   }
 
   /* ── CSV export ─────────────────────────────────────────────────────── */

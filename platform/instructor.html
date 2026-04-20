@@ -57,6 +57,14 @@
           <span class="inst-filter-label" style="margin:0 0.3rem">to</span>
           <input type="date" id="filter-end" class="inst-date" />
         </div>
+        <div class="inst-filter-group inst-filter-group--stack">
+          <label class="inst-filter-label" for="filter-training">Training level</label>
+          <select id="filter-training" class="inst-select inst-select--filter"></select>
+        </div>
+        <div class="inst-filter-group inst-filter-group--stack">
+          <label class="inst-filter-label" for="filter-affiliation">Affiliation</label>
+          <select id="filter-affiliation" class="inst-select inst-select--filter"></select>
+        </div>
         <button class="inst-btn" id="btn-apply-filters">Apply Filters</button>
       </div>
     </div>
@@ -142,9 +150,24 @@
     </div>
 
     <!-- ── Tab: Individual Learners ─────────────────────────────────────── -->
-    <div class="inst-panel" id="panel-learners" hidden>
+      <div class="inst-panel" id="panel-learners" hidden>
       <div class="dash-section">
         <h2 class="dash-section__title">Select a Learner</h2>
+        <p class="inst-hint inst-hint--tight">Uses the cohort + date filters above, then narrows by profile. Options reflect all learners in the roster.</p>
+        <div class="inst-filters inst-filters--learner-pick">
+          <div class="inst-filter-group inst-filter-group--stack">
+            <label class="inst-filter-label" for="learner-filter-training">Training</label>
+            <select id="learner-filter-training" class="inst-select inst-select--filter"></select>
+          </div>
+          <div class="inst-filter-group inst-filter-group--stack">
+            <label class="inst-filter-label" for="learner-filter-affiliation">Affiliation</label>
+            <select id="learner-filter-affiliation" class="inst-select inst-select--filter"></select>
+          </div>
+          <div class="inst-filter-group inst-filter-group--stack">
+            <label class="inst-filter-label" for="learner-search-name">Search name</label>
+            <input type="search" id="learner-search-name" class="inst-input inst-input--inline" placeholder="Type to filter…" autocomplete="off" />
+          </div>
+        </div>
         <select id="learner-select" class="inst-select inst-select--wide">
           <option value="">— Choose a learner —</option>
         </select>
@@ -216,7 +239,22 @@
       <div id="cohort-member-editor" hidden style="margin-top:1.2rem">
         <h3 class="dash-section__title" id="cohort-member-title">Members</h3>
         <div id="cohort-member-list"></div>
-        <div style="margin-top:0.6rem">
+        <p class="inst-hint inst-hint--tight">Find learners to add by training, affiliation, or name.</p>
+        <div class="inst-filters inst-filters--cohort-pick">
+          <div class="inst-filter-group inst-filter-group--stack">
+            <label class="inst-filter-label" for="cohort-add-filter-training">Training</label>
+            <select id="cohort-add-filter-training" class="inst-select inst-select--filter"></select>
+          </div>
+          <div class="inst-filter-group inst-filter-group--stack">
+            <label class="inst-filter-label" for="cohort-add-filter-affiliation">Affiliation</label>
+            <select id="cohort-add-filter-affiliation" class="inst-select inst-select--filter"></select>
+          </div>
+          <div class="inst-filter-group inst-filter-group--stack">
+            <label class="inst-filter-label" for="cohort-add-search-name">Search name</label>
+            <input type="search" id="cohort-add-search-name" class="inst-input inst-input--inline" placeholder="Type to filter…" autocomplete="off" />
+          </div>
+        </div>
+        <div style="margin-top:0.6rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
           <select id="cohort-add-user" class="inst-select inst-select--wide">
             <option value="">— Add a learner —</option>
           </select>
