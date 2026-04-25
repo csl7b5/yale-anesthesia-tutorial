@@ -343,3 +343,117 @@ dialog.cohort-dialog {
   .inst-date { width: 100%; }
   .inst-select--wide { min-width: 100%; }
 }
+
+/* ── Motif Manager & Generator ──────────────────────────────────────────── */
+
+.inst-btn--primary {
+  background: #4f46e5;
+  color: #fff;
+}
+.inst-btn--primary:hover { background: #3730a3; }
+.inst-btn--sm { padding: 0.25rem 0.65rem; font-size: 0.8rem; }
+
+.motif-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.motif-status--active   { background: rgba(16,185,129,0.12); color: #065f46; }
+.motif-status--archived { background: rgba(107,114,128,0.12); color: #374151; }
+.motif-status--pending  { background: rgba(245,158,11,0.12);  color: #92400e; }
+.motif-status--approved { background: rgba(16,185,129,0.12);  color: #065f46; }
+.motif-status--rejected { background: rgba(239,68,68,0.12);   color: #991b1b; }
+
+/* Motif editor form */
+.motif-form { display: flex; flex-direction: column; gap: 12px; }
+
+.motif-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.motif-form__label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 180px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.motif-form__input {
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 0.88rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #111827;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.motif-form__input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79,70,229,0.15);
+}
+.motif-form__input--sm { flex: 0 0 80px; width: 80px; }
+
+.motif-form__fieldset {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 0;
+}
+.motif-form__legend {
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0 6px;
+  color: #111827;
+}
+
+.motif-form__constraints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  font-size: 0.82rem;
+  color: #374151;
+}
+.motif-form__constraints label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+/* Step rows inside the editor */
+.motif-step-row {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: #f9fafb;
+}
+.motif-step-row__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.motif-choice-row {
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.motif-choice-row input[type="text"] { flex: 1 1 0; }
+
+.motif-form__actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+}

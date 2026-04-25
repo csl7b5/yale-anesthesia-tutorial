@@ -1132,6 +1132,7 @@
     scenState.stepIdx       = 0;
     scenState.answered      = false;
     scenState.stepStartTime = simTime;
+    scenState.stepHistory   = [];   // [{question, choice_text, is_correct, domain}]
 
     Object.assign(patientState, scenario.initialPatient);
     Object.assign(vitals, scenario.initialVitals);
@@ -1310,6 +1311,15 @@
     const qa = $('scen-qa');
     if (!qa) return;
 
+    // Track step history for AI coaching context
+    if (!scenState.stepHistory) scenState.stepHistory = [];
+    scenState.stepHistory.push({
+      question:    step.question,
+      choice_text: choice.text,
+      is_correct:  choice.isCorrect,
+      domain:      step.phase || 'general',
+    });
+
     // Update phase badge based on correctness
     setPhase(choice.isCorrect ? 'Intervention' : 'Deterioration');
 
@@ -1321,11 +1331,44 @@
       else if (i === selectedIdx) btn.classList.add('scen-choice--wrong');
     });
 
-    // Append feedback card
+    // Append hardcoded feedback card (unchanged)
     const fbDiv = document.createElement('div');
     fbDiv.className = `scen-feedback scen-feedback--${choice.isCorrect ? 'correct' : 'wrong'}`;
     fbDiv.innerHTML = (choice.isCorrect ? '✓ ' : '✗ ') + choice.feedback;
     qa.appendChild(fbDiv);
+
+    // AI coaching panel — shown below hardcoded feedback, loads asynchronously
+    const coachDiv = document.createElement('div');
+    coachDiv.className = 'scen-ai-coaching scen-ai-coaching--loading';
+    coachDiv.innerHTML = '<span class="scen-ai-coaching__label">AI Coaching</span><span class="scen-ai-coaching__spinner"></span>';
+    qa.appendChild(coachDiv);
+
+    if (window.ScenarioCoach) {
+      const priorHistory = scenState.stepHistory.slice(0, -1).map(h => ({
+        question: h.question, correct: h.is_correct,
+      }));
+      window.ScenarioCoach.requestStepCoaching({
+        scenarioTitle:      scenState.scenario.title,
+        patientContext:     scenState.scenario.patientContext ?? '',
+        stepClue:           step.clue ?? '',
+        question:           step.question,
+        choiceText:         choice.text,
+        isCorrect:          choice.isCorrect,
+        hardcodedFeedback:  choice.feedback,
+        stepHistory:        priorHistory,
+      }).then(coaching => {
+        if (coaching) {
+          coachDiv.className = 'scen-ai-coaching';
+          coachDiv.innerHTML =
+            '<span class="scen-ai-coaching__label">AI Coaching</span>' +
+            `<p class="scen-ai-coaching__text">${escHtml(coaching)}</p>`;
+        } else {
+          coachDiv.remove();
+        }
+      });
+    } else {
+      coachDiv.remove();
+    }
 
     const isLast = scenState.stepIdx >= scenState.scenario.steps.length - 1;
     const nextBtn = document.createElement('button');
@@ -1334,6 +1377,10 @@
     nextBtn.textContent = isLast ? 'See Resolution →' : 'Next Question →';
     nextBtn.addEventListener('click', nextScenStep);
     qa.appendChild(nextBtn);
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   function renderScenResolution() {
@@ -1349,6 +1396,41 @@
     const textEl  = $('scen-resolution-text');
     if (titleEl) titleEl.textContent = s.title + ' — Complete';
     if (textEl)  textEl.textContent  = s.resolution;
+
+    // AI debrief — injected below the resolution text, loads asynchronously
+    const debriefContainer = $('scen-ai-debrief');
+    if (debriefContainer && window.ScenarioCoach) {
+      debriefContainer.hidden = false;
+      debriefContainer.innerHTML =
+        '<div class="scen-ai-debrief__header">AI Debrief</div>' +
+        '<div class="scen-ai-debrief__body scen-ai-debrief__body--loading">' +
+          '<span class="scen-ai-coaching__spinner"></span> Generating personalised debrief…' +
+        '</div>';
+
+      // Gather attempt_id from event-logger's currentAttemptId if available
+      const attemptId = window._currentAttemptId ?? null;
+
+      window.ScenarioCoach.requestDebrief({
+        scenarioTitle:  s.title,
+        patientContext: s.patientContext ?? '',
+        attemptId,
+        steps: (scenState.stepHistory ?? []).map(h => ({
+          question:    h.question,
+          choice_text: h.choice_text,
+          is_correct:  h.is_correct,
+          domain:      h.domain,
+        })),
+      }).then(debrief => {
+        const bodyEl = debriefContainer.querySelector('.scen-ai-debrief__body');
+        if (!bodyEl) return;
+        if (debrief) {
+          bodyEl.classList.remove('scen-ai-debrief__body--loading');
+          bodyEl.innerHTML = `<p>${escHtml(debrief)}</p>`;
+        } else {
+          debriefContainer.hidden = true;
+        }
+      });
+    }
 
     const restartBtn = $('scen-restart-btn');
     if (restartBtn) {

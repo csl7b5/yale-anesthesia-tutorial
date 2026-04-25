@@ -23,6 +23,12 @@
   let currentAttemptId   = null;
   let currentScenarioId  = null;
   let currentStepNumber  = 0;
+
+  // Expose attempt ID globally so scenario-coach.js can link debriefs to attempts
+  Object.defineProperty(window, '_currentAttemptId', {
+    get: () => currentAttemptId,
+    configurable: true,
+  });
   let attemptStartedAt   = null;
   let stepShownAt        = null;
 

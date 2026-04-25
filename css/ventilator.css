@@ -1027,6 +1027,78 @@ html { scrollbar-gutter: stable; }
 }
 .scen-next-btn:hover { background: #3080d8; }
 
+/* AI Coaching panel — appears below each step's hardcoded feedback */
+.scen-ai-coaching {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(99, 102, 241, 0.07);
+  border-left: 3px solid rgba(99, 102, 241, 0.5);
+  border-radius: 0 6px 6px 0;
+  font-size: 11px;
+  line-height: 1.65;
+}
+.scen-ai-coaching--loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+.scen-ai-coaching__label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(99, 102, 241, 0.85);
+  margin-bottom: 4px;
+}
+.scen-ai-coaching__text {
+  margin: 0;
+  color: var(--text-secondary, #cbd5e1);
+}
+.scen-ai-coaching__spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(99,102,241,0.25);
+  border-top-color: rgba(99,102,241,0.8);
+  border-radius: 50%;
+  animation: tz-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes tz-spin { to { transform: rotate(360deg); } }
+
+/* AI Debrief panel — shown in the resolution screen */
+.scen-ai-debrief {
+  margin: 16px auto 0;
+  max-width: 700px;
+  text-align: left;
+  background: rgba(99, 102, 241, 0.07);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.scen-ai-debrief__header {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(99, 102, 241, 0.9);
+  margin-bottom: 8px;
+}
+.scen-ai-debrief__body {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-secondary, #cbd5e1);
+}
+.scen-ai-debrief__body--loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+.scen-ai-debrief__body p { margin: 0; }
+
 /* Resolution screen */
 #scen-resolution {
   padding: 32px 20px;

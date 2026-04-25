@@ -1,0 +1,77 @@
+# TensorZero Gateway — Anesthesia Playground
+# Deployed on Fly.io free tier (shared-cpu-1x, 256 MB)
+# Observability stored in existing Supabase Postgres via TENSORZERO_POSTGRES_URL secret.
+# OPENAI_API_KEY is set as a Fly.io secret (not in Supabase edge functions).
+
+[gateway]
+bind_address = "0.0.0.0:3000"
+
+# Auth: all endpoints require a valid TensorZero API key.
+# Create a key after first deploy with: fly ssh console -a anesthesia-playground-tz
+# then: tensorzero create-api-key --name "supabase-edge-functions"
+# Store the result as TENSORZERO_API_KEY in Supabase edge function secrets.
+[gateway.auth]
+enabled = true
+
+# -------------------------------------------------------------------
+# Functions — one per LLM use case.
+# No prompt templates used here: messages are constructed dynamically
+# in each Supabase edge function and passed directly through the gateway.
+# Templates can be added later to enable A/B testing prompt variants.
+# -------------------------------------------------------------------
+
+# General Q&A chat (ventilator + pyxis pages)
+[functions.ai_chat]
+type = "chat"
+
+[functions.ai_chat.variants.v1]
+type = "chat_completion"
+model = "openai::gpt-4o-mini"
+temperature = 0.6
+max_tokens = 520
+
+# Per-step coaching: called after a learner selects a scenario choice
+[functions.scenario_coaching]
+type = "chat"
+
+[functions.scenario_coaching.variants.v1]
+type = "chat_completion"
+model = "openai::gpt-4o-mini"
+temperature = 0.5
+max_tokens = 350
+
+# End-of-scenario debrief: called when all steps are complete
+[functions.scenario_debrief]
+type = "chat"
+
+[functions.scenario_debrief.variants.v1]
+type = "chat_completion"
+model = "openai::gpt-4o-mini"
+temperature = 0.5
+max_tokens = 900
+
+# Scenario variation generator: creates a new patient case from a motif template
+[functions.scenario_generator]
+type = "chat"
+
+[functions.scenario_generator.variants.v1]
+type = "chat_completion"
+model = "openai::gpt-4o-mini"
+temperature = 0.85
+max_tokens = 2500
+
+# -------------------------------------------------------------------
+# Metrics — link quiz/scenario outcomes to inference calls.
+# Used for future prompt optimization and fine-tuning.
+# Send feedback via POST /feedback with the inference_id.
+# -------------------------------------------------------------------
+
+[metrics.quiz_correct]
+type = "boolean"
+optimize = "max"
+level = "inference"
+
+[metrics.scenario_completed]
+type = "boolean"
+optimize = "max"
+level = "episode"

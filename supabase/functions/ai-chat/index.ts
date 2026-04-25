@@ -1,7 +1,7 @@
-// Supabase Edge Function: authenticated AI chat with OpenAI, 15 queries/day, logging.
-// Deploy: `supabase functions deploy ai-chat` (see supabase/config.toml: verify_jwt=false;
-// auth is enforced here via auth.getUser(jwt).)
-// Secrets: OPENAI_API_KEY (set in Dashboard → Edge Functions → Secrets)
+// Supabase Edge Function: authenticated AI chat calling OpenAI directly.
+// Deploy: `supabase functions deploy ai-chat`
+// Secrets required (Dashboard → Edge Functions → Secrets):
+//   OPENAI_API_KEY — OpenAI secret key (sk-...)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -54,7 +54,6 @@ Deno.serve(async (req: Request) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
-
     if (!openaiKey) {
       console.error("OPENAI_API_KEY missing");
       return jsonErr(500, "server_config", "Assistant unavailable.");

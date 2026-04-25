@@ -77,6 +77,8 @@
       <button class="inst-tab" data-tab="pyxis">Pyxis Exploration</button>
       <button class="inst-tab" data-tab="learners">Individual Learners</button>
       <button class="inst-tab" data-tab="export">Export</button>
+      <button class="inst-tab" data-tab="motifs">Scenario Motifs</button>
+      <button class="inst-tab" data-tab="generated">Generated Cases</button>
     </div>
 
     <!-- ── Tab: Overview ────────────────────────────────────────────────── -->
@@ -206,6 +208,126 @@
       </div>
     </div>
 
+    <!-- ── Tab: Scenario Motifs ────────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-motifs" hidden>
+      <div class="dash-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+          <h2 class="dash-section__title" style="margin:0">Scenario Motif Templates</h2>
+          <button class="inst-btn inst-btn--primary" id="btn-add-motif" type="button">+ Add Motif</button>
+        </div>
+        <p class="inst-hint">Motifs define the clinical archetype for AI-generated scenarios. Add, edit, or archive templates here. The simulation physics (effect profiles) are fixed by developers for safety.</p>
+        <div id="motif-list">
+          <p class="inst-hint">Loading motifs…</p>
+        </div>
+      </div>
+      <!-- Motif editor (inline, shown/hidden) -->
+      <div id="motif-editor" class="dash-section" hidden>
+        <h2 class="dash-section__title" id="motif-editor-title">New Motif</h2>
+        <form id="motif-form" class="motif-form">
+          <div class="motif-form__row">
+            <label class="motif-form__label">Title *<input type="text" id="mf-title" class="motif-form__input" required placeholder="e.g. Malignant Hyperthermia" /></label>
+            <label class="motif-form__label">Clinical Domain *
+              <select id="mf-domain" class="motif-form__input" required>
+                <option value="">Select…</option>
+                <option value="cardiovascular">Cardiovascular</option>
+                <option value="respiratory">Respiratory</option>
+                <option value="pharmacology">Pharmacology / Allergy</option>
+                <option value="airway">Airway</option>
+                <option value="neurological">Neurological</option>
+                <option value="metabolic">Metabolic</option>
+                <option value="regional">Regional Anesthesia</option>
+              </select>
+            </label>
+          </div>
+          <div class="motif-form__row">
+            <label class="motif-form__label" style="flex:1">Summary * (shown on scenario card)
+              <textarea id="mf-summary" class="motif-form__input" rows="2" required placeholder="Brief patient-facing description of the scenario type"></textarea>
+            </label>
+          </div>
+          <div class="motif-form__row">
+            <label class="motif-form__label" style="flex:1">Badge label
+              <input type="text" id="mf-badge" class="motif-form__input" maxlength="6" placeholder="e.g. RESP" value="CASE" />
+            </label>
+            <label class="motif-form__label">Badge color
+              <input type="color" id="mf-badge-color" class="motif-form__input" value="#64748b" style="height:38px" />
+            </label>
+          </div>
+          <div class="motif-form__row">
+            <label class="motif-form__label" style="flex:1">Learning objectives (one per line)
+              <textarea id="mf-objectives" class="motif-form__input" rows="4" placeholder="Recognize signs of...&#10;Select appropriate..."></textarea>
+            </label>
+          </div>
+          <fieldset class="motif-form__fieldset">
+            <legend class="motif-form__legend">Physiology Constraints <span class="inst-hint" style="font-weight:400">(AI-generated values stay within these ranges)</span></legend>
+            <div class="motif-form__constraints">
+              <label>Cardiac Output (L/min) min<input type="number" id="mf-co-min" class="motif-form__input motif-form__input--sm" step="0.05" min="0.1" max="2" value="0.5" /></label>
+              <label>max<input type="number" id="mf-co-max" class="motif-form__input motif-form__input--sm" step="0.05" min="0.1" max="2" value="1.2" /></label>
+              <label>Compliance (mL/cmH₂O) min<input type="number" id="mf-comp-min" class="motif-form__input motif-form__input--sm" step="1" min="5" max="100" value="30" /></label>
+              <label>max<input type="number" id="mf-comp-max" class="motif-form__input motif-form__input--sm" step="1" min="5" max="100" value="70" /></label>
+              <label>Resistance (cmH₂O/L/s) min<input type="number" id="mf-res-min" class="motif-form__input motif-form__input--sm" step="0.5" min="1" max="50" value="3" /></label>
+              <label>max<input type="number" id="mf-res-max" class="motif-form__input motif-form__input--sm" step="0.5" min="1" max="50" value="15" /></label>
+            </div>
+          </fieldset>
+          <fieldset class="motif-form__fieldset">
+            <legend class="motif-form__legend">Steps <span class="inst-hint" style="font-weight:400">(the AI writes clue/question text from these prompts)</span></legend>
+            <div id="mf-steps-list"></div>
+            <button type="button" class="inst-btn" id="btn-add-step" style="margin-top:8px">+ Add Step</button>
+          </fieldset>
+          <div class="motif-form__actions">
+            <button type="submit" class="inst-btn inst-btn--primary" id="mf-save-btn">Save Motif</button>
+            <button type="button" class="inst-btn" id="mf-cancel-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── Tab: Generated Cases ─────────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-generated" hidden>
+      <div class="dash-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+          <h2 class="dash-section__title" style="margin:0">AI-Generated Scenario Cases</h2>
+          <button class="inst-btn inst-btn--primary" id="btn-generate-case" type="button">Generate New Case</button>
+        </div>
+        <p class="inst-hint">Cases generated from motif templates. Review and approve before they appear in the student scenario selector.</p>
+        <!-- Generator form -->
+        <div id="generate-form-wrap" class="dash-section" hidden style="background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:16px 20px;margin-bottom:20px;">
+          <h3 style="margin:0 0 12px;font-size:0.9rem">Generate from Motif</h3>
+          <div class="motif-form__row">
+            <label class="motif-form__label">Motif
+              <select id="gen-motif-select" class="motif-form__input">
+                <option value="">Loading…</option>
+              </select>
+            </label>
+            <label class="motif-form__label">Age range (optional)
+              <select id="gen-age" class="motif-form__input">
+                <option value="">Any age</option>
+                <option value="18-35">Young adult (18–35)</option>
+                <option value="36-55">Middle-aged (36–55)</option>
+                <option value="56-75">Older adult (56–75)</option>
+                <option value="76+">Elderly (76+)</option>
+              </select>
+            </label>
+            <label class="motif-form__label">Sex (optional)
+              <select id="gen-sex" class="motif-form__input">
+                <option value="">Any</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </label>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button class="inst-btn inst-btn--primary" id="btn-run-generator" type="button">Generate</button>
+            <button class="inst-btn" id="btn-cancel-generator" type="button">Cancel</button>
+          </div>
+          <div id="gen-status" style="margin-top:10px;font-size:11px;color:var(--text-muted)"></div>
+        </div>
+        <!-- Cases list -->
+        <div id="generated-cases-list">
+          <p class="inst-hint">Loading generated cases…</p>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ── Cohort management modal ──────────────────────────────────────── -->
@@ -298,6 +420,7 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/auth-guard.js"></script>
   <script src="js/instructor-dashboard.js"></script>
+  <script src="js/scenario-generator.js"></script>
 
 </body>
 </html>
