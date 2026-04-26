@@ -869,8 +869,8 @@ html { scrollbar-gutter: stable; }
 /* Monitor clue box — highlights key diagnostic pattern for the student */
 .scen-monitor-clue {
   display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0;
   gap: 10px;
   background: var(--accent-soft);
   border: 1px solid rgba(13, 148, 136, 0.2);
@@ -880,22 +880,75 @@ html { scrollbar-gutter: stable; }
   color: var(--text-primary);
   line-height: 1.6;
 }
-.scen-clue-icon {
-  font-size: 0.9rem;
-  flex-shrink: 0;
+/* Key Clue toggle button */
+.scen-clue-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  appearance: none;
+  background: rgba(13, 148, 136, 0.1);
+  border: 1px solid rgba(13, 148, 136, 0.3);
+  border-radius: 6px;
   color: var(--accent);
-  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background 0.15s, border-color 0.15s;
+  width: fit-content;
 }
+.scen-clue-toggle:hover {
+  background: rgba(13, 148, 136, 0.18);
+  border-color: rgba(13, 148, 136, 0.5);
+}
+.scen-clue-toggle__arrow { font-style: normal; }
+
+/* Collapsible content below the toggle button */
+.scen-clue-content {
+  display: none;  /* hidden by default; JS removes [hidden] to show */
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.scen-clue-content:not([hidden]) {
+  display: flex;
+}
+
+.scen-clue-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+.scen-clue-list {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+.scen-clue-list li { margin-bottom: 3px; }
+.scen-clue-list li:last-child { margin-bottom: 0; }
 .scen-wave-hint {
   display: flex;
   flex-direction: column;
   gap: 6px;
   width: 100%;
-  margin-left: 20px;
-  padding: 7px 9px;
+  margin-top: 6px;
+  padding: 8px 10px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px dashed rgba(13, 148, 136, 0.36);
+  background: rgba(13, 148, 136, 0.08);
+  border: 1px dashed rgba(13, 148, 136, 0.45);
+  color: var(--text-primary);
+  font-size: 10.5px;
+  line-height: 1.55;
+  box-sizing: border-box;
 }
 .scen-wave-hint__btn {
   align-self: flex-start;
@@ -915,6 +968,33 @@ html { scrollbar-gutter: stable; }
   background: rgba(13, 148, 136, 0.16);
   border-color: rgba(13, 148, 136, 0.55);
 }
+/* AI Coaching opt-in toggle in scenario header */
+.scen-ai-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.scen-ai-toggle:has(input:checked) {
+  color: rgba(139, 143, 255, 1);
+  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.08);
+}
+.scen-ai-toggle input[type="checkbox"] {
+  accent-color: rgba(99, 102, 241, 0.9);
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
+}
+
 .scen-exit-btn {
   background: transparent;
   border: 1px solid var(--border-subtle);
@@ -935,12 +1015,12 @@ html { scrollbar-gutter: stable; }
   gap: 12px 16px;
   align-items: start;
 }
-/* Context: left column, top row
-   Clue:    left column, bottom row
-   QA:      right column, spans both rows */
-.scen-context      { grid-column: 1; grid-row: 1; }
-.scen-monitor-clue { grid-column: 1; grid-row: 2; }
-.scen-qa           { grid-column: 2; grid-row: 1 / span 2; }
+/* Context: left col row 1 | Clue: left col row 2 | AI coach: left col row 3
+   QA:      right col spans all rows */
+.scen-context       { grid-column: 1; grid-row: 1; }
+.scen-monitor-clue  { grid-column: 1; grid-row: 2; }
+#scen-ai-coach-col  { grid-column: 1; grid-row: 3; }
+.scen-qa            { grid-column: 2; grid-row: 1 / span 3; }
 
 .scen-context {
   background: rgba(13, 148, 136, 0.04);
@@ -1027,15 +1107,17 @@ html { scrollbar-gutter: stable; }
 }
 .scen-next-btn:hover { background: #3080d8; }
 
-/* AI Coaching panel — appears below each step's hardcoded feedback */
+/* AI Coaching panel — appears in the left column (clue area) after answering */
 .scen-ai-coaching {
   margin-top: 10px;
-  padding: 10px 14px;
-  background: rgba(99, 102, 241, 0.07);
-  border-left: 3px solid rgba(99, 102, 241, 0.5);
-  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 7px;
   font-size: 11px;
-  line-height: 1.65;
+  line-height: 1.7;
+  width: 100%;
+  box-sizing: border-box;
 }
 .scen-ai-coaching--loading {
   display: flex;
@@ -1049,12 +1131,12 @@ html { scrollbar-gutter: stable; }
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(99, 102, 241, 0.85);
-  margin-bottom: 4px;
+  color: rgba(139, 143, 255, 1);
+  margin-bottom: 5px;
 }
 .scen-ai-coaching__text {
   margin: 0;
-  color: var(--text-secondary, #cbd5e1);
+  color: var(--text-primary);
 }
 .scen-ai-coaching__spinner {
   display: inline-block;
@@ -2630,6 +2712,25 @@ html { scrollbar-gutter: stable; }
 /* Sections */
 .debrief-dialog__section {
   margin-bottom: 1.2rem;
+}
+
+/* AI Debrief inside the debrief modal */
+.debrief-ai-body {
+  font-size: 0.84rem;
+  line-height: 1.7;
+  color: #1e293b;
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 8px;
+  padding: 12px 16px;
+  white-space: pre-wrap;
+}
+.debrief-ai-body--loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-style: italic;
 }
 .debrief-dialog__teaching {
   padding-left: 1.2rem;

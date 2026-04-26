@@ -1351,6 +1351,17 @@
 
     document.getElementById('trig-ventwaves')?.addEventListener('click', () => dialog.showModal());
 
+    // Expose globally so the scenario module can open and focus a preset directly
+    window.openVentWavePreset = function (presetKey) {
+      const k = normalizePresetKey(presetKey || 'normal');
+      if (!dialog.open) dialog.showModal();
+      if (PRESETS[k]) {
+        applyPreset(k);
+        const wavesTab = dialog.querySelector('.vent-tut__tab[data-tab="waves"]');
+        if (wavesTab) wavesTab.click();
+      }
+    };
+
     syncUI();
     applyPreset('normal');
   }

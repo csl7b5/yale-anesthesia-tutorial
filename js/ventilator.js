@@ -1134,6 +1134,10 @@
     scenState.stepStartTime = simTime;
     scenState.stepHistory   = [];   // [{question, choice_text, is_correct, domain}]
 
+    // Expose for debrief-ui.js
+    Object.defineProperty(window, '_scenStepHistory', { get: () => scenState.stepHistory ?? [], configurable: true });
+    Object.defineProperty(window, '_activeScenTitle',  { get: () => scenState.scenario?.title ?? '', configurable: true });
+
     Object.assign(patientState, scenario.initialPatient);
     Object.assign(vitals, scenario.initialVitals);
     // Immediately sync derived display values so monitors update on next tick
@@ -1246,17 +1250,15 @@
   function openLinkedVentWavePreset(preset, objective) {
     const clean = (preset || '').trim();
     if (!clean) return;
-    document.dispatchEvent(
-      new CustomEvent('ventwave_focus_preset', {
-        detail: {
-          preset: clean,
-          objective: objective || '',
-          source: 'scenario',
-          scenario_id: scenState.scenario?.id || null,
-          step_index: scenState.stepIdx,
-        },
-      })
-    );
+    // Call the wave tutorial's exposed function directly (avoids event dispatch timing issues)
+    if (typeof window.openVentWavePreset === 'function') {
+      window.openVentWavePreset(clean);
+    } else {
+      // Fallback: event dispatch
+      document.dispatchEvent(new CustomEvent('ventwave_focus_preset', {
+        detail: { preset: clean, objective: objective || '', source: 'scenario' },
+      }));
+    }
   }
 
   function renderScenStep() {
@@ -1270,24 +1272,43 @@
     setPhase(step.phase || 'Active');
 
     // Update monitor clue box
-    const clueBox  = $('scen-monitor-clue');
-    const clueText = $('scen-clue-text');
-    const waveHint = $('scen-wave-hint');
-    const waveHintText = $('scen-wave-hint-text');
-    const waveHintBtn = $('scen-wave-hint-btn');
+    const clueBox     = $('scen-monitor-clue');
+    const clueContent = $('scen-clue-content');
+    const clueText    = $('scen-clue-text');
+    const toggleBtn   = $('scen-clue-toggle');
+
+    // Clear any AI coaching from the previous step
+    const aiCoachCol = document.getElementById('scen-ai-coach-col');
+    if (aiCoachCol) aiCoachCol.innerHTML = '';
+
+    // Collapse the clue content on each new step
+    if (clueContent) clueContent.hidden = true;
+    if (toggleBtn) {
+      const arrow = toggleBtn.querySelector('.scen-clue-toggle__arrow');
+      if (arrow) arrow.textContent = '▾';
+      toggleBtn.onclick = () => {
+        if (!clueContent) return;
+        clueContent.hidden = !clueContent.hidden;
+        if (arrow) arrow.textContent = clueContent.hidden ? '▾' : '▴';
+      };
+    }
+
     if (clueText && step.clue) {
-      clueText.textContent = step.clue;
-      if (clueBox) clueBox.hidden = false;
-      if (waveHint && waveHintBtn && waveHintText) {
-        if (step.waveformTeachPreset) {
-          waveHint.hidden = false;
-          waveHintText.textContent = step.waveformLearningObjective || 'Open a linked waveform preset for pattern recognition.';
-          waveHintBtn.onclick = () => openLinkedVentWavePreset(step.waveformTeachPreset, step.waveformLearningObjective || '');
-        } else {
-          waveHint.hidden = true;
-          waveHintBtn.onclick = null;
-        }
+      // Format clue as bullet list for readability
+      const clueRaw = step.clue;
+      if (clueRaw.startsWith('Key clue:')) {
+        const body = clueRaw.replace(/^Key clue:\s*/, '');
+        const sentences = body.split(/\.\s+/).filter(Boolean).map((s, i, arr) =>
+          i < arr.length - 1 ? s.trim() + '.' : s.trim()
+        );
+        clueText.innerHTML =
+          '<ul class="scen-clue-list">' +
+          sentences.map(s => `<li>${escHtml(s)}</li>`).join('') +
+          '</ul>';
+      } else {
+        clueText.textContent = clueRaw;
       }
+      if (clueBox) clueBox.hidden = false;
     } else if (clueBox) {
       clueBox.hidden = true;
     }
@@ -1337,13 +1358,16 @@
     fbDiv.innerHTML = (choice.isCorrect ? '✓ ' : '✗ ') + choice.feedback;
     qa.appendChild(fbDiv);
 
-    // AI coaching panel — shown below hardcoded feedback, loads asynchronously
-    const coachDiv = document.createElement('div');
-    coachDiv.className = 'scen-ai-coaching scen-ai-coaching--loading';
-    coachDiv.innerHTML = '<span class="scen-ai-coaching__label">AI Coaching</span><span class="scen-ai-coaching__spinner"></span>';
-    qa.appendChild(coachDiv);
+    // AI coaching — only if the student has opted in via the checkbox
+    const aiEnabled = document.getElementById('scen-ai-coaching-opt')?.checked ?? false;
+    if (window.ScenarioCoach && aiEnabled) {
+      const coachDiv = document.createElement('div');
+      coachDiv.className = 'scen-ai-coaching scen-ai-coaching--loading';
+      coachDiv.innerHTML = '<span class="scen-ai-coaching__label">AI Coaching</span><span class="scen-ai-coaching__spinner"></span>';
+      const aiCoachColFb = document.getElementById('scen-ai-coach-col');
+      if (aiCoachColFb) aiCoachColFb.appendChild(coachDiv);
+      else qa.appendChild(coachDiv);
 
-    if (window.ScenarioCoach) {
       const priorHistory = scenState.stepHistory.slice(0, -1).map(h => ({
         question: h.question, correct: h.is_correct,
       }));
@@ -1366,8 +1390,6 @@
           coachDiv.remove();
         }
       });
-    } else {
-      coachDiv.remove();
     }
 
     const isLast = scenState.stepIdx >= scenState.scenario.steps.length - 1;
@@ -1396,41 +1418,6 @@
     const textEl  = $('scen-resolution-text');
     if (titleEl) titleEl.textContent = s.title + ' — Complete';
     if (textEl)  textEl.textContent  = s.resolution;
-
-    // AI debrief — injected below the resolution text, loads asynchronously
-    const debriefContainer = $('scen-ai-debrief');
-    if (debriefContainer && window.ScenarioCoach) {
-      debriefContainer.hidden = false;
-      debriefContainer.innerHTML =
-        '<div class="scen-ai-debrief__header">AI Debrief</div>' +
-        '<div class="scen-ai-debrief__body scen-ai-debrief__body--loading">' +
-          '<span class="scen-ai-coaching__spinner"></span> Generating personalised debrief…' +
-        '</div>';
-
-      // Gather attempt_id from event-logger's currentAttemptId if available
-      const attemptId = window._currentAttemptId ?? null;
-
-      window.ScenarioCoach.requestDebrief({
-        scenarioTitle:  s.title,
-        patientContext: s.patientContext ?? '',
-        attemptId,
-        steps: (scenState.stepHistory ?? []).map(h => ({
-          question:    h.question,
-          choice_text: h.choice_text,
-          is_correct:  h.is_correct,
-          domain:      h.domain,
-        })),
-      }).then(debrief => {
-        const bodyEl = debriefContainer.querySelector('.scen-ai-debrief__body');
-        if (!bodyEl) return;
-        if (debrief) {
-          bodyEl.classList.remove('scen-ai-debrief__body--loading');
-          bodyEl.innerHTML = `<p>${escHtml(debrief)}</p>`;
-        } else {
-          debriefContainer.hidden = true;
-        }
-      });
-    }
 
     const restartBtn = $('scen-restart-btn');
     if (restartBtn) {

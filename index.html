@@ -29,27 +29,29 @@
       });
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team." />
-    <title>Anesthesia Playground - Yale School of Medicine</title>
+    <meta name="description" content="Anesthesia Playground — a free, open, interactive anesthesia learning sandbox. Explore a virtual Pyxis, simulate ventilator physiology, run AI-coached clinical scenarios, and analyze cohorts in the educator dashboard." />
+    <meta name="theme-color" content="#0d9488" />
+    <title>Anesthesia Playground — Interactive Anesthesia Education</title>
     <link rel="canonical" href="https://anesthesia.guide/" />
     <!-- Open Graph -->
     <meta property="og:type"        content="website" />
     <meta property="og:url"         content="https://anesthesia.guide/" />
-    <meta property="og:title"       content="Anesthesia Playground — Yale School of Medicine" />
-    <meta property="og:description" content="Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team." />
-    <meta property="og:site_name"   content="Yale Anesthesia Playground" />
+    <meta property="og:title"       content="Anesthesia Playground — Interactive Anesthesia Education" />
+    <meta property="og:description" content="A free, open, interactive sandbox for learning anesthesia. Pyxis, ventilator physiology, AI-coached scenarios, and an educator dashboard." />
+    <meta property="og:site_name"   content="Anesthesia Playground" />
     <meta property="og:image"       content="https://anesthesia.guide/bannerimage.png" />
     <meta property="og:image:width"  content="924" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt"   content="Anesthesia Playground — Yale School of Medicine, medical student learning" />
+    <meta property="og:image:alt"   content="Anesthesia Playground — Interactive Pyxis and Ventilator simulations" />
     <!-- Twitter/X Card -->
     <meta name="twitter:card"        content="summary_large_image" />
-    <meta name="twitter:title"       content="Anesthesia Playground — Yale School of Medicine" />
-    <meta name="twitter:description" content="Interactive anesthesia learning tool for Yale medical students." />
+    <meta name="twitter:title"       content="Anesthesia Playground — Interactive Anesthesia Education" />
+    <meta name="twitter:description" content="A free, open, interactive sandbox for learning anesthesia." />
     <meta name="twitter:image"       content="https://anesthesia.guide/bannerimage.png" />
     <link rel="icon" href="favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/home.css" />
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -57,71 +59,40 @@
         {
           "@type": "WebSite",
           "@id": "https://anesthesia.guide/#website",
-          "name": "Yale Anesthesia Playground",
-          "alternateName": "Anesthesia Playground",
+          "name": "Anesthesia Playground",
+          "alternateName": "Yale Anesthesia Playground",
           "url": "https://anesthesia.guide/",
-          "description": "Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team.",
+          "description": "A free, open, interactive sandbox for learning anesthesia.",
           "inLanguage": "en-US"
         },
         {
           "@type": "WebPage",
           "@id": "https://anesthesia.guide/#webpage",
           "url": "https://anesthesia.guide/",
-          "name": "Anesthesia Playground — Yale School of Medicine",
-          "description": "Interactive anesthesia learning tool for Yale medical students. Explore a virtual Pyxis, interactive ventilator simulator, and meet the anesthesia team.",
+          "name": "Anesthesia Playground — Interactive Anesthesia Education",
+          "description": "Pyxis, ventilator physiology, AI-coached scenarios, and an educator dashboard — built at Yale, free for everyone.",
           "isPartOf": { "@id": "https://anesthesia.guide/#website" }
+        },
+        {
+          "@type": "EducationalOrganization",
+          "name": "Yale School of Medicine — Department of Anesthesiology",
+          "url": "https://medicine.yale.edu/anesthesiology/"
         }
       ]
     }
     </script>
-    <script>
-      (function () {
-        var p = location.pathname;
-        var d = document.querySelector('meta[name="description"]');
-        var ogd = document.querySelector('meta[property="og:description"]');
-        var twd = document.querySelector('meta[name="twitter:description"]');
-        var canon = document.querySelector('link[rel="canonical"]');
-        var ogu = document.querySelector('meta[property="og:url"]');
-        var ogt = document.querySelector('meta[property="og:title"]');
-        var twt = document.querySelector('meta[name="twitter:title"]');
-        if (p.indexOf('/teams') !== -1) {
-          var tt = 'Meet Your Team — Anesthesia Playground';
-          var cc =
-            'Meet the Yale anesthesia team: faculty, residents, students, and how to connect with the department.';
-          document.title = tt;
-          if (d) d.setAttribute('content', cc);
-          if (ogd) ogd.setAttribute('content', cc);
-          if (twd) twd.setAttribute('content', cc);
-          if (canon) canon.setAttribute('href', 'https://anesthesia.guide/teams/');
-          if (ogu) ogu.setAttribute('content', 'https://anesthesia.guide/teams/');
-          if (ogt) ogt.setAttribute('content', tt);
-          if (twt) twt.setAttribute('content', tt);
-        } else if (p.indexOf('/pyxis') !== -1) {
-          var tp = 'Interactive Pyxis — Anesthesia Playground';
-          var cp =
-            'Virtual anesthesia Pyxis: where controlled medications and OR supplies live, with student-focused cheatsheets and exploration.';
-          document.title = tp;
-          if (d) d.setAttribute('content', cp);
-          if (ogd) ogd.setAttribute('content', cp);
-          if (twd) twd.setAttribute('content', cp);
-          if (canon) canon.setAttribute('href', 'https://anesthesia.guide/pyxis/');
-          if (ogu) ogu.setAttribute('content', 'https://anesthesia.guide/pyxis/');
-          if (ogt) ogt.setAttribute('content', tp);
-          if (twt) twt.setAttribute('content', tp);
-        }
-      })();
-    </script>
   </head>
-  <body>
+  <body class="home-body">
+    <a href="#home-features" class="visually-hidden-focusable">Skip to features</a>
     <div class="app">
 
       <!-- ── Navigation bar ──────────────────────────────────────────────── -->
       <nav class="site-nav" aria-label="Site navigation">
         <div class="site-nav__inner">
-          <span class="site-nav__brand">
+          <a href="./" class="site-nav__brand" style="text-decoration:none">
             <img src="favicon.png" alt="" class="site-nav__brand-logo" width="42" height="42" decoding="async" />
             Anesthesia Playground
-          </span>
+          </a>
           <button
             type="button"
             class="site-nav__menu-btn"
@@ -133,281 +104,411 @@
             <span class="site-nav__menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
           </button>
           <div class="site-nav__tabs" id="site-nav-menu" role="tablist">
-            <button class="site-nav__tab site-nav__tab--active" role="tab"
-                    aria-selected="true" data-page="tour">Interactive Pyxis</button>
+            <a href="./" class="site-nav__tab site-nav__tab--active" role="tab"
+               aria-selected="true" style="text-decoration:none">Home</a>
+            <a href="pyxis/" class="site-nav__tab" role="tab"
+               aria-selected="false" style="text-decoration:none">Interactive Pyxis</a>
             <a href="ventilator/" class="site-nav__tab" role="tab"
-                    aria-selected="false" style="text-decoration:none">Interactive Ventilator</a>
-            <button class="site-nav__tab" role="tab"
-                    aria-selected="false" data-page="about">Meet Your Team</button>
-            <a href="platform/auth.html" class="site-nav__tab site-nav__tab--signin" role="tab"
-                    aria-selected="false" style="text-decoration:none">Sign In</a>
+               aria-selected="false" style="text-decoration:none">Interactive Ventilator</a>
+            <a href="teams/" class="site-nav__tab" role="tab"
+               aria-selected="false" style="text-decoration:none">Meet Your Team</a>
+            <a href="platform/auth.html" id="home-signin-tab" class="site-nav__tab site-nav__tab--signin" role="tab"
+               aria-selected="false" style="text-decoration:none">Sign In</a>
           </div>
         </div>
       </nav>
 
-      <!-- ── Page: Anesthesia Tour ────────────────────────────────────────── -->
-      <section id="page-tour" class="page-section page-section--active" role="tabpanel">
+      <main class="home" id="home-main">
 
-      <header class="site-header">
-        <div class="site-header__card">
-          <h1>Interactive Pyxis</h1>
-          <p>
-            A Pyxis-inspired cheatsheet for medical students learning <strong>where</strong> medications and supplies live,
-            <strong>what</strong> they are, and <strong>why</strong> they matter.
-            You will see these machines in the OR and sometimes in the hospital hallways - feel free to explore!
-          </p>
-        </div>
-      </header>
+        <!-- ── HERO ─────────────────────────────────────────────────────── -->
+        <section class="home-hero" aria-label="Anesthesia Playground introduction">
+          <div class="home-hero__bg" aria-hidden="true">
+            <div class="home-hero__orb home-hero__orb--1"></div>
+            <div class="home-hero__orb home-hero__orb--2"></div>
+          </div>
 
-      <div class="main-layout">
-        <div class="cabinet-stage" aria-label="Stylized anesthesia cabinet">
-          <div class="cabinet-scale" style="--cx-left:39.25%;--cx-width:36%;--rack-left:39.25%;--rack-width:36%;">
-
-            <!-- ── Supply rack (2 rows × 5 columns) ──────────────────── -->
-            <div class="supply-rack" aria-label="Top supply bins">
-              <div class="supply-rack__row">
-                <button type="button" class="supply-bin" data-supply-id="tube-caps">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Tube caps</span></div>
-                </button>
-                <button type="button" class="supply-bin" data-supply-id="tourniquets">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Tourniquets</span></div>
-                </button>
-                <button type="button" class="supply-bin" data-supply-id="alcohol-wipes">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Alcohol wipes</span></div>
-                </button>
-                <button type="button" class="supply-bin" data-supply-id="gauze">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Gauze</span></div>
-                </button>
-                <button type="button" class="supply-bin" data-supply-id="tape">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Tape</span></div>
-                </button>
-              </div>
-              <div class="supply-rack__row">
-                <button type="button" class="supply-bin" data-supply-id="ecg-stickers">
-                  <div class="supply-bin__face"><span class="supply-bin__label">ECG stickers</span></div>
-                </button>
-                <button type="button" class="supply-bin" data-supply-id="oral-airways">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Oral airways</span></div>
-                </button>
-                <button type="button" class="supply-bin" data-supply-id="lab-tubes">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Lab tubes</span></div>
-                </button>
-                <button type="button" class="supply-bin" data-supply-id="tegaderms">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Tegaderms</span></div>
-                </button>
-                <button type="button" class="supply-bin" data-supply-id="nasal-supplies">
-                  <div class="supply-bin__face"><span class="supply-bin__label">Nasal / oral adj.</span></div>
-                </button>
-              </div>
-            </div>
-
-            <!-- ── Monitor ───────────────────────────────────────────── -->
-            <div class="monitor-arm" aria-hidden="true"></div>
-            <div class="monitor" aria-label="Station monitor">
-              <div class="monitor__screen">
-                <div class="monitor__title">Anesthesia station</div>
-                <div class="monitor__hint">Click any drawer to explore</div>
-                <button type="button" class="monitor__ai-btn" id="monitor-ai-btn"
-                        aria-label="Open AI assistant" aria-expanded="false">
-                  <span class="monitor__ai-dot" aria-hidden="true"></span>Ask AI
-                </button>
-              </div>
-            </div>
-
-            <!-- ── Left cabinet body ─────────────────────────────────── -->
-            <div class="cabinet-left" aria-hidden="true">
-              <a href="https://medicine.yale.edu/anesthesiology/" target="_blank" rel="noopener noreferrer"
-                 class="cabinet-logo" aria-label="Yale Department of Anesthesiology">
-                <img src="images/yaleanesthesiologylogo.jpg" alt="Yale Anesthesiology"
-                     class="cabinet-logo__img">
-              </a>
-            </div>
-
-            <!-- ── Left-cabinet specialty drawers ────────────────────── -->
-            <button type="button" class="left-drawer left-drawer--airway" id="left-drawer-airway"
-                    aria-label="Airway drawer">
-              <span class="left-drawer__handle" aria-hidden="true"></span>
-              <span class="left-drawer__label">Airway</span>
-            </button>
-            <button type="button" class="left-drawer left-drawer--lines" id="left-drawer-lines"
-                    aria-label="Lines &amp; Infusion drawer">
-              <span class="left-drawer__handle" aria-hidden="true"></span>
-              <span class="left-drawer__label">Lines &amp; Infusion</span>
-            </button>
-
-            <!-- ── Center top cap ─────────────────────────────────────── -->
-            <div class="cabinet-center-top" aria-hidden="true"></div>
-
-            <!-- ── Controlled grid (3 rows × 5 columns) ──────────────── -->
-            <div class="drawer-grid-wrap" aria-label="Controlled medication cells">
-              <div class="drawer-grid" id="controlled-grid"></div>
-            </div>
-
-            <!-- ── Main drawers (5 stacked, contiguous) ──────────────── -->
-            <div class="main-drawers" aria-label="Main medication drawers">
-              <button type="button" class="main-drawer main-drawer--short"></button>
-              <button type="button" class="main-drawer main-drawer--short"></button>
-              <button type="button" class="main-drawer main-drawer--tall"></button>
-              <button type="button" class="main-drawer main-drawer--medium"></button>
-              <button type="button" class="main-drawer main-drawer--short"></button>
-            </div>
-
-            <!-- ── Side auxiliary ─────────────────────────────────────── -->
-            <div class="side-aux" id="side-aux" role="button" tabindex="0"
-                 aria-label="Auxiliary and sharps compartment">
-              <div class="side-aux__handle" aria-hidden="true"></div>
-              <div class="side-aux__slot"   aria-hidden="true"></div>
-              <div class="side-aux__rule side-aux__rule--1" aria-hidden="true"></div>
-              <div class="side-aux__rule side-aux__rule--2" aria-hidden="true"></div>
-            </div>
-
-            <!-- ── Vaporizer / gas canister assembly ─────────────────── -->
-            <button type="button" class="gas-canister-btn" id="gas-canister-btn"
-                    aria-label="Volatile anesthetic vaporizers — click to learn">
-              <span class="gas-canister__label" aria-hidden="true">Vaporizers</span>
-              <div class="gas-canister__row" aria-hidden="true">
-                <div class="gas-canister__cyl gas-canister__cyl--sevo">
-                  <div class="gas-canister__knob"></div>
-                  <span class="gas-canister__name">Sevo</span>
+          <div class="home-hero__inner">
+            <div class="home-hero__copy">
+              <span class="home-hero__eyebrow">Yale School of Medicine · Open Education</span>
+              <h1 class="home-hero__title">
+                Anesthesia <span class="home-hero__title-accent">Playground</span>
+              </h1>
+              <p class="home-hero__lead">
+                An interactive sandbox for learning anesthesia. Explore the OR cabinet,
+                manipulate ventilator physiology in real time, and rehearse clinical
+                scenarios with AI coaching that adapts to <em>your</em> reasoning.
+              </p>
+              <div class="home-hero__ctas">
+                <div class="home-cta-menu" id="home-cta-menu">
+                  <button type="button"
+                          class="home-cta home-cta--primary"
+                          id="home-cta-explore"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                          aria-controls="home-cta-explore-list">
+                    Start exploring
+                    <span class="home-cta__arrow" aria-hidden="true">▾</span>
+                  </button>
+                  <div class="home-cta-menu__panel"
+                       id="home-cta-explore-list"
+                       role="menu"
+                       aria-labelledby="home-cta-explore"
+                       hidden>
+                    <a href="pyxis/" class="home-cta-menu__item" role="menuitem">
+                      <span class="home-cta-menu__title">Interactive Pyxis</span>
+                      <span class="home-cta-menu__sub">Drugs, supplies, and the OR cabinet.</span>
+                    </a>
+                    <a href="ventilator/" class="home-cta-menu__item" role="menuitem">
+                      <span class="home-cta-menu__title">Interactive Ventilator</span>
+                      <span class="home-cta-menu__sub">Physiology, scenarios, AI coaching.</span>
+                    </a>
+                  </div>
                 </div>
-                <div class="gas-canister__cyl gas-canister__cyl--iso">
-                  <div class="gas-canister__knob"></div>
-                  <span class="gas-canister__name">Iso</span>
-                </div>
-                <div class="gas-canister__cyl gas-canister__cyl--des">
-                  <div class="gas-canister__knob"></div>
-                  <span class="gas-canister__name">Des</span>
-                </div>
+                <a class="home-cta home-cta--ghost" id="home-cta-signup" href="platform/auth.html">
+                  Sign up
+                </a>
               </div>
-            </button>
-
-            <!-- ── Cabinet base & wheels ──────────────────────────────── -->
-            <div class="cabinet-base" aria-hidden="true"></div>
-            <div class="wheel wheel--a"  aria-hidden="true"></div>
-            <div class="wheel wheel--b"  aria-hidden="true"></div>
-
-            <!-- ── Callout labels (pointer-events: none) ─────────────── -->
-            <span class="callout callout--supply">Supply Bins</span>
-            <span class="callout callout--controlled">Controlled Substances</span>
-            <span class="callout callout--main">Main Drawers</span>
-
-          </div><!-- /cabinet-scale -->
-        </div><!-- /cabinet-stage -->
-      </div><!-- /main-layout -->
-
-      <!-- ── Modal: Drawer / bin contents ──────────────────────────────── -->
-      <dialog class="modal modal--contents" id="modal-contents" aria-labelledby="modal-contents-title">
-        <div class="modal__inner">
-          <header class="modal__head">
-            <div class="modal__head-text">
-              <p class="modal__eyebrow">Drawer contents</p>
-              <h2 class="modal__title" id="modal-contents-title">—</h2>
+              <div class="home-hero__meta">
+                <span class="home-hero__meta-dot" aria-hidden="true"></span>
+                <span>Free for medical students, residents, and educators</span>
+              </div>
             </div>
-            <button type="button" class="modal__close" id="modal-contents-close" aria-label="Close">×</button>
-          </header>
-          <div class="modal__body" id="modal-contents-body">
-            <p class="empty-hint">Select a drawer, bin, or slot on the cabinet.</p>
-          </div>
-        </div>
-      </dialog>
 
-      <!-- ── Modal: Learning detail ─────────────────────────────────────── -->
-      <dialog class="modal modal--detail" id="modal-detail" aria-labelledby="modal-detail-title">
-        <div class="modal__inner">
-          <header class="modal__head">
-            <div class="modal__head-text">
-              <p class="modal__eyebrow">Learning detail</p>
-              <h2 class="modal__title" id="modal-detail-title">Details</h2>
+            <!-- ── 3D Carousel ─────────────────────────────────────────── -->
+            <div class="home-carousel" aria-label="Feature preview carousel">
+              <div class="home-carousel__stage">
+
+                <!-- Mini Pyxis card -->
+                <article class="home-card home-card--pyxis is-active" data-card="pyxis" aria-label="Interactive Pyxis preview">
+                  <span class="home-card__chip">Interactive Pyxis</span>
+                  <div class="home-card__art">
+                    <div class="mini-pyxis" aria-hidden="true">
+                      <div class="mini-pyxis__cabinet">
+                        <div class="mini-pyxis__head">
+                          <span class="mini-pyxis__brand">Anesthesia station</span>
+                          <span class="mini-pyxis__led" aria-hidden="true"></span>
+                        </div>
+                        <div class="mini-pyxis__rack">
+                          <div class="mini-pyxis__drawer mini-pyxis__drawer--1">
+                            <span class="mini-pyxis__drawer-label">A1</span>
+                            <span class="mini-pyxis__handle" aria-hidden="true"></span>
+                          </div>
+                          <div class="mini-pyxis__drawer mini-pyxis__drawer--open">
+                            <span class="mini-pyxis__drawer-label">A2</span>
+                            <span class="mini-pyxis__handle" aria-hidden="true"></span>
+                          </div>
+                          <div class="mini-pyxis__drawer mini-pyxis__drawer--3">
+                            <span class="mini-pyxis__drawer-label">A3</span>
+                            <span class="mini-pyxis__handle" aria-hidden="true"></span>
+                          </div>
+                          <div class="mini-pyxis__drawer mini-pyxis__drawer--4">
+                            <span class="mini-pyxis__drawer-label">A4</span>
+                            <span class="mini-pyxis__handle" aria-hidden="true"></span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="mini-pyxis__card" role="presentation">
+                        <span class="mini-pyxis__card-pill">A2 · vial</span>
+                        <span class="mini-pyxis__card-name">Metoprolol</span>
+                        <span class="mini-pyxis__card-class">Cardioselective β1-blocker</span>
+                        <div class="mini-pyxis__card-bars" aria-hidden="true">
+                          <span></span><span></span><span></span>
+                        </div>
+                        <span class="mini-pyxis__card-dose">2.5–5 mg IV · onset ≈ 5 min</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="home-card__caption">A virtual cabinet of drugs, supplies, and gear, explorable down to the dose.</p>
+                </article>
+
+                <!-- Mini Ventilator card -->
+                <article class="home-card home-card--vent" data-card="vent" aria-label="Interactive Ventilator preview">
+                  <span class="home-card__chip">Interactive Ventilator</span>
+                  <div class="home-card__art">
+                    <div class="mini-vent" aria-hidden="true">
+                      <!-- Vitals column -->
+                      <div class="mini-vent__panel mini-vent__vitals">
+                        <span class="mini-vent__panel-title">Vitals</span>
+                        <div class="mini-vent__vital mini-vent__vital--hr">
+                          <span class="mini-vent__vital-label">HR</span>
+                          <span class="mini-vent__vital-val" data-vital="hr">78</span>
+                        </div>
+                        <div class="mini-vent__vital mini-vent__vital--bp">
+                          <span class="mini-vent__vital-label">BP</span>
+                          <span class="mini-vent__vital-val" data-vital="bp">118/72</span>
+                        </div>
+                        <div class="mini-vent__vital mini-vent__vital--spo2">
+                          <span class="mini-vent__vital-label">SpO₂</span>
+                          <span class="mini-vent__vital-val" data-vital="spo2">99</span>
+                        </div>
+                      </div>
+
+                      <!-- Waveforms column -->
+                      <div class="mini-vent__waves">
+                        <div class="mini-vent__panel mini-vent__wave mini-vent__wave--paw">
+                          <span class="mini-vent__panel-title">Paw (cmH₂O)</span>
+                          <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+                            <path d="M0,50 L10,50 Q14,46 18,38 L22,16 Q26,10 30,12 L34,16 L40,40 L46,48 L50,50 L60,50 Q64,46 68,38 L72,16 Q76,10 80,12 L84,16 L90,40 L96,48 L100,50 L110,50 Q114,46 118,38 L122,16 Q126,10 130,12 L134,16 L140,40 L146,48 L150,50 L160,50 Q164,46 168,38 L172,16 Q176,10 180,12 L184,16 L190,40 L196,48 L200,50" />
+                          </svg>
+                        </div>
+                        <div class="mini-vent__panel mini-vent__wave mini-vent__wave--flow">
+                          <span class="mini-vent__panel-title">Flow (L/min)</span>
+                          <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+                            <path d="M0,30 L8,8 L16,12 L40,18 L46,30 L52,52 L70,46 L98,30 L106,10 L114,12 L138,18 L144,30 L150,52 L168,46 L196,30 L200,30" />
+                          </svg>
+                        </div>
+                        <div class="mini-vent__panel mini-vent__wave mini-vent__wave--vol">
+                          <span class="mini-vent__panel-title">Volume (mL)</span>
+                          <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+                            <path d="M0,52 Q12,52 18,40 Q26,18 36,10 Q46,8 54,18 Q62,40 70,50 L96,52 Q108,52 114,40 Q122,18 132,10 Q142,8 150,18 Q158,40 166,50 L200,52" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      <!-- Numbers column -->
+                      <div class="mini-vent__numbers">
+                        <div class="mini-vent__num">
+                          <span class="mini-vent__num-label">PIP</span>
+                          <span><span class="mini-vent__num-val" data-vent="pip">24</span><span class="mini-vent__num-unit">cmH₂O</span></span>
+                        </div>
+                        <div class="mini-vent__num">
+                          <span class="mini-vent__num-label">RR</span>
+                          <span><span class="mini-vent__num-val" data-vent="rr">12</span><span class="mini-vent__num-unit">/min</span></span>
+                        </div>
+                        <div class="mini-vent__num">
+                          <span class="mini-vent__num-label">Vt</span>
+                          <span><span class="mini-vent__num-val" data-vent="vt">480</span><span class="mini-vent__num-unit">mL</span></span>
+                        </div>
+                        <div class="mini-vent__num">
+                          <span class="mini-vent__num-label">etCO₂</span>
+                          <span><span class="mini-vent__num-val" data-vent="co2">38</span><span class="mini-vent__num-unit">mmHg</span></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="home-card__caption">Tweak knobs, watch waveforms talk back. Physiology you can poke.</p>
+                </article>
+
+                <!-- Mini Dashboard card -->
+                <article class="home-card home-card--dash" data-card="dash" aria-label="Instructor Dashboard preview">
+                  <span class="home-card__chip">Instructor Dashboard</span>
+                  <div class="home-card__art">
+                    <div class="mini-dash" aria-hidden="true">
+                      <div class="mini-dash__head">
+                        <div class="mini-dash__tabs">
+                          <span class="mini-dash__tab is-active">Cohort</span>
+                          <span class="mini-dash__tab">Tutorials</span>
+                          <span class="mini-dash__tab">Scenarios</span>
+                        </div>
+                        <span class="mini-dash__live"><span class="mini-dash__live-dot"></span>Live</span>
+                      </div>
+
+                      <div class="mini-dash__kpis">
+                        <div class="mini-dash__kpi">
+                          <span class="mini-dash__kpi-label">Active learners</span>
+                          <span class="mini-dash__kpi-val">37</span>
+                        </div>
+                        <div class="mini-dash__kpi">
+                          <span class="mini-dash__kpi-label">Scenarios / wk</span>
+                          <span class="mini-dash__kpi-val">128</span>
+                        </div>
+                        <div class="mini-dash__kpi">
+                          <span class="mini-dash__kpi-label">Avg score</span>
+                          <span class="mini-dash__kpi-val">82<span class="mini-dash__kpi-unit">%</span></span>
+                        </div>
+                      </div>
+
+                      <div class="mini-dash__panels">
+                        <div class="mini-dash__chart">
+                          <span class="mini-dash__panel-title">Activity (7d)</span>
+                          <div class="mini-dash__bars">
+                            <span style="--h: 38%"></span>
+                            <span style="--h: 62%"></span>
+                            <span style="--h: 48%"></span>
+                            <span style="--h: 78%"></span>
+                            <span style="--h: 56%"></span>
+                            <span style="--h: 88%"></span>
+                            <span style="--h: 72%"></span>
+                          </div>
+                        </div>
+                        <div class="mini-dash__donut">
+                          <span class="mini-dash__panel-title">Mastery</span>
+                          <div class="mini-dash__donut-ring" role="img" aria-label="73 percent mastery">
+                            <span class="mini-dash__donut-num">73<span class="mini-dash__donut-unit">%</span></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="home-card__caption">Cohort analytics, AI debriefs, and authorable scenarios for educators.</p>
+                </article>
+
+              </div>
+
+              <div class="home-carousel__dots" role="tablist" aria-label="Switch carousel slide">
+                <button type="button" class="home-carousel__dot is-active" data-go="0"
+                        role="tab" aria-selected="true" aria-label="Show Pyxis preview"></button>
+                <button type="button" class="home-carousel__dot" data-go="1"
+                        role="tab" aria-selected="false" aria-label="Show ventilator preview"></button>
+                <button type="button" class="home-carousel__dot" data-go="2"
+                        role="tab" aria-selected="false" aria-label="Show instructor dashboard preview"></button>
+              </div>
             </div>
-            <button type="button" class="modal__close" id="modal-detail-close" aria-label="Close">×</button>
-          </header>
-          <div class="modal__body modal__body--detail" id="modal-detail-body">
-            <p class="empty-hint">Choose an item in the drawer to see clinical orientation and pearls.</p>
           </div>
-          <footer class="modal__footer" id="modal-detail-footer" hidden>
-            <button type="button" class="modal__back-btn" id="modal-detail-back" aria-label="Back to drawer">← Back to drawer</button>
-          </footer>
-        </div>
-      </dialog>
+        </section>
 
-      </section><!-- /page-tour -->
-
-      <!-- ── Page: Meet Your Team ─────────────────────────────────────────── -->
-      <section id="page-about" class="page-section" role="tabpanel">
-        <header class="site-header">
-          <div class="site-header__card">
-            <h1>Meet Your Team</h1>
-            <p>The team working with you on your rotations and Anesthesia Playground. <br> Click a bubble to learn more and <strong>reach out directly!</strong></p>
+        <!-- ── FEATURES ─────────────────────────────────────────────────── -->
+        <section class="home-features" id="home-features" aria-labelledby="home-features-title">
+          <div class="home-features__intro reveal">
+            <h2 id="home-features-title">Three playgrounds, one mission</h2>
+            <p>Explore at your own pace, drill the patterns that matter, and let educators see exactly where to coach next.</p>
           </div>
-        </header>
-        <div class="about-page">
-          <div class="about-page__row about-page__row--split">
-            <div class="about-page__group">
-              <h3 class="about-page__group-title">Attendings &amp; Faculty</h3>
-              <div class="attending-bubbles" id="attending-bubbles" aria-label="Attending physicians and advising faculty"></div>
+
+          <div class="home-features__grid">
+            <!-- Pyxis -->
+            <article class="home-feature home-feature--pyxis reveal">
+              <div class="home-feature__head">
+                <div class="home-feature__icon home-feature__icon--pyxis" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="3" width="16" height="18" rx="2" />
+                    <path d="M4 9h16M4 15h16M9 3v18" />
+                  </svg>
+                </div>
+                <h3>Interactive Pyxis</h3>
+                <p class="home-feature__sub">Demystify the cabinet you'll meet on day one of your rotation.</p>
+              </div>
+              <ul class="home-feature__list">
+                <li><strong>Click-to-explore drawers</strong> for controlled meds, supplies, airway gear, and lines.</li>
+                <li><strong>Vaporizer panel:</strong> sevo, iso, and des side-by-side with teaching context.</li>
+                <li><strong>Curated drug cards</strong> with mechanism, dosing, and "what to look for" pearls.</li>
+                <li><strong>Ask AI</strong> chat to demystify any drug or device on the spot.</li>
+              </ul>
+              <a class="home-feature__cta" href="pyxis/">Open the Pyxis</a>
+            </article>
+
+            <!-- Ventilator -->
+            <article class="home-feature home-feature--vent reveal">
+              <div class="home-feature__head">
+                <div class="home-feature__icon home-feature__icon--vent" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12h3l2-6 4 12 4-9 2 3h3" />
+                  </svg>
+                </div>
+                <h3>Interactive Ventilator</h3>
+                <p class="home-feature__sub">Play with physiology. Watch the waveforms talk back to your settings.</p>
+              </div>
+              <ul class="home-feature__list">
+                <li><strong>Live monitors</strong>: pressure, flow, volume, capnography, and P–V loops.</li>
+                <li><strong>Tutorial modals</strong> for compliance, resistance, and pattern recognition.</li>
+                <li><strong>Clinical scenarios</strong> (bronchospasm, hypotension, anaphylaxis, and more) with branching choices.</li>
+                <li><strong>AI coaching</strong> that tailors feedback to your decisions in real time.</li>
+                <li><strong>AI-generated debriefs</strong> with strengths, weaknesses, and recommended drills.</li>
+              </ul>
+              <a class="home-feature__cta" href="ventilator/">Open the ventilator</a>
+            </article>
+
+            <!-- Dashboard -->
+            <article class="home-feature home-feature--dash reveal">
+              <div class="home-feature__head">
+                <div class="home-feature__icon home-feature__icon--dash" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 21V10M9 21V4M15 21v-9M21 21V8" />
+                  </svg>
+                </div>
+                <h3>Instructor Dashboard</h3>
+                <p class="home-feature__sub">See what your learners are practicing, struggling with, and mastering.</p>
+              </div>
+              <ul class="home-feature__list">
+                <li><strong>Live analytics</strong> across cohorts, training levels, and affiliations.</li>
+                <li><strong>Per-learner timelines</strong> for tutorials, scenarios, and quizzes.</li>
+                <li><strong>AI debriefs</strong> summarizing strengths, weaknesses, and next-step coaching.</li>
+                <li><strong>Authorable scenario motifs</strong> that AI variates into endless cases.</li>
+              </ul>
+              <a class="home-feature__cta" href="platform/auth.html">Educator sign-in</a>
+            </article>
+          </div>
+        </section>
+
+        <!-- ── ABOUT ────────────────────────────────────────────────────── -->
+        <section class="home-about" aria-labelledby="home-about-title">
+          <div class="home-about__inner reveal">
+            <span class="home-about__eyebrow">Why this exists</span>
+            <h2 id="home-about-title">Open-sourcing anesthesia education</h2>
+            <p class="home-about__lead">
+              Anesthesia is hard to <em>see</em>. The OR moves fast, decisions live inside the
+              attending's head, and a textbook can't show you a vent waveform shifting under
+              <em>your</em> changes. <strong>Anesthesia Playground</strong> is a small attempt
+              to fix that: a public, free, modern sandbox that pairs interactive simulations
+              with AI tutoring so any student, anywhere, can practice the way faculty already think.
+            </p>
+            <ul class="home-about__pillars">
+              <li><strong>Open</strong>Free for learners. Free for institutions. Built to be borrowed.</li>
+              <li><strong>Interactive</strong> Every screen is a thing you can poke, not a slide.</li>
+              <li><strong>AI-augmented</strong>Coaching, debriefs, and case generation that scale a teaching attending's bandwidth.</li>
+            </ul>
+            <p class="home-about__signoff">Built to grow a community of anesthesia trainees and educators around digital tech × medical education.</p>
+          </div>
+        </section>
+
+        <!-- ── FOOTER CTA BAND ──────────────────────────────────────────── -->
+        <section class="home-cta-band">
+          <div class="home-cta-band__inner reveal">
+            <div>
+              <h3>Ready to play?</h3>
+              <p>Jump straight into the Pyxis or fire up a clinical scenario on the ventilator. No account needed to start exploring.</p>
             </div>
-            <div class="about-page__group" id="students-group">
-              <h3 class="about-page__group-title">Students</h3>
-              <div class="attending-bubbles" id="student-bubbles" aria-label="Medical students"></div>
-              <p class="about-page__empty-hint" id="students-empty" hidden>No students listed yet.</p>
+            <div class="home-cta-band__buttons">
+              <a class="home-cta home-cta--primary" href="pyxis/">Open the Pyxis</a>
+              <a class="home-cta home-cta--ghost" href="ventilator/">Open the ventilator</a>
             </div>
           </div>
-          <div class="about-page__group">
-            <h3 class="about-page__group-title">Residents</h3>
-            <div class="attending-bubbles" id="resident-bubbles" aria-label="Anesthesiology residents"></div>
-          </div>
-        </div>
-      </section><!-- /page-about -->
+        </section>
 
-      <!-- ── Modal: Attending card (shared by attendings and residents) ─────── -->
-      <dialog class="modal modal--attending" id="modal-attending" aria-labelledby="modal-attending-name">
-        <div class="modal__inner attending-card">
-          <button type="button" class="modal__close attending-card__close" id="modal-attending-close" aria-label="Close">×</button>
-          <div id="attending-card-content"></div>
-        </div>
-      </dialog>
+        <footer class="home-foot">
+          <div class="home-foot__inner">
+            <!-- Founder strip: replace href="#" on LinkedIn with your real profile URL -->
+            <a class="home-founder" href="https://www.linkedin.com/in/chanseocslee/" target="_blank" rel="noopener noreferrer" aria-label="Connect with Chanseo (CS) Lee on LinkedIn">
+              <img class="home-founder__avatar" src="images/chanseolee.jpg" alt="" width="44" height="44" decoding="async" />
+              <span class="home-founder__copy">
+                <span class="home-founder__label">Built by</span>
+                <span class="home-founder__name">Chanseo (CS) Lee</span>
+                <span class="home-founder__role">MS3 · Yale School of Medicine</span>
+              </span>
+              <span class="home-founder__social" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                  <path d="M4.98 3.5a2.5 2.5 0 11.02 5 2.5 2.5 0 01-.02-5zM3 9h4v12H3V9zm6.5 0h3.84v1.64h.05c.54-.93 1.86-1.92 3.83-1.92 4.1 0 4.86 2.7 4.86 6.21V21h-4v-5.5c0-1.31-.02-3-1.83-3-1.83 0-2.11 1.43-2.11 2.9V21h-4V9z"/>
+                </svg>
+              </span>
+            </a>
 
-      <!-- ── Chat panel ──────────────────────────────────────────────────── -->
-      <div class="chat-panel" id="chat-panel" aria-hidden="true" role="complementary"
-           aria-label="Anesthesia AI assistant">
-        <header class="chat-panel__header">
-          <div class="chat-panel__title-group">
-            <span class="chat-panel__online-dot" aria-hidden="true"></span>
-            <span class="chat-panel__title">Your Attending (Available)</span>
+            <p class="home-foot__line">
+              Built with care at the Yale School of Medicine, Department of
+              <a href="https://medicine.yale.edu/anesthesiology/" target="_blank" rel="noopener noreferrer">Anesthesiology</a>.
+            </p>
           </div>
-          <button type="button" class="chat-panel__header-btn" id="chat-key-btn"
-                  title="Change API key" aria-label="Change API key">⚙</button>
-          <button type="button" class="chat-panel__header-btn chat-panel__close"
-                  id="chat-close" aria-label="Close AI assistant">×</button>
-        </header>
-        <div class="chat-panel__messages" id="chat-messages"
-             role="log" aria-live="polite" aria-label="Chat messages"></div>
-        <footer class="chat-panel__footer">
-          <input type="text" id="chat-input" class="chat-panel__input"
-                 placeholder="Ask about any drug or equipment…"
-                 autocomplete="off" maxlength="500" aria-label="Chat message input">
-          <button type="button" class="chat-panel__send" id="chat-send" aria-label="Send">↑</button>
         </footer>
-      </div>
 
-    <!-- ── Fixed disclaimer widget ─────────────────────────────────────── -->
-    <div class="disclaimer-widget" role="complementary" aria-label="Educational disclaimer">
-      <div class="disclaimer-widget__tab" aria-hidden="true">⚕ Educational Sources and Disclaimer</div>
-      <div class="disclaimer-widget__panel">
-        <div class="disclaimer-widget__inner">
-          <p class="disclaimer-widget__heading">Educational Resource — Not for Clinical Decision-Making</p>
-          <p class="disclaimer-widget__text">
-            This tool is designed exclusively for medical students on anesthesiology rotations to build context around
-            what they observe in the OR. The information presented, including drug doses, mechanisms, and clinical pearls
-            , is meant to supplement direct teaching, not replace it.
-            It should <strong>never be relied upon as the sole basis for patient care decisions.</strong>
-            Always conduct your own research, defer to your supervising attendings, follow local protocols and formularies,
-            and exercise clinical judgment adapted to each patient.
-          </p>
-          <p class="disclaimer-widget__source">Informed by faculty, ASA/AHA/ACC guidelines, FDA labels, peer-reviewed literature, Deranged Physiology, and <strong>Manual of Clinical Anesthesiology</strong> by Chu, Traynor, Kurup.</p>
+      </main>
+
+      <!-- ── Fixed disclaimer widget ─────────────────────────────────────── -->
+      <div class="disclaimer-widget" role="complementary" aria-label="Educational disclaimer">
+        <div class="disclaimer-widget__tab" aria-hidden="true">⚕ Educational Sources and Disclaimer</div>
+        <div class="disclaimer-widget__panel">
+          <div class="disclaimer-widget__inner">
+            <p class="disclaimer-widget__heading">Educational Resource — Not for Clinical Decision-Making</p>
+            <p class="disclaimer-widget__text">
+              This tool is designed exclusively for medical students on anesthesiology rotations to build context around
+              what they observe in the OR. The information presented, including drug doses, mechanisms, and clinical pearls,
+              is meant to supplement direct teaching, not replace it.
+              It should <strong>never be relied upon as the sole basis for patient care decisions.</strong>
+              Always conduct your own research, defer to your supervising attendings, follow local protocols and formularies,
+              and exercise clinical judgment adapted to each patient.
+            </p>
+            <p class="disclaimer-widget__source">Informed by faculty, ASA/AHA/ACC guidelines, FDA labels, peer-reviewed literature, Deranged Physiology, and <strong>Manual of Clinical Anesthesiology</strong> by Chu, Traynor, Kurup.</p>
+          </div>
         </div>
       </div>
-    </div>
 
     </div><!-- /app -->
 
@@ -436,30 +537,31 @@
       </button>
     </div>
 
-    <!-- Inline: build controlled-grid cells -->
-    <script>
-      (function () {
-        var grid = document.getElementById("controlled-grid");
-        if (!grid) return;
-        for (var i = 0; i < 15; i++) {
-          var b = document.createElement("button");
-          b.type = "button";
-          b.className = "drawer-cell";
-          b.dataset.controlledIndex = String(i);
-          b.setAttribute("aria-label", "Controlled medication slot " + (i + 1));
-          b.setAttribute("tabindex", "0");
-          grid.appendChild(b);
-        }
-      })();
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
-    <script src="js/data.js"></script>
+    <!-- Visually-hidden but focusable skip-link -->
+    <style>
+      .visually-hidden-focusable {
+        position: absolute;
+        left: -9999px;
+        top: auto;
+      }
+      .visually-hidden-focusable:focus {
+        left: 16px;
+        top: 16px;
+        z-index: 1000;
+        padding: 10px 14px;
+        background: #fff;
+        border: 2px solid var(--accent);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-weight: 600;
+        text-decoration: none;
+      }
+    </style>
+
     <script src="js/site-nav-mobile.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="platform/js/supabase-client.js"></script>
-    <script src="platform/js/ai-chat.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/home.js"></script>
     <script src="js/analytics.js"></script>
-    <script src="platform/js/event-logger.js"></script>
   </body>
 </html>

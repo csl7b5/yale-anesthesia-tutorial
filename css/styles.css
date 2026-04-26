@@ -115,6 +115,28 @@ body {
   border-color: var(--accent-hover);
 }
 
+/* When nav tabs are <a> elements, browsers apply :link/:visited colours
+   at higher specificity. These rules normalise them to match <button> tabs. */
+a.site-nav__tab,
+a.site-nav__tab:link,
+a.site-nav__tab:visited {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+a.site-nav__tab:hover {
+  color: var(--text-primary);
+}
+a.site-nav__tab--active,
+a.site-nav__tab--active:link,
+a.site-nav__tab--active:visited {
+  color: var(--accent);
+}
+a.site-nav__tab--signin,
+a.site-nav__tab--signin:link,
+a.site-nav__tab--signin:visited {
+  color: #fff;
+}
+
 /* Mobile nav — hamburger (≤960px; avoids awkward tab wrap ~770–820px) */
 .site-nav {
   position: relative;

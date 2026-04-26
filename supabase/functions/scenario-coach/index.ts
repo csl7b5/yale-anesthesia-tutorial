@@ -23,9 +23,8 @@ const corsHeaders: Record<string, string> = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Shared rate limit pool: coaching + debrief share a 30-call/day cap
-// (coaching fires automatically on every step, so higher than the 15-cap for chat)
-const DAILY_LIMIT = 30;
+// Shared rate limit pool: coaching + debrief share a 10-call/day cap
+const DAILY_LIMIT = 10;
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {

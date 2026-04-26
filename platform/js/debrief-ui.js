@@ -160,6 +160,36 @@
       drillSection.hidden = true;
     }
 
+    // AI Debrief — personalised coaching narrative, loaded asynchronously
+    const aiSection = document.getElementById('debrief-ai-section');
+    const aiBody    = document.getElementById('debrief-ai-body');
+    if (aiSection && aiBody && window.ScenarioCoach) {
+      aiSection.hidden = false;
+      aiBody.className = 'debrief-ai-body debrief-ai-body--loading';
+      aiBody.innerHTML = '<span class="scen-ai-coaching__spinner"></span> Generating personalised debrief\u2026';
+
+      window.ScenarioCoach.requestDebrief({
+        scenarioTitle:  window._activeScenTitle ?? activeScenarioId ?? '',
+        patientContext: '',
+        attemptId:      window._currentAttemptId ?? null,
+        steps: (window._scenStepHistory ?? []).map(h => ({
+          question:    h.question,
+          choice_text: h.choice_text,
+          is_correct:  h.is_correct,
+          domain:      h.domain,
+        })),
+      }).then(text => {
+        if (text) {
+          aiBody.className = 'debrief-ai-body';
+          aiBody.textContent = text;
+        } else {
+          aiSection.hidden = true;
+        }
+      });
+    } else if (aiSection) {
+      aiSection.hidden = true;
+    }
+
     // Sign-in prompt for anonymous users
     const signinPrompt = document.getElementById('debrief-signin-prompt');
     const user = window.SB ? await SB.getUser() : null;

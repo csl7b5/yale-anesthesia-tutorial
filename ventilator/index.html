@@ -100,6 +100,7 @@
         <span class="site-nav__menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
       </button>
       <div class="site-nav__tabs" id="site-nav-menu-vent" role="tablist">
+        <a href="../" class="site-nav__tab" role="tab" aria-selected="false">Home</a>
         <a href="../pyxis/" class="site-nav__tab" role="tab" aria-selected="false">Interactive Pyxis</a>
         <a href="../ventilator/" class="site-nav__tab site-nav__tab--active" role="tab" aria-selected="true">Interactive Ventilator</a>
         <a href="../teams/" class="site-nav__tab" role="tab" aria-selected="false">Meet Your Team</a>
@@ -540,19 +541,24 @@
           <div class="scen-active__right">
             <span class="scen-phase scen-phase--deterioration" id="scen-phase">Deterioration</span>
             <span class="scen-step-label" id="scen-step">Step 1 of 2</span>
+            <label class="scen-ai-toggle" title="Show personalised AI coaching after each answer">
+              <input type="checkbox" id="scen-ai-coaching-opt" />
+              AI Coaching
+            </label>
             <button class="scen-exit-btn" id="scen-exit-btn" type="button">✕ Exit</button>
           </div>
         </div>
         <div class="scen-active__body">
           <div class="scen-context" id="scen-context"></div>
           <div class="scen-monitor-clue" id="scen-monitor-clue" hidden>
-            <span class="scen-clue-icon">⬡</span>
-            <span id="scen-clue-text"></span>
-            <div class="scen-wave-hint" id="scen-wave-hint" hidden>
-              <span id="scen-wave-hint-text"></span>
-              <button class="scen-wave-hint__btn" id="scen-wave-hint-btn" type="button">Open linked wave pattern</button>
+            <button class="scen-clue-toggle" id="scen-clue-toggle" type="button">
+              Key Clue <span class="scen-clue-toggle__arrow">▾</span>
+            </button>
+            <div class="scen-clue-content" id="scen-clue-content" hidden>
+              <span id="scen-clue-text"></span>
             </div>
           </div>
+          <div id="scen-ai-coach-col"></div>
           <div class="scen-qa" id="scen-qa"><!-- question + choices injected here --></div>
         </div>
       </div>
@@ -562,8 +568,6 @@
         <div class="scen-resolution__icon">✓</div>
         <h3 id="scen-resolution-title"></h3>
         <p id="scen-resolution-text"></p>
-        <!-- AI debrief — populated asynchronously by scenario-coach.js -->
-        <div id="scen-ai-debrief" class="scen-ai-debrief" hidden></div>
         <div class="scen-resolution__actions">
           <button class="mode-btn mode-btn--on" id="scen-restart-btn" type="button">Try Another Scenario</button>
         </div>
@@ -1192,6 +1196,12 @@
     <div class="debrief-dialog__section">
       <h3 class="debrief-dialog__label">High-Yield Teaching Points</h3>
       <ul class="debrief-dialog__teaching" id="debrief-teaching"></ul>
+    </div>
+
+    <!-- AI Debrief — personalised narrative generated after the scenario -->
+    <div class="debrief-dialog__section" id="debrief-ai-section" hidden>
+      <h3 class="debrief-dialog__label">AI Debrief</h3>
+      <div id="debrief-ai-body" class="debrief-ai-body"></div>
     </div>
 
     <div class="debrief-dialog__section" id="debrief-drill-section" hidden>
