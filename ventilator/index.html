@@ -1128,8 +1128,13 @@
 
 <!-- ── Fixed disclaimer widget ──────────────────────────────────────────── -->
 <div class="disclaimer-widget" role="complementary" aria-label="Educational disclaimer">
-  <div class="disclaimer-widget__tab" aria-hidden="true">⚕ Educational Sources and Disclaimer</div>
-  <div class="disclaimer-widget__panel">
+  <button class="disclaimer-widget__tab" id="disclaimer-tab" type="button"
+          aria-expanded="false" aria-controls="disclaimer-panel"
+          aria-label="Educational Sources and Disclaimer">
+    <span class="wt-full">⚕ Educational Sources and Disclaimer</span>
+    <span class="wt-icon" aria-hidden="true">⚕</span>
+  </button>
+  <div class="disclaimer-widget__panel" id="disclaimer-panel">
     <div class="disclaimer-widget__inner">
       <p class="disclaimer-widget__heading">Educational Resource — Not for Clinical Decision-Making</p>
       <p class="disclaimer-widget__text">
@@ -1166,7 +1171,8 @@
     </div>
   </div>
   <button class="feedback-widget__tab" id="feedback-tab" aria-label="Open feedback form" aria-expanded="false">
-    📝 Share Feedback
+    <span class="wt-full">📝 Share Feedback</span>
+    <span class="wt-icon" aria-hidden="true">📝</span>
   </button>
 </div>
 

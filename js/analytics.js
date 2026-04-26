@@ -344,6 +344,33 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  //  DISCLAIMER WIDGET — click-to-toggle (needed on mobile where there's no hover)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const disclaimerWidget = document.querySelector('.disclaimer-widget');
+  const disclaimerTab    = document.getElementById('disclaimer-tab');
+
+  if (disclaimerWidget && disclaimerTab) {
+    function setDisclaimerOpen(open) {
+      disclaimerWidget.classList.toggle('is-open', open);
+      disclaimerTab.setAttribute('aria-expanded', String(open));
+    }
+
+    disclaimerTab.addEventListener('click', () => {
+      const willOpen = !disclaimerWidget.classList.contains('is-open');
+      setDisclaimerOpen(willOpen);
+    });
+
+    // Close when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+      if (disclaimerWidget.classList.contains('is-open') &&
+          !disclaimerWidget.contains(e.target)) {
+        setDisclaimerOpen(false);
+      }
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
   //  FEEDBACK WIDGET — both pages
   // ══════════════════════════════════════════════════════════════════════════
 

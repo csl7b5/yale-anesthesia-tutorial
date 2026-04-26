@@ -1833,6 +1833,11 @@ a.site-nav__tab--signin:visited {
 }
 
 .disclaimer-widget__tab {
+  /* Button reset so <button> looks identical to the old <div> */
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
@@ -2094,6 +2099,138 @@ a.site-nav__tab--signin:visited {
   }
   .feedback-widget__close {
     font-size: clamp(0.9rem, 4vw, 1.1rem);
+  }
+}
+
+/* ── Widget span helpers (full label vs icon-only for mobile) ───────────── */
+/* Desktop: show the full vertical label text, hide the bare icon span.     */
+.wt-full { display: inline; }
+.wt-icon { display: none;   }
+
+/* ── Mobile: convert side-bar widgets to small floating icon buttons ────── */
+@media (max-width: 680px) {
+
+  /* Icon spans flip: only the emoji shows */
+  .wt-full { display: none;   }
+  .wt-icon { display: inline; }
+
+  /* === Disclaimer (bottom-left) === */
+  .disclaimer-widget {
+    left: 14px;
+    top: auto;
+    bottom: 18px;
+    transform: none;
+    flex-direction: column;   /* panel stacks above button */
+    align-items: flex-start;
+  }
+
+  .disclaimer-widget__tab {
+    order: 2;                 /* button sits below the panel */
+    writing-mode: horizontal-tb;
+    text-orientation: initial;
+    transform: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    padding: 0;
+    font-size: 1.25rem;
+    letter-spacing: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.24);
+  }
+
+  .disclaimer-widget__panel {
+    order: 1;                 /* panel floats above the button */
+    /* Override the desktop width:0 / slide-right reveal */
+    width: min(calc(100vw - 28px), 320px) !important;
+    border-radius: 12px 12px 12px 4px;
+    border: 1px solid rgba(180, 130, 60, 0.28);
+    margin-bottom: 10px;
+    /* Vertical reveal animation */
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: max-height 0.40s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity    0.28s ease;
+  }
+
+  /* Disable the CSS :hover that opens the desktop panel */
+  .disclaimer-widget:hover .disclaimer-widget__panel {
+    width: min(calc(100vw - 28px), 320px) !important;
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .disclaimer-widget.is-open .disclaimer-widget__panel {
+    max-height: 72dvh;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .disclaimer-widget__inner {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    padding: 1rem 1.1rem;
+    box-sizing: border-box;
+  }
+
+  /* === Feedback (bottom-right) === */
+  .feedback-widget {
+    right: 14px;
+    top: auto;
+    bottom: 18px;
+    transform: none;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .feedback-widget__tab {
+    order: 2;
+    writing-mode: horizontal-tb;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    padding: 0;
+    font-size: 1.25rem;
+    letter-spacing: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(13, 148, 136, 0.38);
+  }
+
+  .feedback-widget__panel {
+    order: 1;
+    width: min(calc(100vw - 28px), 360px) !important;
+    border-radius: 12px 12px 4px 12px;
+    border: 1px solid rgba(13, 148, 136, 0.28);
+    margin-bottom: 10px;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: max-height 0.40s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity    0.28s ease;
+  }
+
+  .feedback-widget.is-open .feedback-widget__panel {
+    max-height: 76dvh;
+    opacity: 1;
+    pointer-events: auto;
+    /* Override desktop width rule */
+    width: min(calc(100vw - 28px), 360px) !important;
+  }
+
+  .feedback-widget__inner {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    height: min(68dvh, 500px);
+    box-sizing: border-box;
   }
 }
 
