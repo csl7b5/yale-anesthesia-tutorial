@@ -1556,12 +1556,22 @@ body.home-body {
   }
   .home-cta { width: 100%; justify-content: center; }
   .home-hero__ctas { width: 100%; }
-  /* Clip the carousel so side-card "wings" don't bleed off screen */
+  /* Clip the carousel so side-card "wings" don't bleed off screen.
+     border-radius forces iOS to composite the layer within its bounds,
+     preventing the 3D-transform "ghost box" artifact. */
   .home-carousel {
     overflow: hidden;
     width: 100%;
+    border-radius: 4px;
   }
-  .home-carousel__stage { aspect-ratio: 4 / 3.2; }
+  .home-carousel__stage {
+    aspect-ratio: 4 / 3.2;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  /* Drop the floor-shadow pseudo-element on mobile — it extends below
+     the card bounds and shows as a visible box edge when clipped */
+  .home-card.is-active::after { display: none; }
   /* Reduce side card translation so they stay within the clipped bounds */
   .home-card.is-side-left  {
     transform: translateX(-36%) translateZ(-180px) rotateY(32deg) scale(0.82);

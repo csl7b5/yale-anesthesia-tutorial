@@ -569,6 +569,15 @@ html { scrollbar-gutter: stable; }
   z-index: 200;
 }
 .vent-ai-btn:hover { transform: scale(1.04); box-shadow: 0 6px 28px rgba(13, 148, 136, 0.45); }
+
+/* On mobile the feedback widget becomes a 48px circle at bottom-right (18px from bottom).
+   Push the Ask AI button above it so they don't overlap. */
+@media (max-width: 680px) {
+  .vent-ai-btn {
+    bottom: 80px;
+    right: 14px;
+  }
+}
 .vent-ai-dot {
   width: 8px;
   height: 8px;
@@ -1138,6 +1147,12 @@ html { scrollbar-gutter: stable; }
   margin: 0;
   color: var(--text-primary);
 }
+.scen-ai-signin-link {
+  color: var(--accent, #0d9488);
+  font-weight: 600;
+  text-decoration: none;
+}
+.scen-ai-signin-link:hover { text-decoration: underline; }
 .scen-ai-coaching__spinner {
   display: inline-block;
   width: 14px;
@@ -2938,4 +2953,18 @@ html { scrollbar-gutter: stable; }
   /* Control sliders: slightly smaller */
   .vent-tut__ctrl-block .ctrl-lbl { font-size: 9px; }
   .vent-tut__ctrl-block .ctrl-val { font-size: 10px; }
+
+  /* Selector rows: stack label above select so the select
+     fills the available width and never bleeds outside the modal */
+  .mon-tut__selector-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    padding: 8px 12px;
+  }
+  .mon-tut__select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
 }

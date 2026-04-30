@@ -1363,7 +1363,7 @@
     });
   }
 
-  function renderScenFeedback(step, selectedIdx, choice) {
+  async function renderScenFeedback(step, selectedIdx, choice) {
     const qa = $('scen-qa');
     if (!qa) return;
 
@@ -1393,38 +1393,55 @@
     fbDiv.innerHTML = (choice.isCorrect ? '✓ ' : '✗ ') + choice.feedback;
     qa.appendChild(fbDiv);
 
-    // AI coaching — only if the student has opted in via the checkbox
+    // AI coaching — only if opted in AND signed in
     const aiEnabled = document.getElementById('scen-ai-coaching-opt')?.checked ?? false;
     if (window.ScenarioCoach && aiEnabled) {
-      const coachDiv = document.createElement('div');
-      coachDiv.className = 'scen-ai-coaching scen-ai-coaching--loading';
-      coachDiv.innerHTML = '<span class="scen-ai-coaching__label">AI Coaching</span><span class="scen-ai-coaching__spinner"></span>';
       const aiCoachColFb = document.getElementById('scen-ai-coach-col');
-      if (aiCoachColFb) aiCoachColFb.appendChild(coachDiv);
-      else qa.appendChild(coachDiv);
+      const _insertCoach = (el) => {
+        if (aiCoachColFb) aiCoachColFb.appendChild(el);
+        else qa.appendChild(el);
+      };
 
-      const priorHistory = scenState.stepHistory.slice(0, -1).map(h => ({
-        question: h.question, correct: h.is_correct,
-      }));
-      window.ScenarioCoach.requestStepCoaching({
-        scenarioTitle:      scenState.scenario.title,
-        patientContext:     scenState.scenario.patientContext ?? '',
-        stepClue:           step.clue ?? '',
-        question:           step.question,
-        choiceText:         choice.text,
-        isCorrect:          choice.isCorrect,
-        hardcodedFeedback:  choice.feedback,
-        stepHistory:        priorHistory,
-      }).then(coaching => {
-        if (coaching) {
-          coachDiv.className = 'scen-ai-coaching';
-          coachDiv.innerHTML =
-            '<span class="scen-ai-coaching__label">AI Coaching</span>' +
-            `<p class="scen-ai-coaching__text">${escHtml(coaching)}</p>`;
-        } else {
-          coachDiv.remove();
-        }
-      });
+      // Check auth first; AI is a signed-in-only feature
+      const _user = window.SB ? (await window.SB.getUser().catch(() => null)) : null;
+      if (!_user) {
+        const signinDiv = document.createElement('div');
+        signinDiv.className = 'scen-ai-coaching scen-ai-coaching--signin';
+        signinDiv.innerHTML =
+          '<span class="scen-ai-coaching__label">AI Coaching</span>' +
+          '<p class="scen-ai-coaching__text">' +
+          '<a href="../platform/auth.html" class="scen-ai-signin-link">Create a free account to unlock AI coaching →</a>' +
+          '</p>';
+        _insertCoach(signinDiv);
+      } else {
+        const coachDiv = document.createElement('div');
+        coachDiv.className = 'scen-ai-coaching scen-ai-coaching--loading';
+        coachDiv.innerHTML = '<span class="scen-ai-coaching__label">AI Coaching</span><span class="scen-ai-coaching__spinner"></span>';
+        _insertCoach(coachDiv);
+
+        const priorHistory = scenState.stepHistory.slice(0, -1).map(h => ({
+          question: h.question, correct: h.is_correct,
+        }));
+        window.ScenarioCoach.requestStepCoaching({
+          scenarioTitle:      scenState.scenario.title,
+          patientContext:     scenState.scenario.patientContext ?? '',
+          stepClue:           step.clue ?? '',
+          question:           step.question,
+          choiceText:         choice.text,
+          isCorrect:          choice.isCorrect,
+          hardcodedFeedback:  choice.feedback,
+          stepHistory:        priorHistory,
+        }).then(coaching => {
+          if (coaching) {
+            coachDiv.className = 'scen-ai-coaching';
+            coachDiv.innerHTML =
+              '<span class="scen-ai-coaching__label">AI Coaching</span>' +
+              `<p class="scen-ai-coaching__text">${escHtml(coaching)}</p>`;
+          } else {
+            coachDiv.remove();
+          }
+        });
+      }
     }
 
     const isLast = scenState.stepIdx >= scenState.scenario.steps.length - 1;
@@ -1514,21 +1531,24 @@
     const closeBtn = $('scen-panel-close-btn');
     const exitBtn  = $('scen-exit-btn');
 
-    if (openBtn) openBtn.addEventListener('click', () => {
+    const _openScenPanel = () => {
       if (!panel) return;
-      if (panel.hidden) {
-        panel.hidden = false;
-        if (!scenState.active) renderScenSelectView();
-        openBtn.textContent = '▼ Hide Scenarios';
-      } else {
-        panel.hidden = true;
-        openBtn.textContent = '▶ Clinical Scenarios — Test Your Knowledge';
-      }
-    });
-    if (closeBtn) closeBtn.addEventListener('click', () => {
+      panel.hidden = false;
+      if (!scenState.active) renderScenSelectView();
+      openBtn.textContent = '▼ Hide Scenarios';
+      document.body.classList.add('scenario-panel-open');
+    };
+    const _closeScenPanel = () => {
       if (panel) panel.hidden = true;
       if (openBtn) openBtn.textContent = '▶ Clinical Scenarios — Test Your Knowledge';
+      document.body.classList.remove('scenario-panel-open');
+    };
+
+    if (openBtn) openBtn.addEventListener('click', () => {
+      if (!panel) return;
+      panel.hidden ? _openScenPanel() : _closeScenPanel();
     });
+    if (closeBtn) closeBtn.addEventListener('click', _closeScenPanel);
     if (exitBtn) exitBtn.addEventListener('click', endScenario);
   }
 

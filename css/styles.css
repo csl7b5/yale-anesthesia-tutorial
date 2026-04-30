@@ -1866,8 +1866,11 @@ a.site-nav__tab--signin:visited {
   border-radius: 0 8px 8px 0;
 }
 
-.disclaimer-widget:hover .disclaimer-widget__panel {
-  width: 330px;
+/* Only expand on real hover-capable devices; touch devices use the click handler */
+@media (hover: hover) {
+  .disclaimer-widget:hover .disclaimer-widget__panel {
+    width: 330px;
+  }
 }
 
 /* Fixed-width inner so overflow:hidden clips cleanly */
@@ -2108,6 +2111,16 @@ a.site-nav__tab--signin:visited {
 .wt-icon { display: none;   }
 
 /* ── Mobile: convert side-bar widgets to small floating icon buttons ────── */
+/* Hide both widgets whenever the scenario panel is open — applies at ALL
+   viewport widths because the feedback sidebar (position:fixed, z-index 900)
+   can overlap the Ask AI / Next Question buttons at any screen size */
+body.scenario-panel-open .disclaimer-widget,
+body.scenario-panel-open .feedback-widget {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
 @media (max-width: 680px) {
 
   /* Icon spans flip: only the emoji shows */
