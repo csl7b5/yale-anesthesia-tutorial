@@ -21,8 +21,8 @@
       width: 8.5in;
       height: 11in;
       font-family: "DM Sans", system-ui, sans-serif;
-      background: #0d1b2a;
-      color: #e2e8f0;
+      background: #ffffff;
+      color: #1c2738;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -32,9 +32,9 @@
       width: 8.5in;
       height: 11in;
       background:
-        radial-gradient(ellipse 70% 45% at 50% -5%, rgba(20,184,166,0.18) 0%, transparent 70%),
-        radial-gradient(ellipse 55% 35% at 90% 60%, rgba(40,109,192,0.13) 0%, transparent 65%),
-        linear-gradient(175deg, #0d1b2a 0%, #0c1825 55%, #091521 100%);
+        radial-gradient(ellipse 70% 40% at 50% -2%, rgba(20,184,166,0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 30% at 95% 55%, rgba(40,109,192,0.07) 0%, transparent 60%),
+        #ffffff;
       display: flex;
       flex-direction: column;
       padding: 0.48in 0.52in 0.42in;
@@ -43,14 +43,13 @@
       overflow: hidden;
     }
 
-    /* ── Ambient orbs (decorative) ───────────────────────────── */
+    /* ── Subtle teal accent stripe at top ────────────────────── */
     .poster::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle 180px at 92% 14%, rgba(20,184,166,0.10) 0%, transparent 70%),
-        radial-gradient(circle 120px at 8% 88%,  rgba(40,109,192,0.09) 0%, transparent 70%);
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #14b8a6 0%, #0d9488 50%, #286dc0 100%);
       pointer-events: none;
     }
 
@@ -74,10 +73,10 @@
       box-shadow: 0 0 8px rgba(20,184,166,0.6);
     }
     .top-bar__site {
-      font-size: 11.5pt;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      color: #94a3b8;
+      font-size: 16pt;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #0f172a;
     }
     .top-bar__badge {
       font-size: 8.5pt;
@@ -109,7 +108,7 @@
       letter-spacing: -0.02em;
       margin-bottom: 0.10in;
     }
-    .hero__title-line1 { color: #f1f5f9; display: block; }
+    .hero__title-line1 { color: #0f172a; display: block; }
     .hero__title-line2 {
       display: block;
       background: linear-gradient(110deg, #14b8a6 0%, #0d9488 50%, #2dd4bf 100%);
@@ -120,12 +119,12 @@
     .hero__sub {
       font-size: 12.5pt;
       font-weight: 400;
-      color: #94a3b8;
+      color: #475569;
       line-height: 1.55;
       max-width: 5.4in;
     }
     .hero__sub strong {
-      color: #cbd5e1;
+      color: #1c2738;
       font-weight: 600;
     }
     .hero__qs {
@@ -141,7 +140,7 @@
       gap: 8px;
       font-size: 11.5pt;
       font-weight: 500;
-      color: #cbd5e1;
+      color: #1c2738;
       line-height: 1.4;
     }
     .hero__qs li::before {
@@ -166,8 +165,8 @@
       margin-bottom: 0.22in;
     }
     .feat {
-      background: rgba(255,255,255,0.035);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: #f8fafc;
+      border: 1px solid rgba(18,30,45,0.10);
       border-radius: 12px;
       padding: 0.175in 0.175in 0.16in;
     }
@@ -180,13 +179,13 @@
     .feat__title {
       font-size: 10.5pt;
       font-weight: 700;
-      color: #f1f5f9;
+      color: #0f172a;
       margin-bottom: 0.05in;
       line-height: 1.2;
     }
     .feat__body {
       font-size: 8.5pt;
-      color: #94a3b8;
+      color: #64748b;
       line-height: 1.55;
     }
 
@@ -199,7 +198,7 @@
       font-weight: 700;
       letter-spacing: 0.10em;
       text-transform: uppercase;
-      color: #475569;
+      color: #94a3b8;
       margin-bottom: 0.12in;
     }
     .list-grid {
@@ -212,7 +211,7 @@
       align-items: flex-start;
       gap: 7px;
       font-size: 9.5pt;
-      color: #cbd5e1;
+      color: #334155;
       line-height: 1.45;
     }
     .list-item::before {
@@ -244,6 +243,7 @@
       height: 1.55in;
       border-radius: 10px;
       background: #ffffff;
+      border: 1px solid rgba(18,30,45,0.10);
       padding: 8px;
       flex-shrink: 0;
       display: flex;
@@ -261,14 +261,14 @@
       font-weight: 700;
       letter-spacing: 0.10em;
       text-transform: uppercase;
-      color: #475569;
+      color: #94a3b8;
       margin-bottom: 4px;
     }
     .qr-copy__url {
-      font-size: 15pt;
-      font-weight: 700;
+      font-size: 22pt;
+      font-weight: 800;
       color: #14b8a6;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
       margin-bottom: 6px;
     }
     .qr-copy__sub {
@@ -286,7 +286,7 @@
       font-weight: 600;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #334155;
+      color: #94a3b8;
       margin-bottom: 5px;
     }
     .bottom-right__pill {
@@ -310,7 +310,7 @@
     .bottom-right__free {
       margin-top: 8px;
       font-size: 8pt;
-      color: #334155;
+      color: #94a3b8;
     }
 
     /* ── Print: hide browser chrome ──────────────────────────── */
@@ -344,7 +344,7 @@
       <li>Never touched a ventilator and want to impress your attending?</li>
       <li>Can't remember which beta-blockers are short- vs long-acting?</li>
     </ul>
-    <p class="hero__sub" style="margin-top: 0.12in; font-style: italic; color: #64748b;">
+    <p class="hero__sub" style="margin-top: 0.12in; font-style: italic; color: #94a3b8;">
       Made with love by a fellow student, with faculty support.
     </p>
   </div>
