@@ -21,7 +21,7 @@
   </script>
   <link rel="icon" href="../favicon.png" type="image/png" />
   <link rel="stylesheet" href="css/dashboard.css" />
-  <link rel="stylesheet" href="css/instructor.css" />
+  <link rel="stylesheet" href="css/instructor.css?v=2" />
 </head>
 <body data-required-role="instructor">
 
@@ -69,17 +69,48 @@
       </div>
     </div>
 
+    <!-- ── Mobile nav: dropdown replaces tab strip on small screens ──────── -->
+    <select class="inst-tab-select" id="inst-tab-select" aria-label="Navigate dashboard sections">
+      <option value="overview">📊 Cohort Overview</option>
+      <option value="scenarios">🎯 Scenario Performance</option>
+      <option value="tutorials">📚 Tutorial Engagement</option>
+      <option value="pyxis">💊 Pyxis Exploration</option>
+      <option value="learners">👤 Individual Learners</option>
+      <option value="export">⬇ Export</option>
+      <option value="motifs">✏️ Scenario Motifs</option>
+      <option value="generated">🤖 Generated Cases</option>
+    </select>
+
     <!-- ── Tabs ─────────────────────────────────────────────────────────── -->
-    <div class="inst-tabs" id="inst-tabs">
-      <button class="inst-tab inst-tab--active" data-tab="overview">Cohort Overview</button>
-      <button class="inst-tab" data-tab="scenarios">Scenario Performance</button>
-      <button class="inst-tab" data-tab="tutorials">Tutorial Engagement</button>
-      <button class="inst-tab" data-tab="pyxis">Pyxis Exploration</button>
-      <button class="inst-tab" data-tab="learners">Individual Learners</button>
-      <button class="inst-tab" data-tab="export">Export</button>
-      <button class="inst-tab" data-tab="motifs">Scenario Motifs</button>
-      <button class="inst-tab" data-tab="generated">Generated Cases</button>
-    </div>
+    <nav class="inst-tabs" id="inst-tabs" aria-label="Dashboard sections">
+      <!-- Analytics group -->
+      <!-- Row 1: analytics -->
+      <button class="inst-tab inst-tab--active" data-tab="overview">
+        <span class="inst-tab__icon" aria-hidden="true">📊</span>Cohort Overview
+      </button>
+      <button class="inst-tab" data-tab="scenarios">
+        <span class="inst-tab__icon" aria-hidden="true">🎯</span>Scenario Performance
+      </button>
+      <button class="inst-tab" data-tab="tutorials">
+        <span class="inst-tab__icon" aria-hidden="true">📚</span>Tutorial Engagement
+      </button>
+      <button class="inst-tab" data-tab="pyxis">
+        <span class="inst-tab__icon" aria-hidden="true">💊</span>Pyxis Exploration
+      </button>
+      <!-- Row 2: learners + tools -->
+      <button class="inst-tab" data-tab="learners">
+        <span class="inst-tab__icon" aria-hidden="true">👤</span>Individual Learners
+      </button>
+      <button class="inst-tab" data-tab="motifs">
+        <span class="inst-tab__icon" aria-hidden="true">✏️</span>Scenario Motifs
+      </button>
+      <button class="inst-tab" data-tab="generated">
+        <span class="inst-tab__icon" aria-hidden="true">🤖</span>Generated Cases
+      </button>
+      <button class="inst-tab" data-tab="export">
+        <span class="inst-tab__icon" aria-hidden="true">⬇</span>Export
+      </button>
+    </nav>
 
     <!-- ── Tab: Overview ────────────────────────────────────────────────── -->
     <div class="inst-panel" id="panel-overview">

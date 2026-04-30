@@ -2818,3 +2818,124 @@ html { scrollbar-gutter: stable; }
   background: var(--accent) !important;
   color: #fff !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SCENARIO FILTER CHIPS
+   ══════════════════════════════════════════════════════════════════════════ */
+.scen-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.scen-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  appearance: none;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.scen-filter-chip:hover {
+  border-color: rgba(13, 148, 136, 0.4);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.scen-filter-chip--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.scen-filter-chip--active:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.scen-filter-chip__icon { font-size: 12px; line-height: 1; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — SCENARIOS + TUTORIAL MODAL
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Scenario selection: 2-col on tablet ── */
+@media (max-width: 900px) {
+  .scen-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Tutorial modal: allow scroll instead of clipping */
+  .vent-tut-dialog > .mon-tut__inner {
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+}
+
+/* ── Scenario + tutorial: phone layout ── */
+@media (max-width: 600px) {
+  /* --- Scenario selection --- */
+  .scen-cards {
+    grid-template-columns: 1fr;
+  }
+  #scen-select { padding: 14px 14px 12px; }
+  .scen-select__header h2 { font-size: 0.95rem; }
+  .scen-select__header p  { font-size: 0.78rem; }
+
+  /* Header: stack left/right on narrow screens */
+  .scen-active__header {
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .scen-active__left  { flex: 1 1 100%; }
+  .scen-active__right {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Active body: single column — context → clue → AI → QA */
+  .scen-active__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 10px;
+  }
+  .scen-context      { grid-column: 1; grid-row: auto; }
+  .scen-monitor-clue { grid-column: 1; grid-row: auto; }
+  #scen-ai-coach-col { grid-column: 1; grid-row: auto; }
+  .scen-qa           { grid-column: 1; grid-row: auto; }
+
+  #scen-active { padding: 12px 14px 14px; }
+
+  /* Tutorial modal: near-full-screen on phone */
+  .vent-tut-dialog.mon-tut {
+    width: min(100vw - 12px, 1080px);
+    max-height: 94dvh;
+    margin: 3dvh auto 0;
+  }
+  .vent-tut-dialog > .mon-tut__inner {
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+  .vent-tut__layout {
+    padding: 0 12px 8px;
+    gap: 14px;
+  }
+  .vent-tut-dialog .mon-tut__head,
+  .vent-tut-dialog .mon-tut__foot {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* Make readout table font smaller */
+  .vent-tut__ro-table { font-size: 0.72rem; }
+  .vent-tut__ro-table td { padding: 4px 6px 4px 0; }
+
+  /* Control sliders: slightly smaller */
+  .vent-tut__ctrl-block .ctrl-lbl { font-size: 9px; }
+  .vent-tut__ctrl-block .ctrl-val { font-size: 10px; }
+}

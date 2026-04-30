@@ -85,31 +85,60 @@ body[data-required-role="instructor"] .dashboard-main {
 .inst-btn--danger { background: #dc2626; }
 .inst-btn--danger:hover { background: #b91c1c; }
 
-/* Tabs */
+/* ── Tab bar — pill style ───────────────────────────────────────────────── */
 .inst-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid #e5e7eb;
-  margin-bottom: 1rem;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  padding: 5px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  margin-bottom: 1.4rem;
 }
+
 .inst-tab {
-  padding: 0.6rem 1.2rem;
-  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.82rem;
   font-weight: 600;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
   cursor: pointer;
   color: #6b7280;
   white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
+  text-align: center;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+              box-shadow 0.15s ease;
+  line-height: 1;
 }
-.inst-tab:hover { color: #1f2937; }
+.inst-tab:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: #111827;
+  border-color: #e5e7eb;
+}
 .inst-tab--active {
-  color: var(--yale-blue, #00356b);
-  border-bottom-color: var(--yale-blue, #00356b);
+  background: #ffffff;
+  color: var(--accent, #0d9488);
+  border-color: rgba(13, 148, 136, 0.28);
+  box-shadow: 0 1px 4px rgba(18, 30, 45, 0.10), 0 0 0 1px rgba(13, 148, 136, 0.12);
 }
+.inst-tab--active:hover {
+  background: #ffffff;
+  color: var(--accent-hover, #0f766e);
+}
+
+.inst-tab__icon {
+  font-size: 0.88rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 
 /* Panels */
 .inst-panel { animation: fadeUp 0.2s ease; }
@@ -456,4 +485,95 @@ dialog.cohort-dialog {
   display: flex;
   gap: 10px;
   padding-top: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — INSTRUCTOR DASHBOARD
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Mobile tab-select dropdown — hidden on desktop */
+.inst-tab-select {
+  display: none;
+}
+
+/* Make all data tables scrollable in their container so they never force
+   the page to overflow horizontally. */
+.inst-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Wrap generated content tables in a scrollable container automatically */
+.inst-panel .inst-table {
+  min-width: 480px; /* ensure table has room to breathe */
+}
+
+@media (max-width: 768px) {
+  /* Swap tab strip for dropdown */
+  .inst-tabs { display: none; }
+  .inst-tab-select {
+    display: block;
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-weight: 600;
+    border: 1.5px solid #d1d5db;
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    appearance: auto; /* let the OS render a native chevron */
+    -webkit-appearance: auto;
+  }
+
+  /* Main content container: tighter padding on phones */
+  body[data-required-role="instructor"] .dashboard-main {
+    padding: 0 0.85rem;
+    margin: 1rem auto;
+  }
+
+  /* Filters stack vertically */
+  .inst-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .inst-filter-group { flex-direction: column; align-items: stretch; }
+  .inst-date,
+  .inst-select--wide,
+  .inst-select--filter { width: 100%; min-width: 0; }
+
+  /* All data tables get horizontal scroll instead of overflowing the page */
+  .inst-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+  .inst-table th,
+  .inst-table td {
+    white-space: nowrap;
+    padding: 0.45rem 0.65rem;
+  }
+
+  /* Stat grid: 2 cols max on mobile */
+  .dash-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Section headings */
+  .inst-section-title {
+    font-size: 0.9rem;
+  }
+
+  /* Motif form full-width */
+  .motif-form { padding: 12px 14px; }
+  .motif-step-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .motif-form__actions { flex-wrap: wrap; }
 }

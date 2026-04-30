@@ -1145,17 +1145,27 @@
 
   /* ── Tab switching ──────────────────────────────────────────────────── */
   function setupTabs() {
-    const tabs = $$('.inst-tab');
+    const tabs      = $$('.inst-tab');
+    const tabSelect = document.getElementById('inst-tab-select');
+
+    function activateTab(tabName) {
+      tabs.forEach(t => t.classList.remove('inst-tab--active'));
+      $$('.inst-panel').forEach(p => p.hidden = true);
+      const matchingTab = document.querySelector(`.inst-tab[data-tab="${tabName}"]`);
+      if (matchingTab) matchingTab.classList.add('inst-tab--active');
+      const panel = $('panel-' + tabName);
+      if (panel) panel.hidden = false;
+      if (tabSelect && tabSelect.value !== tabName) tabSelect.value = tabName;
+    }
+
     tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('inst-tab--active'));
-        tab.classList.add('inst-tab--active');
-        $$('.inst-panel').forEach(p => p.hidden = true);
-        const target = 'panel-' + tab.dataset.tab;
-        const panel = $(target);
-        if (panel) panel.hidden = false;
-      });
+      tab.addEventListener('click', () => activateTab(tab.dataset.tab));
     });
+
+    // Mobile: dropdown drives navigation
+    if (tabSelect) {
+      tabSelect.addEventListener('change', () => activateTab(tabSelect.value));
+    }
   }
 
   /* ── Learner dropdown ───────────────────────────────────────────────── */

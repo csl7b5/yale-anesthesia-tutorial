@@ -619,6 +619,7 @@ body.home-body {
 /* ── Drug card that "appears" alongside the open drawer ── */
 .mini-pyxis__card {
   position: relative;
+  z-index: 3; /* sit above the open drawer (z-index: 2) that slides rightward */
   background: #ffffff;
   border: 1px solid rgba(13, 148, 136, 0.28);
   border-radius: 12px;
@@ -1555,18 +1556,40 @@ body.home-body {
   }
   .home-cta { width: 100%; justify-content: center; }
   .home-hero__ctas { width: 100%; }
-  .home-carousel__stage { aspect-ratio: 4 / 3.4; }
-  /* Pull side cards in tighter on phones so they hint without
-     overflowing horizontally. */
+  /* Clip the carousel so side-card "wings" don't bleed off screen */
+  .home-carousel {
+    overflow: hidden;
+    width: 100%;
+  }
+  .home-carousel__stage { aspect-ratio: 4 / 3.2; }
+  /* Reduce side card translation so they stay within the clipped bounds */
   .home-card.is-side-left  {
-    transform: translateX(-46%) translateZ(-160px) rotateY(36deg) scale(0.84);
+    transform: translateX(-36%) translateZ(-180px) rotateY(32deg) scale(0.82);
+    opacity: 0.55;
   }
   .home-card.is-side-right {
-    transform: translateX(46%) translateZ(-160px) rotateY(-36deg) scale(0.84);
+    transform: translateX(36%) translateZ(-180px) rotateY(-32deg) scale(0.82);
+    opacity: 0.55;
   }
   .mini-pyxis { padding: 10px; gap: 6px; }
   .mini-vent  { padding: 10px; gap: 8px; grid-template-columns: 1fr 1.4fr 0.7fr; }
+  /* Vitals numbers: smaller on mobile only */
+  .mini-vent__vital-val { font-size: 1.0rem; }
+  .mini-vent__num-val   { font-size: 0.78rem; }
+  /* Mastery donut: smaller on mobile only */
+  .mini-dash__donut-ring { width: 50%; }
+  .mini-dash__donut-num  { font-size: 0.72rem; }
   .home-feature::after { top: 12px; right: 12px; }
+}
+
+@media (max-width: 400px) {
+  /* On very small phones hide side cards entirely — just the active card */
+  .home-card.is-side-left,
+  .home-card.is-side-right {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+  .home-card { left: 5%; right: 5%; }
 }
 
 /* ============================================================

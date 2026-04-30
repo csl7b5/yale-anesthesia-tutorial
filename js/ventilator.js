@@ -1197,11 +1197,46 @@
     if (active) active.hidden = true;
     if (resol)  resol.hidden  = true;
 
-    const container = $('scen-cards');
+    const container  = $('scen-cards');
+    const filterRow  = $('scen-filter-row');
     if (!container) return;
+
+    // ── Category filter chips ──────────────────────────────────────────────
+    const CATEGORY_ICONS = {
+      'Emergency'   : '🚨',
+      'Hemodynamics': '🫀',
+      'Airway'      : '🫁',
+      'Respiratory' : '🌬',
+    };
+    if (filterRow) {
+      const categories = ['All', ...new Set(SCENARIOS.map(s => s.badge))];
+      filterRow.innerHTML = categories.map(cat => {
+        const icon = cat === 'All' ? '⭐' : (CATEGORY_ICONS[cat] || '📋');
+        return `<button class="scen-filter-chip${cat === 'All' ? ' scen-filter-chip--active' : ''}"
+                        data-filter="${cat === 'All' ? 'all' : cat}" type="button">
+                  <span class="scen-filter-chip__icon">${icon}</span>${cat}
+                </button>`;
+      }).join('');
+
+      filterRow.querySelectorAll('.scen-filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          filterRow.querySelectorAll('.scen-filter-chip').forEach(c => c.classList.remove('scen-filter-chip--active'));
+          chip.classList.add('scen-filter-chip--active');
+          const filter = chip.dataset.filter;
+          container.querySelectorAll('.scen-card').forEach(card => {
+            const show = filter === 'all' || card.dataset.category === filter;
+            card.style.display = show ? '' : 'none';
+          });
+        });
+      });
+    }
+
+    // ── Scenario cards ─────────────────────────────────────────────────────
     container.innerHTML = SCENARIOS.map((s, i) =>
-      `<button class="scen-card" type="button" data-scen-idx="${i}">
-         <span class="scen-card__badge" style="background:${s.badgeColor}22;color:${s.badgeColor};border:1px solid ${s.badgeColor}44">${s.badge}</span>
+      `<button class="scen-card" type="button" data-scen-idx="${i}" data-category="${s.badge}">
+         <span class="scen-card__badge" style="background:${s.badgeColor}22;color:${s.badgeColor};border:1px solid ${s.badgeColor}44">
+           ${CATEGORY_ICONS[s.badge] || ''} ${s.badge}
+         </span>
          <div class="scen-card__title">${s.title}</div>
          <div class="scen-card__summary">${s.summary}</div>
          <div class="scen-card__cta">▶ Start scenario →</div>
