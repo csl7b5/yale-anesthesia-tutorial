@@ -89,25 +89,24 @@
       .slice(0, 3)
       .map(d => formatDomainName(d));
 
-    // Teaching points — prioritize weak domains, then add from strong
+    // Teaching points — show ALL points for the scenario; weak domains first
     const teachingPoints = [];
     const usedDomains = new Set();
+    const orderedDomains = [...analysis.weakDomains, ...analysis.strongDomains];
 
-    analysis.weakDomains.forEach(domain => {
+    orderedDomains.forEach(domain => {
+      if (usedDomains.has(domain)) return;
+      usedDomains.add(domain);
       const pts = scenData.teachingPoints[domain];
-      if (pts && !usedDomains.has(domain)) {
-        teachingPoints.push(pts[0]);
-        usedDomains.add(domain);
-      }
+      if (pts) pts.forEach(p => teachingPoints.push(p));
     });
-    analysis.strongDomains.forEach(domain => {
-      if (teachingPoints.length >= 4) return;
-      const pts = scenData.teachingPoints[domain];
-      if (pts && !usedDomains.has(domain)) {
-        teachingPoints.push(pts[0]);
-        usedDomains.add(domain);
-      }
-    });
+
+    // If somehow still empty (no domains tracked), fall back to all available points
+    if (teachingPoints.length === 0) {
+      Object.values(scenData.teachingPoints).forEach(pts => {
+        if (pts) pts.forEach(p => teachingPoints.push(p));
+      });
+    }
 
     // Micro-drill — pick from weakest domain if available
     let nextDrill = null;
@@ -149,6 +148,9 @@
       strengths,
       gaps,
       teaching_points:   teachingPoints,
+      key_strengths:     scenData.keyStrengths     || [],
+      common_pitfalls:   scenData.commonPitfalls   || [],
+      high_yield_pearls: scenData.highYieldPearls  || [],
       next_drill:        nextDrill,
       step_details:      stepResults.map((s, i) => ({
         step:    i + 1,

@@ -796,10 +796,19 @@ html { scrollbar-gutter: stable; }
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 2px 7px;
+  padding: 0 7px;
   border-radius: 3px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  min-height: 20px;
+  max-height: 20px;
+  line-height: 1;
+  overflow: hidden;
+  flex-shrink: 0;
   margin-bottom: 8px;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 .scen-card__title {
   font-size: 13px;
@@ -2682,8 +2691,30 @@ html { scrollbar-gutter: stable; }
   letter-spacing: 0.06em;
   margin: 0 0 0.5rem;
 }
-.debrief-dialog__label--good { color: #1a8a4a; }
-.debrief-dialog__label--gap  { color: #c44; }
+.debrief-dialog__label--good  { color: #1a8a4a; }
+.debrief-dialog__label--gap   { color: #c44; }
+.debrief-dialog__label--pearl { color: #0f766e; }
+
+.debrief-dialog__row--fixed {
+  margin-top: 0.25rem;
+}
+
+/* Fixed-scenario lists: strengths get green bullets, pitfalls get red */
+.debrief-dialog__list--fixed li {
+  padding-left: 1.25rem;
+  position: relative;
+}
+.debrief-dialog__list--fixed li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+#debrief-key-strengths.debrief-dialog__list--fixed li::before { background: #1a8a4a; }
+#debrief-pitfalls.debrief-dialog__list--fixed li::before      { background: #c44; }
 
 .debrief-dialog__list {
   list-style: none;
@@ -2748,13 +2779,26 @@ html { scrollbar-gutter: stable; }
   font-style: italic;
 }
 .debrief-dialog__teaching {
-  padding-left: 1.2rem;
+  padding-left: 0;
   margin: 0;
+  list-style: none;
 }
 .debrief-dialog__teaching li {
   font-size: 0.82rem;
-  line-height: 1.55;
-  margin-bottom: 0.5rem;
+  line-height: 1.6;
+  margin-bottom: 0.55rem;
+  padding: 0.45rem 0.7rem 0.45rem 1rem;
+  border-left: 3px solid rgba(13, 148, 136, 0.4);
+  background: rgba(13, 148, 136, 0.04);
+  border-radius: 0 4px 4px 0;
+}
+.debrief-dialog__teaching--secondary {
+  opacity: 0.85;
+}
+.debrief-dialog__teaching--secondary li {
+  border-left-color: rgba(100, 116, 139, 0.35);
+  background: rgba(100, 116, 139, 0.04);
+  font-size: 0.8rem;
   color: #1c2738;
 }
 
@@ -2814,6 +2858,33 @@ html { scrollbar-gutter: stable; }
   background: rgba(204,68,68,.07);
   color: #c44;
 }
+
+/* Generate AI Debrief button */
+.debrief-ai-generate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.debrief-ai-generate-btn:hover { opacity: 0.88; }
+.debrief-ai-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Sign-in note inside AI debrief section */
+.debrief-ai-note {
+  font-size: 0.8rem;
+  color: #58687a;
+  margin: 4px 0 0;
+}
+.debrief-ai-note a { color: var(--accent); font-weight: 600; }
 
 /* Sign-in prompt */
 .debrief-dialog__signin-text {

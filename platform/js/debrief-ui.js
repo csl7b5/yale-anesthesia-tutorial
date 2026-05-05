@@ -22,10 +22,8 @@
   document.addEventListener('click', e => {
     const card = e.target.closest('.scen-card');
     if (!card) return;
-    const idx = parseInt(card.dataset.scenIdx, 10);
-    // Map scenario index to ID by reading from the page or known order
-    const scenIds = ['hypo', 'anaphylaxis', 'bronchospasm'];
-    activeScenarioId = scenIds[idx] || null;
+    // Read the ID directly from the card's data attribute — no hardcoded list needed
+    activeScenarioId = card.dataset.scenId || null;
     stepResults.length = 0;
     currentStep = 0;
   });
@@ -88,10 +86,34 @@
   // ── Show debrief ────────────────────────────────────────────────────────
 
   async function showDebrief() {
-    if (!activeScenarioId || stepResults.length === 0) return;
+    if (!activeScenarioId) return;
 
-    const debrief = DebriefEngine.generateDebrief(activeScenarioId, stepResults);
-    if (!debrief) return;
+    // Generate debrief; fall back to a generic shell if this scenario isn't in the data yet
+    let debrief = stepResults.length > 0
+      ? DebriefEngine.generateDebrief(activeScenarioId, stepResults)
+      : null;
+
+    if (!debrief) {
+      const allCorrect = stepResults.length > 0 && stepResults.every(s => s.correct);
+      debrief = {
+        summary: stepResults.length === 0
+          ? 'Scenario complete.'
+          : allCorrect
+            ? 'Excellent work — you chose the correct intervention at every step.'
+            : 'Scenario complete. Review the teaching points below to reinforce your understanding.',
+        strengths: [],
+        gaps: [],
+        teaching_points: [],
+        next_drill: null,
+        step_details: stepResults.map((s, i) => ({
+          step: i + 1, correct: s.correct, latency: s.latency, domains: [],
+        })),
+        avg_latency: stepResults.length
+          ? Math.round(stepResults.reduce((a, r) => a + r.latency, 0) / stepResults.length)
+          : 0,
+        weak_domains_raw: [],
+      };
+    }
 
     const modal = document.getElementById('debrief-modal');
     if (!modal) return;
@@ -122,9 +144,39 @@
       </div>`
     ).join('');
 
-    // Teaching points
+    // Key Strengths to Demonstrate (scenario-specific, always shown)
+    const ksEl = document.getElementById('debrief-key-strengths');
+    if (ksEl) {
+      ksEl.innerHTML = (debrief.key_strengths || []).length > 0
+        ? debrief.key_strengths.map(s => `<li>${s}</li>`).join('')
+        : '<li class="debrief-dialog__none">See teaching points below</li>';
+    }
+
+    // Common Pitfalls (scenario-specific, always shown)
+    const pfEl = document.getElementById('debrief-pitfalls');
+    if (pfEl) {
+      pfEl.innerHTML = (debrief.common_pitfalls || []).length > 0
+        ? debrief.common_pitfalls.map(p => `<li>${p}</li>`).join('')
+        : '<li class="debrief-dialog__none">None listed</li>';
+    }
+
+    // High-Yield Pearls (scenario-specific, always shown)
+    const pearlEl = document.getElementById('debrief-pearls');
+    if (pearlEl) {
+      pearlEl.innerHTML = (debrief.high_yield_pearls || []).length > 0
+        ? debrief.high_yield_pearls.map(p => `<li>${p}</li>`).join('')
+        : '';
+    }
+
+    // Domain review teaching points (performance-based)
     const tEl = document.getElementById('debrief-teaching');
-    tEl.innerHTML = debrief.teaching_points.map(t => `<li>${t}</li>`).join('');
+    const domainSection = document.getElementById('debrief-domain-teaching-section');
+    if (tEl && debrief.teaching_points && debrief.teaching_points.length > 0) {
+      tEl.innerHTML = debrief.teaching_points.map(t => `<li>${t}</li>`).join('');
+      if (domainSection) domainSection.hidden = false;
+    } else {
+      if (domainSection) domainSection.hidden = true;
+    }
 
     // Drill
     const drillSection = document.getElementById('debrief-drill-section');
@@ -160,45 +212,63 @@
       drillSection.hidden = true;
     }
 
-    // AI Debrief — signed-in users only
-    const aiSection = document.getElementById('debrief-ai-section');
-    const aiBody    = document.getElementById('debrief-ai-body');
+    // AI Debrief — opt-in via button; requires sign-in
+    const aiSigninNote = document.getElementById('debrief-ai-signin-note');
+    const aiBtn        = document.getElementById('debrief-ai-btn');
+    const aiBody       = document.getElementById('debrief-ai-body');
     const signinPrompt = document.getElementById('debrief-signin-prompt');
+
+    // Reset state each time modal opens
+    if (aiBtn)        { aiBtn.hidden = false; aiBtn.disabled = false; }
+    if (aiBody)       { aiBody.hidden = true; aiBody.textContent = ''; aiBody.className = 'debrief-ai-body'; }
+    if (aiSigninNote) aiSigninNote.hidden = true;
+
     const user = window.SB ? await SB.getUser().catch(() => null) : null;
 
-    if (aiSection && aiBody) {
-      if (!user) {
-        // Not signed in — show sign-in prompt, hide AI section
-        aiSection.hidden = true;
-        if (signinPrompt) signinPrompt.hidden = false;
-      } else if (window.ScenarioCoach) {
-        // Signed in — run the AI debrief
-        if (signinPrompt) signinPrompt.hidden = true;
-        aiSection.hidden = false;
-        aiBody.className = 'debrief-ai-body debrief-ai-body--loading';
-        aiBody.innerHTML = '<span class="scen-ai-coaching__spinner"></span> Generating personalised debrief\u2026';
+    if (!user) {
+      // Not signed in — show sign-in note, hide button
+      if (aiBtn)        aiBtn.hidden = true;
+      if (aiSigninNote) aiSigninNote.hidden = false;
+      if (signinPrompt) signinPrompt.hidden = false;
+    } else {
+      // Signed in — show the generate button
+      if (signinPrompt) signinPrompt.hidden = true;
+      if (aiBtn && window.ScenarioCoach) {
+        // Capture scenario context now (before the button is clicked)
+        const _title   = window._activeScenTitle || activeScenarioId || '';
+        const _steps   = (window._scenStepHistory || []).map(h => ({
+          question:    h.question,
+          choice_text: h.choice_text,
+          is_correct:  h.is_correct,
+          domain:      h.domain,
+        }));
+        const _attempt = window._currentAttemptId || null;
 
-        window.ScenarioCoach.requestDebrief({
-          scenarioTitle:  window._activeScenTitle ?? activeScenarioId ?? '',
-          patientContext: '',
-          attemptId:      window._currentAttemptId ?? null,
-          steps: (window._scenStepHistory ?? []).map(h => ({
-            question:    h.question,
-            choice_text: h.choice_text,
-            is_correct:  h.is_correct,
-            domain:      h.domain,
-          })),
-        }).then(text => {
-          if (text) {
+        aiBtn.onclick = async () => {
+          aiBtn.hidden = true;
+          if (aiBody) {
+            aiBody.hidden = false;
+            aiBody.className = 'debrief-ai-body debrief-ai-body--loading';
+            aiBody.innerHTML = '<span class="scen-ai-coaching__spinner"></span> Generating personalised debrief\u2026';
+          }
+          const text = await window.ScenarioCoach.requestDebrief({
+            scenarioTitle:  _title,
+            patientContext: '',
+            attemptId:      _attempt,
+            steps:          _steps,
+          }).catch(() => null);
+
+          if (text && aiBody) {
             aiBody.className = 'debrief-ai-body';
             aiBody.textContent = text;
-          } else {
-            aiSection.hidden = true;
+          } else if (aiBody) {
+            aiBody.className = 'debrief-ai-body';
+            aiBody.textContent = 'AI debrief unavailable. Please try again later.';
           }
-        });
-      } else {
-        aiSection.hidden = true;
-        if (signinPrompt) signinPrompt.hidden = true;
+        };
+      } else if (aiBtn) {
+        // ScenarioCoach not loaded
+        aiBtn.hidden = true;
       }
     }
 

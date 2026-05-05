@@ -85,7 +85,7 @@
         var ogt = document.querySelector('meta[property="og:title"]');
         var twt = document.querySelector('meta[name="twitter:title"]');
         if (p.indexOf('/teams') !== -1) {
-          var tt = 'Meet Your Team — Anesthesia Playground';
+          var tt = 'About Us — Anesthesia Playground';
           var cc =
             'Meet the Yale anesthesia team: faculty, residents, students, and how to connect with the department.';
           document.title = tt;
@@ -140,7 +140,7 @@
             <a href="ventilator/" class="site-nav__tab" role="tab"
                     aria-selected="false" style="text-decoration:none">Interactive Ventilator</a>
             <button class="site-nav__tab" role="tab"
-                    aria-selected="false" data-page="about">Meet Your Team</button>
+                    aria-selected="false" data-page="about">About Us</button>
             <a href="platform/auth.html" class="site-nav__tab site-nav__tab--signin" role="tab"
                     aria-selected="false" style="text-decoration:none">Sign In</a>
           </div>
@@ -334,30 +334,100 @@
 
       </section><!-- /page-tour -->
 
-      <!-- ── Page: Meet Your Team ─────────────────────────────────────────── -->
+      <!-- ── Page: About Us ──────────────────────────────────────────────── -->
       <section id="page-about" class="page-section" role="tabpanel">
-        <header class="site-header">
-          <div class="site-header__card">
-            <h1>Meet Your Team</h1>
-            <p>The team working with you on your rotations and Anesthesia Playground. <br> Click a bubble to learn more and <strong>reach out directly!</strong></p>
+
+        <!-- ── Origin Story banner ───────────────────────────────────────── -->
+        <div class="origin-banner" aria-label="Our story">
+          <div class="origin-banner__orb origin-banner__orb--1" aria-hidden="true"></div>
+          <div class="origin-banner__orb origin-banner__orb--2" aria-hidden="true"></div>
+
+          <div class="origin-banner__inner">
+            <p class="origin-banner__eyebrow">Our Story</p>
+            <h2 class="origin-banner__title">The OR as a Playground</h2>
+
+            <p class="origin-narrative">
+              Anesthesia is one of the <strong>hardest</strong> specialties to get meaningful exposure to as a student. We identified a gap in early anesthesia education, from which <strong class="origin-ap-name">Anesthesia Playground</strong> was born: an open, interactive OR that <strong class = "origin-ap-name">any medical student anywhere</strong> can walk into.
+            </p>
+
+            <!-- Four chapter cards + connectors -->
+            <div class="origin-chapters">
+
+              <div class="origin-chapter" data-reveal>
+                <div class="origin-chapter__icon" aria-hidden="true">🔭</div>
+                <p class="origin-chapter__label">The Vision</p>
+                <p class="origin-chapter__text">Dr. Szabo imagined an explorable operating room, as immersive as J.K. Rowling's early interactive websites. What if learning anesthesia felt like stepping into a world?</p>
+              </div>
+
+              <div class="origin-connector" aria-hidden="true"><span></span></div>
+
+              <div class="origin-chapter" data-reveal>
+                <div class="origin-chapter__icon" aria-hidden="true">📚</div>
+                <p class="origin-chapter__label">The Curriculum</p>
+                <p class="origin-chapter__text">Dr. Guzzi built a structured 30-day anesthesia education program designed to orient medical students on rotation, giving them clinical footing to contribute, not just observe.</p>
+              </div>
+
+              <div class="origin-connector" aria-hidden="true"><span></span></div>
+
+              <div class="origin-chapter" data-reveal>
+                <div class="origin-chapter__icon" aria-hidden="true">🔬</div>
+                <p class="origin-chapter__label">The Research</p>
+                <p class="origin-chapter__text">Dr. Kurup has spent years at the frontier of digital medical education, collaborating with institutions across the U.S. and Vietnam to bring simulation and technology into how physicians learn.</p>
+              </div>
+
+              <div class="origin-connector" aria-hidden="true"><span></span></div>
+
+              <div class="origin-chapter" data-reveal>
+                <div class="origin-chapter__icon" aria-hidden="true">⚡</div>
+                <p class="origin-chapter__label">The Build</p>
+                <p class="origin-chapter__text">Chanseo is a healthtech and AI builder drawn to medicine, simulation, and digital learning. He is building the tools that turn great clinical ideas into something you can actually interact with.</p>
+              </div>
+
+            </div><!-- /origin-chapters -->
+
           </div>
-        </header>
-        <div class="about-page">
+        </div><!-- /origin-banner -->
+
+        <!-- Wave transition: dark → light -->
+        <div class="origin-wave" aria-hidden="true">
+          <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,72 L0,28 C240,72 480,0 720,28 C960,56 1200,8 1440,28 L1440,72 Z" fill="#f5f7fa"/>
+          </svg>
+        </div>
+
+        <!-- Team section (light, unified) -->
+        <div class="about-page about-page--integrated">
+
+          <!-- Founding Team -->
+          <div class="about-page__section-header">
+            <p class="about-page__section-eyebrow">Founding Team</p>
+            <p class="about-page__section-tagline">Four visions. One playground.</p>
+          </div>
           <div class="about-page__row about-page__row--split">
             <div class="about-page__group">
               <h3 class="about-page__group-title">Attendings &amp; Faculty</h3>
               <div class="attending-bubbles" id="attending-bubbles" aria-label="Attending physicians and advising faculty"></div>
             </div>
             <div class="about-page__group" id="students-group">
-              <h3 class="about-page__group-title">Students</h3>
+              <h3 class="about-page__group-title">Student Builder</h3>
               <div class="attending-bubbles" id="student-bubbles" aria-label="Medical students"></div>
               <p class="about-page__empty-hint" id="students-empty" hidden>No students listed yet.</p>
             </div>
           </div>
-          <div class="about-page__group">
+
+          <!-- Gradient band between sections -->
+          <div class="about-page__section-gradient" aria-hidden="true"></div>
+
+          <!-- Supporting Team -->
+          <div class="about-page__section-header about-page__section-header--supporting">
+            <p class="about-page__section-eyebrow">Supporting Team</p>
+            <p class="about-page__section-tagline">Residents who support the students on rotation. <br>Contributors who help bring Anesthesia Playground to learners.</p>
+          </div>
+          <div class="about-page__group about-page__group--supporting">
             <h3 class="about-page__group-title">Residents</h3>
             <div class="attending-bubbles" id="resident-bubbles" aria-label="Anesthesiology residents"></div>
           </div>
+
         </div>
       </section><!-- /page-about -->
 
@@ -469,5 +539,105 @@
     <script src="js/app.js"></script>
     <script src="js/analytics.js"></script>
     <script src="platform/js/event-logger.js"></script>
+
+    <!-- Origin story scroll-reveal + letter-flip animation -->
+    <script>
+      (function () {
+        /* ── 1. Wrap section eyebrow letters in spans; set gradient offsets ── */
+        function wrapLetters(el) {
+          if (el.dataset.lettersWrapped) return;
+          el.dataset.lettersWrapped = '1';
+          var text = el.textContent;
+          el.textContent = '';
+          text.split('').forEach(function (ch) {
+            var span = document.createElement('span');
+            span.className = ch === ' ' ? '' : 'letter-char';
+            span.textContent = ch;
+            el.appendChild(span);
+          });
+          // After paint: stamp --lo (letter offset) and --pw (parent width) on each span
+          // so the gradient looks like one continuous sweep across the whole word.
+          requestAnimationFrame(function () {
+            var pw = el.offsetWidth;
+            el.querySelectorAll('.letter-char').forEach(function (span) {
+              span.style.setProperty('--lo', span.offsetLeft + 'px');
+              span.style.setProperty('--pw', pw + 'px');
+            });
+          });
+        }
+
+        /* ── 2. Randomly flip one letter using Web Animations API (rotateY only)
+              so it never conflicts with the CSS shimmer animation ── */
+        function scheduleFlip(header) {
+          var delay = 1800 + Math.random() * 2200; // 1.8 – 4 s
+          setTimeout(function () {
+            var letters = Array.from(header.querySelectorAll('.letter-char'))
+                               .filter(function (l) { return !l._flipping; });
+            if (letters.length) {
+              var pick = letters[Math.floor(Math.random() * letters.length)];
+              pick._flipping = true;
+              var anim = pick.animate(
+                [
+                  { transform: 'rotateY(0deg)',   easing: 'ease-in'  },
+                  { transform: 'rotateY(90deg)',  offset: 0.40 },
+                  { transform: 'rotateY(-90deg)', offset: 0.60, easing: 'ease-out' },
+                  { transform: 'rotateY(0deg)' }
+                ],
+                { duration: 520, fill: 'none' }
+              );
+              anim.onfinish = function () { pick._flipping = false; };
+            }
+            scheduleFlip(header); // reschedule
+          }, delay);
+        }
+
+        /* ── 3. Scroll-reveal observer ── */
+        var targets = document.querySelectorAll(
+          '.origin-chapter, .origin-narrative, .about-page__section-header, .origin-ap-name'
+        );
+        if (!targets.length) return;
+
+        function revealEl(el) {
+          if (el.classList.contains('is-visible')) return;
+          el.classList.add('is-visible');
+
+          var letterEl = null, flipEl = null;
+          if (el.classList.contains('about-page__section-header')) {
+            letterEl = el.querySelector('.about-page__section-eyebrow');
+            flipEl   = el;
+          } else if (el.classList.contains('origin-ap-name')) {
+            letterEl = el;
+            flipEl   = el;
+          }
+          if (letterEl) { wrapLetters(letterEl); scheduleFlip(flipEl); }
+        }
+
+        if (!('IntersectionObserver' in window)) {
+          targets.forEach(revealEl);
+          return;
+        }
+
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { revealEl(e.target); io.unobserve(e.target); }
+          });
+        }, { threshold: 0.15 });
+        targets.forEach(function (el) { io.observe(el); });
+
+        // Trigger immediately for elements already in view on load or tab click
+        function checkAll() {
+          targets.forEach(function (el) {
+            var rect = el.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) revealEl(el);
+          });
+        }
+        document.querySelectorAll('[data-page="about"]').forEach(function (btn) {
+          btn.addEventListener('click', function () { setTimeout(checkAll, 80); });
+        });
+        // Also run once on load in case the page opens mid-scroll
+        if (document.readyState === 'complete') { checkAll(); }
+        else { window.addEventListener('load', checkAll); }
+      })();
+    </script>
   </body>
 </html>

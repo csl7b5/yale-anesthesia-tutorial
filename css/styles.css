@@ -1399,7 +1399,6 @@ a.site-nav__tab--signin:visited {
 /* ── About Us page ──────────────────────────────────────────────────────── */
 
 .about-page {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2855,3 +2854,417 @@ body.scenario-panel-open .feedback-widget {
   margin: 0;
 }
 .volatile-pearl__body strong { color: var(--text-primary); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ORIGIN STORY BANNER — About Us page
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Wave SVG transition dark → light */
+.origin-wave {
+  display: block;
+  margin-top: -2px;          /* eliminate seam */
+  line-height: 0;
+  background: #0e1f30;       /* match banner bottom colour */
+}
+.origin-wave svg {
+  display: block;
+  width: 100%;
+  height: 72px;
+}
+
+/* Integrated team section — sits flush after the wave */
+.about-page--integrated {
+  background: #f5f7fa;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+/* Section headings: Founding Team / Supporting Team */
+.about-page__section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-top: 0.5rem;
+  /* scroll-reveal: starts hidden */
+  opacity: 0;
+  transform: translateY(28px) scale(0.96);
+  transition: opacity 0.55s cubic-bezier(0.34, 1.4, 0.64, 1),
+              transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.about-page__section-header.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.about-page__section-header--supporting {
+  padding-top: 0;
+  margin-bottom: 2rem;
+}
+
+.about-page__section-eyebrow {
+  display: block;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 10px;
+  /* gradient lives on each .letter-char span — eyebrow is transparent fallback */
+  color: #0d9488;
+  /* perspective so each letter-char rotateY looks 3D */
+  perspective: 600px;
+  perspective-origin: 50% 50%;
+}
+
+/* Each letter carries its own slice of the gradient */
+.letter-char {
+  display: inline;        /* inline by default — no layout disruption in prose */
+  background: linear-gradient(
+    100deg,
+    #0d9488 0%,
+    #3b82f6 30%,
+    #8b5cf6 55%,
+    #0d9488 80%,
+    #0ea5a0 100%
+  );
+  /* --pw and --lo are set per-span via JS after wrapping */
+  background-size: var(--pw, 400px) 100%;
+  background-position: calc(-1 * var(--lo, 0px)) 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: letterShimmer 5s linear infinite;
+  animation-play-state: paused;
+}
+/* Section headers: inline-block so rotateY perspective renders crisply */
+.about-page__section-header .letter-char {
+  display: inline-block;
+}
+.about-page__section-header.is-visible .letter-char {
+  animation-play-state: running;
+}
+
+@keyframes sectionTitleShimmer {
+  0%   { background-position: 0%   50%; }
+  100% { background-position: 250% 50%; }
+}
+
+/* Continuous per-letter gradient sweep — each letter animates its own background-position
+   offset by --lo so the gradient looks seamless across the whole word */
+@keyframes letterShimmer {
+  from { background-position: calc(-1 * var(--lo, 0px)) 0; }
+  to   { background-position: calc(-1 * var(--lo, 0px) - var(--pw, 400px)) 0; }
+}
+
+.about-page__section-sub {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 480px;
+  margin-inline: auto;
+  line-height: 1.65;
+}
+
+/* Gradient band between founding and supporting sections */
+.about-page__section-gradient {
+  height: 48px;
+  margin: 0.5rem -2rem 1.5rem;
+  position: relative;
+  background: linear-gradient(
+    to bottom,
+    #f5f7fa 0%,
+    rgba(99, 102, 241, 0.07) 45%,
+    rgba(13, 148, 136, 0.06) 65%,
+    #eef3f8 100%
+  );
+  overflow: hidden;
+}
+/* Three decorative dots/lines */
+.about-page__section-gradient::before {
+  content: '· · · · ·';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.1rem;
+  letter-spacing: 0.55em;
+  color: var(--accent);
+  opacity: 0.35;
+}
+
+/* Supporting group — no box, flows openly */
+.about-page__group--supporting {
+  width: 100%;
+}
+
+/* Group titles become elegant teal-underlined dividers */
+.about-page--integrated .about-page__group-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  position: relative;
+  padding-bottom: 10px;
+  margin-bottom: 2rem;
+}
+.about-page--integrated .about-page__group-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.5;
+}
+
+/* "click to connect" is now implicit — removed pseudo-element hint */
+
+/* Banner container */
+.origin-banner {
+  position: relative;
+  background: linear-gradient(160deg, #0c1622 0%, #0e1f30 55%, #111a2e 100%);
+  overflow: hidden;
+  padding: 72px 24px 64px;
+}
+
+/* Ambient orbs (Option A touch) */
+.origin-banner__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.origin-banner__orb--1 {
+  width: 420px; height: 420px;
+  background: rgba(13, 148, 136, 0.18);
+  top: -100px; left: -80px;
+  animation: originOrb1 10s ease-in-out infinite alternate;
+}
+.origin-banner__orb--2 {
+  width: 340px; height: 340px;
+  background: rgba(59, 130, 246, 0.14);
+  bottom: -80px; right: -60px;
+  animation: originOrb2 13s ease-in-out infinite alternate;
+}
+@keyframes originOrb1 { to { transform: translate(40px, 30px); } }
+@keyframes originOrb2 { to { transform: translate(-30px, -40px); } }
+
+/* Inner content cap */
+.origin-banner__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Eyebrow + title */
+.origin-banner__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 12px;
+}
+.origin-banner__title {
+  font-size: clamp(1.7rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: #f0f6ff;
+  margin: 0 0 52px;
+  line-height: 1.15;
+}
+
+/* ── Chapter cards row ───────────────────────────────────────────────────── */
+.origin-chapters {
+  display: flex;
+  align-items: stretch;      /* equal height */
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 52px;
+}
+
+.origin-chapter {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 220px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  padding: 24px 18px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;    /* so content fills height */
+  transition: background 0.2s, transform 0.2s;
+  /* scroll-reveal start state */
+  opacity: 0;
+  transform: translateY(20px);
+}
+.origin-chapter.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s ease, background 0.2s;
+}
+.origin-chapter:hover {
+  background: rgba(255, 255, 255, 0.10);
+  transform: translateY(-3px);
+}
+.origin-chapter.is-visible:hover {
+  transform: translateY(-3px);
+}
+.origin-chapter__icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  display: block;
+}
+.origin-chapter__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 10px;
+}
+.origin-chapter__text {
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: #ffffff;
+  margin: 0;
+  flex: 1;
+}
+
+/* Connector dashes between cards */
+.origin-connector {
+  flex: 0 0 32px;
+  display: flex;
+  align-items: center;     /* always center — cards are now equal height */
+  justify-content: center;
+  align-self: stretch;
+  padding-top: 0;
+}
+.origin-connector span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(13, 148, 136, 0.55) 0px,
+    rgba(13, 148, 136, 0.55) 5px,
+    transparent 5px,
+    transparent 10px
+  );
+}
+
+/* ── Pull quote ──────────────────────────────────────────────────────────── */
+.origin-pullquote {
+  font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+  font-style: italic;
+  font-weight: 600;
+  color: #ffffff;
+  border: none;
+  margin: 0 auto 28px;
+  max-width: 460px;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+}
+.origin-pullquote.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Narrative paragraph (intro above chapter cards) ────────────────────── */
+.origin-narrative {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.88);
+  max-width: 660px;
+  margin: 0 auto 2.5rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
+}
+.origin-narrative.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── "Anesthesia Playground" gradient name in the origin narrative ───────── */
+.origin-ap-name {
+  /* inline-block makes the whole phrase one atomic unit (no mid-phrase breaks)
+     white-space: nowrap keeps all letter spans on one line
+     vertical-align: baseline keeps it level with surrounding text          */
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: baseline;
+  font-weight: 800;
+  font-style: normal;
+  color: #0d9488;           /* fallback before JS wraps letters */
+  perspective: 500px;
+  perspective-origin: 50% 50%;
+}
+/* letter-chars inside need inline-block so rotateY works */
+.origin-ap-name .letter-char {
+  display: inline-block;
+}
+/* start shimmer when revealed */
+.origin-ap-name.is-visible .letter-char {
+  animation-play-state: running;
+}
+
+/* ── "Four visions. One playground." tagline under Founding Team ─────────── */
+.about-page__section-tagline {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--teal, #0d9488);
+  margin: -4px 0 0;
+  letter-spacing: 0.01em;
+  opacity: 0.85;
+}
+
+/* ── Staggered card reveal delays ───────────────────────────────────────── */
+.origin-chapter:nth-of-type(1) { transition-delay: 0.0s; }
+.origin-chapter:nth-of-type(2) { transition-delay: 0.12s; }
+.origin-chapter:nth-of-type(3) { transition-delay: 0.24s; }
+.origin-chapter:nth-of-type(4) { transition-delay: 0.36s; }
+
+/* ── Mobile: stack vertically ───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .origin-banner { padding: 52px 18px 48px; }
+  .origin-banner__title { margin-bottom: 36px; }
+  .origin-chapters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .origin-chapter {
+    max-width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+  .origin-chapter__icon { font-size: 1.5rem; margin: 0; flex-shrink: 0; }
+  .origin-connector {
+    flex: 0 0 auto;
+    align-self: auto;
+    padding: 0 0 0 27px;
+    height: 28px;
+    align-items: center;
+  }
+  .origin-connector span {
+    width: 2px;
+    height: 100%;
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(13, 148, 136, 0.55) 0px,
+      rgba(13, 148, 136, 0.55) 5px,
+      transparent 5px,
+      transparent 10px
+    );
+  }
+}

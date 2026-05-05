@@ -712,6 +712,16 @@
    *                   patient/vit target values + optional rate (default 0.002)
    * ─────────────────────────────────────────────────────────────────────────
    */
+
+  // Centralised badge colour palette — same category always renders the same colour
+  const BADGE_COLORS = {
+    'Emergency'   : { fg:'#cc2222', bg:'rgba(220,34,34,0.10)',   border:'rgba(220,34,34,0.28)'   },
+    'Hemodynamics': { fg:'#c05a00', bg:'rgba(249,115,22,0.10)',  border:'rgba(249,115,22,0.28)'  },
+    'Airway'      : { fg:'#1d5fa8', bg:'rgba(51,153,255,0.10)',  border:'rgba(51,153,255,0.28)'  },
+    'Respiratory' : { fg:'#0f766e', bg:'rgba(13,148,136,0.10)',  border:'rgba(13,148,136,0.28)'  },
+  };
+  const _defaultBadgeColor = { fg:'#475569', bg:'rgba(71,85,105,0.10)', border:'rgba(71,85,105,0.28)' };
+
   const SCENARIOS = [
 
     /* ── 1. Post-Induction Hypotension ──────────────────────────────────── */
@@ -1030,6 +1040,588 @@
 
       resolution : 'Bronchospasm key pattern: PIP rises disproportionately over Pplat (peak-to-plateau gap widens), expiratory flow is prolonged and may not return to zero, capnogram develops shark-fin morphology, and EtCO₂ rises. Treatment: bronchodilators + deeper volatile. Critical ventilator adjustment: slow RR to allow full exhalation. Never increase RR in obstructive physiology — it is one of the most teachable "wrong answers" in anesthesia.',
     },
+
+    /* ── 4. Right Mainstem Intubation After Positioning ─────────────────── */
+    {
+      id        : 'right_mainstem_after_turn',
+      title     : 'Pressure After Positioning',
+      badge     : 'Airway',
+      badgeColor: '#3399ff',
+      summary   : 'Soon after intubation and patient positioning, oxygenation drifts down while airway pressures rise. The capnogram is still present, but the ventilator and chest exam no longer look symmetric.',
+
+      initialPatient : { compliance:32, resistance:8, co2Prod:170, leak:0, cardiacOutput:0.95 },
+      initialVitals  : { hr:105, sysBP:118, diaBP:70, spo2:92, bis:46, etco2Display:43 },
+      initialVent    : { tv:480, rr:12, peep:5, fio2:50, ti:1.0 },
+
+      steps : [
+        /* ── Step 1 ── */
+        {
+          phase : 'Deterioration',
+          clue  : 'Key clue: After the table is rotated, peak inspiratory pressure is 36 cmH₂O and plateau pressure is 32 cmH₂O — a narrow peak-to-plateau gap (4 cmH₂O). Expiratory flow returns to zero. The capnogram remains rectangular and EtCO₂ is 43 mmHg. SpO₂ has drifted from 99% to 92% on FiO₂ 50%. Right-sided chest rise is more prominent than left.',
+          question : 'Peak pressure is 36 cmH₂O, plateau is 32 cmH₂O, SpO₂ is 92% and falling, EtCO₂ is 43 mmHg, and chest rise is asymmetric after positioning. What is the most appropriate next step?',
+
+          passiveDeterior : {
+            rate    : 0.002,
+            vit     : { spo2:88, etco2Display:47 },
+            patient : { compliance:26 },
+          },
+
+          choices : [
+            {
+              text      : 'A. Increase PEEP from 5 to 12 cmH₂O and continue the case',
+              isCorrect : false,
+              feedback  : 'Incorrect. More PEEP may recruit lung later, but it does not fix asymmetric ventilation. If only one lung is receiving the tidal volume, extra PEEP worsens overdistention of the ventilated lung and delays correction of the tube position.',
+              effects   : { patient:{ compliance:29 }, vit:{ sysBP:-8, spo2:-1 }, vent:{ peep:12 }, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'B. Switch to 100% FiO₂, verify tube depth, and withdraw the ETT until bilateral breath sounds and symmetric chest rise return',
+              isCorrect : true,
+              feedback  : 'Correct. The narrow peak-to-plateau gap indicates a compliance problem, not bronchospasm. Asymmetric chest rise after positioning strongly suggests the tube has migrated into the right mainstem. Withdrawing the tube while ventilating at 100% O₂ restores bilateral ventilation, lowers plateau pressure, and allows SpO₂ to recover.',
+              effects   : { patient:{ compliance:52, resistance:7 }, vit:{ spo2:6, etco2Display:-4 }, vent:{ fio2:100 }, overlaySpeed:0.034 },
+            },
+            {
+              text      : 'C. Give albuterol through the ETT for presumed bronchospasm',
+              isCorrect : false,
+              feedback  : 'Incorrect. Bronchospasm produces a large peak-to-plateau gap, expiratory flow that may not return to zero, and a shark-fin capnogram. Here plateau pressure is also elevated and chest rise is asymmetric — these point to tube malposition, not bronchospasm.',
+              effects   : { patient:{ resistance:6 }, vit:{ spo2:-1 }, vent:{}, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'D. Increase respiratory rate to 20 to wash out the rising EtCO₂',
+              isCorrect : false,
+              feedback  : 'Incorrect. Increasing RR shortens expiratory time without addressing the underlying cause. It can also mask deteriorating oxygenation while the atelectatic lung worsens. The focus must be on why only one lung is being ventilated.',
+              effects   : { patient:{ compliance:28 }, vit:{ spo2:-2, etco2Display:-1 }, vent:{ rr:20 }, overlaySpeed:0.015 },
+            },
+          ],
+        },
+
+        /* ── Step 2 ── */
+        {
+          phase : 'Resolution',
+          clue  : 'Key clue: After tube repositioning, peak pressure is 26 cmH₂O and plateau pressure is 21 cmH₂O. SpO₂ is 96% and rising on FiO₂ 100%. EtCO₂ is 39 mmHg. Breath sounds are now symmetric, but saturation has not fully returned to baseline — the previously excluded lung is still partly atelectatic.',
+          question : 'Bilateral ventilation is restored and pressures have improved, but SpO₂ is 96% and still recovering. What is the best next step to complete the rescue and prevent recurrence?',
+
+          passiveDeterior : {
+            rate    : 0.001,
+            vit     : { spo2:-1 },
+            patient : {},
+          },
+
+          choices : [
+            {
+              text      : 'A. Advance the tube 2 cm to improve the cuff seal',
+              isCorrect : false,
+              feedback  : 'Incorrect. The problem improved after withdrawal — advancing risks re-creating right mainstem intubation. A cuff seal issue would show an exhaled volume leak alarm, not this pressure-and-asymmetry pattern.',
+              effects   : { patient:{ compliance:20 }, vit:{ spo2:-4 }, vent:{}, overlaySpeed:0.015 },
+            },
+            {
+              text      : 'B. Perform a gentle recruitment maneuver, set PEEP 7–8 cmH₂O for alveolar stability, then recheck tube depth after every table movement',
+              isCorrect : true,
+              feedback  : 'Correct. The excluded lung may have collapsed during the period of one-lung ventilation. A brief sustained-inflation recruitment breath reopens dependent units, and modest PEEP prevents immediate de-recruitment. Confirming tube depth after every position change prevents recurrence.',
+              effects   : { patient:{ compliance:60 }, vit:{ spo2:3, etco2Display:-1 }, vent:{ peep:8, fio2:60 }, overlaySpeed:0.030 },
+            },
+            {
+              text      : 'C. Leave FiO₂ at 100% and make no other changes since pressures improved',
+              isCorrect : false,
+              feedback  : 'Incorrect. High FiO₂ buys time but promotes absorption atelectasis and does not re-open the collapsed lung. Once airway alignment is restored, the goal is to recruit lung volume and titrate FiO₂ safely downward.',
+              effects   : { patient:{}, vit:{ spo2:0 }, vent:{}, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'D. Reduce PEEP to 0 to lower peak airway pressure',
+              isCorrect : false,
+              feedback  : 'Incorrect. Removing PEEP after a period of single-lung ventilation worsens de-recruitment of the recovering lung. Lower peak pressure alone is not the endpoint — oxygenation and alveolar recruitment matter equally.',
+              effects   : { patient:{ compliance:27 }, vit:{ spo2:-3 }, vent:{ peep:0 }, overlaySpeed:0.016 },
+            },
+          ],
+        },
+      ],
+
+      resolution : 'A sudden rise in both peak and plateau pressure with asymmetric chest rise after positioning means tube malposition until proven otherwise. The key diagnostic move is separating resistance from compliance using the peak-to-plateau gap: a narrow gap (< 5 cmH₂O) means a compliance problem — check tube depth before treating anything else.',
+    },
+
+    /* ── 5. CO₂ Embolism During Laparoscopy ────────────────────────────── */
+    {
+      id        : 'laparoscopy_etco2_crash',
+      title     : 'Crash During Insufflation',
+      badge     : 'Emergency',
+      badgeColor: '#ff3333',
+      summary   : 'During laparoscopic insufflation, the arterial line and capnogram change abruptly within seconds despite completely unchanged ventilator settings.',
+
+      initialPatient : { compliance:55, resistance:7, co2Prod:170, leak:0, cardiacOutput:0.55 },
+      initialVitals  : { hr:128, sysBP:72, diaBP:38, spo2:90, bis:44, etco2Display:16 },
+      initialVent    : { tv:450, rr:12, peep:5, fio2:60, ti:1.0 },
+
+      steps : [
+        /* ── Step 1 ── */
+        {
+          phase : 'Deterioration',
+          clue  : 'Key clue: Thirty seconds after insufflation pressure is increased, EtCO₂ falls abruptly from 36 to 16 mmHg — no circuit disconnect alarm fires. Peak pressure is 23 cmH₂O and plateau is 19 cmH₂O (both unchanged). SpO₂ drops from 99% to 90%, HR rises to 128, and the arterial line reads 72/38 mmHg.',
+          question : 'EtCO₂ has abruptly dropped to 16 mmHg during insufflation. BP is 72/38, SpO₂ is 90%, and airway pressures are completely unchanged. What is the most urgent next action?',
+
+          passiveDeterior : {
+            rate    : 0.003,
+            vit     : { sysBP:52, spo2:85, etco2Display:10 },
+            patient : { cardiacOutput:0.38 },
+          },
+
+          choices : [
+            {
+              text      : 'A. Increase respiratory rate to 20 to correct the low EtCO₂',
+              isCorrect : false,
+              feedback  : 'Incorrect. A sudden EtCO₂ drop with unchanged airway pressures reflects less CO₂ delivery to the lungs from impaired pulmonary blood flow — not excessive ventilation. Increasing minute ventilation may lower EtCO₂ further while the circulation worsens.',
+              effects   : { patient:{ cardiacOutput:0.48 }, vit:{ sysBP:-8, etco2Display:-2 }, vent:{ rr:20 }, overlaySpeed:0.016 },
+            },
+            {
+              text      : 'B. Tell the surgeon to stop insufflation and desufflate immediately; switch to 100% FiO₂ and support circulation',
+              isCorrect : true,
+              feedback  : 'Correct. Normal airway pressures rule out bronchospasm or pneumothorax. An abrupt EtCO₂ collapse during insufflation with hemodynamic shock is a CO₂ embolism pattern until proven otherwise. Stopping and releasing pneumoperitoneum removes the source, improves venous return and pulmonary blood flow, and should raise EtCO₂, SpO₂, and BP.',
+              effects   : { patient:{ cardiacOutput:0.78 }, vit:{ sysBP:28, spo2:6, etco2Display:12 }, vent:{ fio2:100 }, overlaySpeed:0.034 },
+            },
+            {
+              text      : 'C. Deepen anesthesia — the tachycardia suggests light anesthesia',
+              isCorrect : false,
+              feedback  : 'Incorrect. BIS is in the adequate anesthetic range. The tachycardia is a compensatory response to low cardiac output. Additional volatile or IV anesthetic worsens vasodilation and myocardial depression in an already collapsing circulation.',
+              effects   : { patient:{ cardiacOutput:0.44 }, vit:{ sysBP:-12, spo2:-1 }, vent:{}, overlaySpeed:0.015 },
+            },
+            {
+              text      : 'D. Treat for bronchospasm with albuterol and hand ventilation',
+              isCorrect : false,
+              feedback  : 'Incorrect. Bronchospasm raises peak pressure, widens the peak-to-plateau gap, and distorts the capnogram upstroke. Here airway mechanics are completely unchanged — the capnogram is warning about perfusion, not obstruction.',
+              effects   : { patient:{ resistance:6, cardiacOutput:0.50 }, vit:{ sysBP:-6, etco2Display:-1 }, vent:{}, overlaySpeed:0.018 },
+            },
+          ],
+        },
+
+        /* ── Step 2 ── */
+        {
+          phase : 'Intervention',
+          clue  : 'Key clue: After desufflation and 100% O₂, EtCO₂ rises from 16 to 24 mmHg and SpO₂ improves to 94%, confirming the insufflation was the driver. But BP remains 84/45 with HR 122. Peak pressure is 22 cmH₂O and plateau is 18 cmH₂O.',
+          question : 'The capnogram and SpO₂ are improving after desufflation, but hypotension and persistent low EtCO₂ continue. What is the best next management priority?',
+
+          passiveDeterior : {
+            rate    : 0.002,
+            vit     : { sysBP:70, etco2Display:20 },
+            patient : { cardiacOutput:0.55 },
+          },
+
+          choices : [
+            {
+              text      : 'A. Restart insufflation at the same pressure — oxygenation has improved',
+              isCorrect : false,
+              feedback  : 'Incorrect. Improvement after desufflation confirms the insufflation was the cause. Restarting too early re-creates the obstruction to pulmonary blood flow and risks another collapse — potentially worse than the first.',
+              effects   : { patient:{ cardiacOutput:0.36 }, vit:{ sysBP:-22, spo2:-5, etco2Display:-8 }, vent:{}, overlaySpeed:0.015 },
+            },
+            {
+              text      : 'B. Give metoprolol to control the compensatory tachycardia',
+              isCorrect : false,
+              feedback  : 'Incorrect. The tachycardia is compensatory in a low-output state. Beta-blockade without first restoring preload and perfusion pressure reduces cardiac output further and worsens EtCO₂.',
+              effects   : { patient:{ cardiacOutput:0.42 }, vit:{ hr:-25, sysBP:-14, etco2Display:-3 }, vent:{}, overlaySpeed:0.016 },
+            },
+            {
+              text      : 'C. Maintain 100% O₂, give fluid and vasopressor support, and consider left lateral Trendelenburg positioning to move gas away from the right ventricular outflow tract',
+              isCorrect : true,
+              feedback  : 'Correct. Persistent low EtCO₂ and hypotension mean right-sided output has not fully recovered. Supporting preload and systemic pressure restores pulmonary blood flow. Left lateral Trendelenburg may help displace a gas bubble from the RVOT. EtCO₂ should continue rising toward baseline as cardiac output improves.',
+              effects   : { patient:{ cardiacOutput:0.92 }, vit:{ sysBP:34, spo2:5, etco2Display:14 }, vent:{}, overlaySpeed:0.032 },
+            },
+            {
+              text      : 'D. Increase PEEP to 15 cmH₂O to improve oxygenation further',
+              isCorrect : false,
+              feedback  : 'Incorrect. The problem is primarily circulatory, not a lung-recruitment problem. Raising intrathoracic pressure reduces venous return and worsens right-sided output in a patient who is already hypotensive — the opposite of what is needed.',
+              effects   : { patient:{ cardiacOutput:0.46 }, vit:{ sysBP:-12, spo2:1, etco2Display:-2 }, vent:{ peep:15 }, overlaySpeed:0.018 },
+            },
+          ],
+        },
+      ],
+
+      resolution : 'A sudden EtCO₂ collapse with normal airway pressures during laparoscopy is a CO₂ embolism pattern until proven otherwise. The high-yield move is: stop the source → desufflate → 100% O₂ → support the right heart. Watch EtCO₂ normalize as cardiac output recovers — it is the most sensitive real-time marker of pulmonary blood flow at the bedside.',
+    },
+
+    /* ── 6. Tension Pneumothorax ────────────────────────────────────────── */
+    {
+      id        : 'intraop_tension_pneumothorax',
+      title     : 'Narrow Pressure Gap',
+      badge     : 'Emergency',
+      badgeColor: '#ff3333',
+      summary   : 'Mid-case, the ventilator suddenly struggles against a stiff chest while the arterial line collapses. The capnogram is still present but EtCO₂ is falling and each breath is delivering less useful gas exchange.',
+
+      initialPatient : { compliance:24, resistance:8, co2Prod:170, leak:0, cardiacOutput:0.55 },
+      initialVitals  : { hr:135, sysBP:78, diaBP:44, spo2:88, bis:47, etco2Display:28 },
+      initialVent    : { tv:480, rr:12, peep:5, fio2:60, ti:1.0 },
+
+      steps : [
+        /* ── Step 1 ── */
+        {
+          phase : 'Deterioration',
+          clue  : 'Key clue: Peak inspiratory pressure has risen to 42 cmH₂O and plateau pressure is 40 cmH₂O — a narrow peak-to-plateau gap of 2 cmH₂O. Expiratory flow returns to zero. SpO₂ falls to 88%, EtCO₂ drifts from 36 to 28 mmHg, HR is 135, and the arterial line reads 78/44 mmHg. Right chest movement is visibly reduced compared with the left.',
+          question : 'Peak pressure is 42 cmH₂O, plateau is 40 cmH₂O, SpO₂ is 88%, EtCO₂ is falling, and BP is 78/44 with asymmetric right-sided chest movement. What is the most urgent next step?',
+
+          passiveDeterior : {
+            rate    : 0.003,
+            vit     : { sysBP:54, spo2:82, etco2Display:20 },
+            patient : { cardiacOutput:0.38, compliance:18 },
+          },
+
+          choices : [
+            {
+              text      : 'A. Give albuterol for the high peak airway pressure',
+              isCorrect : false,
+              feedback  : 'Incorrect. The plateau pressure is nearly as high as peak pressure (narrow gap), so this is not primarily an airway resistance problem — it is a compliance problem. Bronchodilator therapy delays treatment while obstructive shock worsens.',
+              effects   : { patient:{ resistance:6, cardiacOutput:0.50 }, vit:{ sysBP:-8, spo2:-2 }, vent:{}, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'B. Switch to 100% FiO₂, call for help, and immediately decompress the right chest (needle decompression → tube thoracostomy)',
+              isCorrect : true,
+              feedback  : 'Correct. The narrow peak-to-plateau gap signals a compliance problem, not resistance. Simultaneous hypotension, falling EtCO₂, hypoxemia, and asymmetric chest movement is the OR pattern for tension pneumothorax. Decompression rapidly restores compliance, venous return, EtCO₂, SpO₂, and blood pressure.',
+              effects   : { patient:{ compliance:50, cardiacOutput:0.85 }, vit:{ sysBP:42, spo2:9, etco2Display:9 }, vent:{ fio2:100 }, overlaySpeed:0.036 },
+            },
+            {
+              text      : 'C. Suction the ETT for a possible mucus plug',
+              isCorrect : false,
+              feedback  : 'Incorrect. A mucus plug causes lobar atelectasis and can raise pressures, but it produces gradual rather than acute obstructive shock. More importantly, suctioning should never delay decompression when this hemodynamic and ventilator pattern is present.',
+              effects   : { patient:{ compliance:22 }, vit:{ sysBP:-10, spo2:-2, etco2Display:-2 }, vent:{}, overlaySpeed:0.017 },
+            },
+            {
+              text      : 'D. Increase PEEP to 12 cmH₂O to splint the lung open',
+              isCorrect : false,
+              feedback  : 'Incorrect. Adding PEEP raises mean intrathoracic pressure and severely worsens venous return in a patient with obstructive shock. It may also enlarge the pneumothorax by increasing airway pressure against the defect.',
+              effects   : { patient:{ cardiacOutput:0.38, compliance:20 }, vit:{ sysBP:-20, spo2:-3, etco2Display:-4 }, vent:{ peep:12 }, overlaySpeed:0.015 },
+            },
+          ],
+        },
+
+        /* ── Step 2 ── */
+        {
+          phase : 'Resolution',
+          clue  : 'Key clue: After emergency decompression, peak pressure falls to 25 cmH₂O and plateau is 20 cmH₂O. SpO₂ rises to 95%, EtCO₂ recovers to 35 mmHg, and BP improves to 112/64. Breath sounds are now symmetric. FiO₂ is still at 100%.',
+          question : 'The acute physiology has improved after decompression. What is the best next step to fully stabilize the patient and prevent recurrence?',
+
+          passiveDeterior : {
+            rate    : 0.001,
+            vit     : { spo2:94 },
+            patient : {},
+          },
+
+          choices : [
+            {
+              text      : 'A. Clamp the decompression catheter now that BP has recovered',
+              isCorrect : false,
+              feedback  : 'Incorrect. Clamping before a formal chest tube allows pressure to re-accumulate. Improvement confirms decompression was therapeutic — it does not mean the underlying problem has resolved.',
+              effects   : { patient:{ compliance:16, cardiacOutput:0.44 }, vit:{ sysBP:-18, spo2:-5, etco2Display:-5 }, vent:{}, overlaySpeed:0.015 },
+            },
+            {
+              text      : 'B. Confirm a functioning chest tube, avoid nitrous oxide, maintain lung-protective pressures, and recheck with ultrasound or CXR when stable',
+              isCorrect : true,
+              feedback  : 'Correct. Needle decompression is a bridge; a chest tube is the definitive step. Avoiding nitrous (which expands gas-filled spaces) and excessive airway pressures prevents enlargement or recurrence. Imaging confirms lung re-expansion before the case continues.',
+              effects   : { patient:{ compliance:55, cardiacOutput:0.92 }, vit:{ sysBP:8, spo2:3, etco2Display:2 }, vent:{ fio2:60, peep:5 }, overlaySpeed:0.030 },
+            },
+            {
+              text      : 'C. Return to the original large tidal volume — pressures have normalized',
+              isCorrect : false,
+              feedback  : 'Incorrect. Normalized pressures after decompression do not mean the injured pleura can tolerate aggressive ventilation. High tidal volumes increase airway pressure against the defect and risk recurrence or barotrauma.',
+              effects   : { patient:{ compliance:46 }, vit:{ spo2:-1, sysBP:-4 }, vent:{ tv:600 }, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'D. Treat the event as resolved and continue without informing the surgical team',
+              isCorrect : false,
+              feedback  : 'Incorrect. This was a life-threatening intraoperative event requiring shared situational awareness. Failure to communicate increases risk during closure, positioning, or emergence — and is a patient-safety failure.',
+              effects   : { patient:{ cardiacOutput:0.80 }, vit:{ sysBP:-6, spo2:-1 }, vent:{}, overlaySpeed:0.016 },
+            },
+          ],
+        },
+      ],
+
+      resolution : 'When both peak and plateau pressures rise together (narrow gap), the problem is compliance — not airway resistance. The intraoperative tension pneumothorax triad: stiff ventilation (high Pplat) + obstructive shock + asymmetric chest movement. Decompress first, image later.',
+    },
+
+    /* ── 7. COPD Auto-PEEP / Dynamic Hyperinflation ────────────────────── */
+    {
+      id        : 'copd_auto_peep',
+      title     : 'Stacked Breaths',
+      badge     : 'Airway',
+      badgeColor: '#3399ff',
+      summary   : 'A patient with COPD is mechanically ventilated after induction. Oxygenation is acceptable, but the pressure, flow, and capnogram waveforms show each breath arriving before the last one is fully finished.',
+
+      initialPatient : { compliance:68, resistance:26, co2Prod:170, leak:0, cardiacOutput:0.85 },
+      initialVitals  : { hr:108, sysBP:96, diaBP:54, spo2:94, bis:48, etco2Display:52 },
+      initialVent    : { tv:500, rr:16, peep:5, fio2:50, ti:1.0 },
+
+      steps : [
+        /* ── Step 1 ── */
+        {
+          phase : 'Deterioration',
+          clue  : 'Key clue: Peak inspiratory pressure is 44 cmH₂O while plateau pressure is only 22 cmH₂O — a wide peak-to-plateau gap of 22 cmH₂O. The expiratory flow waveform does not return to zero before the next breath begins. The capnogram has a slanted, shark-fin upstroke and EtCO₂ is 52 mmHg. BP has drifted from 118/70 to 96/54.',
+          question : 'Peak pressure is 44 cmH₂O, plateau is 22 cmH₂O, EtCO₂ is 52 mmHg, and expiratory flow does not reach baseline before the next breath. What ventilator change best addresses this physiology?',
+
+          passiveDeterior : {
+            rate    : 0.002,
+            vit     : { sysBP:72, etco2Display:58 },
+            patient : { cardiacOutput:0.70 },
+          },
+
+          choices : [
+            {
+              text      : 'A. Increase respiratory rate to 22 to lower the EtCO₂',
+              isCorrect : false,
+              feedback  : 'Incorrect. The elevated EtCO₂ is tempting to chase, but the waveform shows incomplete exhalation. Increasing rate shortens expiratory time, worsens air trapping, raises mean intrathoracic pressure, further reduces venous return, and will drop blood pressure further.',
+              effects   : { patient:{ cardiacOutput:0.72, resistance:28 }, vit:{ sysBP:-12, etco2Display:2, spo2:-1 }, vent:{ rr:22 }, overlaySpeed:0.015 },
+            },
+            {
+              text      : 'B. Reduce respiratory rate to 10–11, shorten inspiratory time to 0.75 s, and allow more time for exhalation',
+              isCorrect : true,
+              feedback  : 'Correct. The wide peak-to-plateau gap and expiratory flow that never reaches zero mean dynamic hyperinflation from high airway resistance. A slower rate and shorter Ti lengthen expiratory time, allowing trapped gas to exit, reducing auto-PEEP, lowering peak pressure, and improving venous return. EtCO₂ may transiently rise — that is acceptable.',
+              effects   : { patient:{ cardiacOutput:0.92, resistance:20 }, vit:{ sysBP:16, etco2Display:-4, spo2:2 }, vent:{ rr:11, ti:0.75, tv:460 }, overlaySpeed:0.032 },
+            },
+            {
+              text      : 'C. Increase tidal volume to improve alveolar ventilation',
+              isCorrect : false,
+              feedback  : 'Incorrect. The problem is not inadequate breath size — it is inadequate expiratory time. Larger tidal volumes worsen hyperinflation because the patient cannot fully exhale before the next breath arrives.',
+              effects   : { patient:{ cardiacOutput:0.78, resistance:28 }, vit:{ sysBP:-10, spo2:-1 }, vent:{ tv:620 }, overlaySpeed:0.016 },
+            },
+            {
+              text      : 'D. Increase PEEP to 12 cmH₂O because the patient has obstructive lung disease',
+              isCorrect : false,
+              feedback  : 'Incorrect. External PEEP in a spontaneously-breathing COPD patient can help trigger synchrony, but blindly raising PEEP during controlled ventilation adds to total end-expiratory pressure, worsens dynamic hyperinflation, and reduces venous return — directly worsening the hypotension.',
+              effects   : { patient:{ cardiacOutput:0.72 }, vit:{ sysBP:-12, spo2:0 }, vent:{ peep:12 }, overlaySpeed:0.018 },
+            },
+          ],
+        },
+
+        /* ── Step 2 ── */
+        {
+          phase : 'Intervention',
+          clue  : 'Key clue: After ventilator timing adjustment, peak pressure falls to 35 cmH₂O and plateau remains 21 cmH₂O. Expiratory flow nearly — but not fully — returns to zero. EtCO₂ is 48 mmHg, SpO₂ is 96%, and BP is 112/62. The capnogram still has a slanted expiratory upstroke consistent with residual obstruction.',
+          question : 'Ventilator timing has improved, but the capnogram still shows expiratory obstruction. What is the best next optimization?',
+
+          passiveDeterior : {
+            rate    : 0.001,
+            vit     : { etco2Display:50 },
+            patient : {},
+          },
+
+          choices : [
+            {
+              text      : 'A. Give an inhaled bronchodilator and ensure adequate anesthetic depth while maintaining the long expiratory time',
+              isCorrect : true,
+              feedback  : 'Correct. The shark-fin capnogram and still-elevated resistance indicate ongoing bronchoconstriction or small-airway obstruction. Bronchodilation reduces intrinsic resistance, and deeper volatile anesthesia blunts airway reactivity — both reduce dynamic hyperinflation while the ventilator strategy prevents breath stacking from returning.',
+              effects   : { patient:{ resistance:12, cardiacOutput:0.96 }, vit:{ sysBP:4, etco2Display:-5, spo2:1 }, vent:{}, overlaySpeed:0.030 },
+            },
+            {
+              text      : 'B. Return respiratory rate to 16 because blood pressure has improved',
+              isCorrect : false,
+              feedback  : 'Incorrect. The improved blood pressure came directly from reducing dynamic hyperinflation. Returning to the original rate shortens expiratory time, recreates air trapping, and will bring back the hypotension.',
+              effects   : { patient:{ cardiacOutput:0.78, resistance:28 }, vit:{ sysBP:-10, etco2Display:4 }, vent:{ rr:16 }, overlaySpeed:0.016 },
+            },
+            {
+              text      : 'C. Perform an aggressive recruitment maneuver to improve the capnogram',
+              isCorrect : false,
+              feedback  : 'Incorrect. The slanted capnogram reflects expiratory obstruction, not derecruitment. A recruitment maneuver increases intrathoracic pressure and may worsen hemodynamics in a patient who just recovered from auto-PEEP-driven hypotension.',
+              effects   : { patient:{ cardiacOutput:0.80 }, vit:{ sysBP:-8, spo2:0 }, vent:{}, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'D. Ignore the waveform — SpO₂ is 96% so the patient is fine',
+              isCorrect : false,
+              feedback  : 'Incorrect. Acceptable SpO₂ can coexist with persistently inefficient ventilation and ongoing CO₂ retention. The flow and capnogram waveforms warn that airway resistance is still elevated and that the patient may deteriorate again if expiratory time or resistance are not addressed.',
+              effects   : { patient:{ resistance:28, cardiacOutput:0.82 }, vit:{ sysBP:-6, etco2Display:3 }, vent:{}, overlaySpeed:0.015 },
+            },
+          ],
+        },
+      ],
+
+      resolution : 'In obstructive physiology, a wide peak-to-plateau gap with expiratory flow that never returns to zero is the waveform signature of dynamic hyperinflation. The most dangerous reflex — increasing respiratory rate to chase EtCO₂ — makes it worse. Slow the rate, shorten Ti, and bronchodilate.',
+    },
+
+    /* ── 8. ARDS — Protective Ventilation & Driving Pressure ───────────── */
+    {
+      id        : 'ards_driving_pressure',
+      title     : 'Plateau Pressure Check',
+      badge     : 'Respiratory',
+      badgeColor: '#0d9488',
+      summary   : 'An intubated patient has worsening oxygenation on volume-control ventilation. The peak pressure is high, but the plateau pressure tells the more important story about lung injury risk.',
+
+      initialPatient : { compliance:24, resistance:9, co2Prod:180, leak:0, cardiacOutput:0.90 },
+      initialVitals  : { hr:102, sysBP:112, diaBP:64, spo2:91, bis:45, etco2Display:37 },
+      initialVent    : { tv:520, rr:20, peep:8, fio2:70, ti:0.9 },
+
+      steps : [
+        /* ── Step 1 ── */
+        {
+          phase : 'Deterioration',
+          clue  : 'Key clue: Peak inspiratory pressure is 39 cmH₂O and plateau pressure is 35 cmH₂O — a narrow peak-to-plateau gap of 4 cmH₂O. PEEP is 8 cmH₂O, giving a driving pressure (Pplat − PEEP) of 27 cmH₂O. Expiratory flow returns to zero and the capnogram is rectangular. SpO₂ is 91% on FiO₂ 70%, EtCO₂ is 37 mmHg.',
+          question : 'Peak pressure is 39 cmH₂O, plateau is 35 cmH₂O, PEEP is 8 cmH₂O, and SpO₂ is 91%. What ventilator change best reduces ventilator-induced lung injury risk?',
+
+          passiveDeterior : {
+            rate    : 0.0015,
+            vit     : { spo2:88 },
+            patient : { compliance:22 },
+          },
+
+          choices : [
+            {
+              text      : 'A. Increase tidal volume to improve oxygenation',
+              isCorrect : false,
+              feedback  : 'Incorrect. Larger tidal volumes increase plateau pressure and driving pressure, the two strongest predictors of ventilator-induced lung injury in ARDS. SpO₂ may transiently rise, but alveolar overdistension accelerates lung damage.',
+              effects   : { patient:{ compliance:20 }, vit:{ spo2:1, etco2Display:-2 }, vent:{ tv:600 }, overlaySpeed:0.016 },
+            },
+            {
+              text      : 'B. Reduce tidal volume toward 6 mL/kg IBW and reassess plateau pressure',
+              isCorrect : true,
+              feedback  : 'Correct. The narrow peak-to-plateau gap with high plateau pressure indicates poor compliance, not airway resistance. Reducing tidal volume lowers both plateau pressure and driving pressure — even if EtCO₂ rises modestly. Permissive hypercapnia is acceptable if pH remains above ~7.20.',
+              effects   : { patient:{ compliance:25 }, vit:{ spo2:-1, etco2Display:5 }, vent:{ tv:360 }, overlaySpeed:0.034 },
+            },
+            {
+              text      : 'C. Give albuterol for the elevated peak pressure',
+              isCorrect : false,
+              feedback  : 'Incorrect. Bronchodilators target airway resistance. Here the peak-to-plateau gap is narrow and plateau pressure is high — the problem is reduced compliance, not bronchospasm. Albuterol will not improve plateau pressure or protect against VILI.',
+              effects   : { patient:{ resistance:8 }, vit:{ spo2:0 }, vent:{}, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'D. Increase respiratory rate to normalize EtCO₂ before changing tidal volume',
+              isCorrect : false,
+              feedback  : 'Incorrect. EtCO₂ is not the immediate priority — reducing alveolar stress is. Increasing rate increases minute ventilation but does not reduce plateau or driving pressure. More breaths at the same volume can also worsen cumulative lung stress.',
+              effects   : { patient:{}, vit:{ etco2Display:-2, spo2:0 }, vent:{ rr:24 }, overlaySpeed:0.018 },
+            },
+          ],
+        },
+
+        /* ── Step 2 ── */
+        {
+          phase : 'Intervention',
+          clue  : 'Key clue: After tidal volume reduction, peak pressure is 31 cmH₂O and plateau is 27 cmH₂O. PEEP remains 8 cmH₂O — driving pressure is now 19 cmH₂O. EtCO₂ has risen to 44 mmHg and SpO₂ is 89% on FiO₂ 70%. BP is 108/62. The capnogram is rectangular.',
+          question : 'Driving pressure has improved, but oxygenation remains marginal at SpO₂ 89%. What is the best next step?',
+
+          passiveDeterior : {
+            rate    : 0.0015,
+            vit     : { spo2:87 },
+            patient : {},
+          },
+
+          choices : [
+            {
+              text      : 'A. Return to the original tidal volume because SpO₂ is lower',
+              isCorrect : false,
+              feedback  : 'Incorrect. Returning to the higher tidal volume may raise SpO₂ slightly but reintroduces excessive plateau and driving pressures. In ARDS physiology, oxygenation must not be improved at the cost of alveolar overdistension.',
+              effects   : { patient:{ compliance:20 }, vit:{ spo2:2, etco2Display:-4 }, vent:{ tv:520 }, overlaySpeed:0.016 },
+            },
+            {
+              text      : 'B. Increase PEEP cautiously while monitoring plateau pressure, driving pressure, oxygenation, and blood pressure',
+              isCorrect : true,
+              feedback  : 'Correct. Once tidal volume is lung-protective, oxygenation can be supported by careful PEEP titration to recruit unstable alveoli. The goal is recruitment without driving pressure > 15 cmH₂O or hemodynamic compromise. As oxygenation improves, FiO₂ can be weaned.',
+              effects   : { patient:{ compliance:30, cardiacOutput:0.86 }, vit:{ spo2:4, sysBP:-4, etco2Display:-1 }, vent:{ peep:12, fio2:60 }, overlaySpeed:0.030 },
+            },
+            {
+              text      : 'C. Hyperventilate aggressively to get EtCO₂ below 35 mmHg',
+              isCorrect : false,
+              feedback  : 'Incorrect. A modest EtCO₂ rise after tidal volume reduction is expected and acceptable. Chasing a normal EtCO₂ leads to higher minute ventilation, cumulative lung stress, and loss of the lung-protective strategy.',
+              effects   : { patient:{ compliance:22 }, vit:{ etco2Display:-5, spo2:0 }, vent:{ rr:26 }, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'D. Lower PEEP to reduce mean airway pressure',
+              isCorrect : false,
+              feedback  : 'Incorrect. Reducing PEEP can derecruit unstable, fluid-filled alveoli and worsen oxygenation in ARDS. Mean airway pressure reduction must always be balanced against the risk of losing alveolar recruitment.',
+              effects   : { patient:{ compliance:20 }, vit:{ spo2:-4, etco2Display:2 }, vent:{ peep:4 }, overlaySpeed:0.016 },
+            },
+          ],
+        },
+      ],
+
+      resolution : 'In restrictive lung disease, plateau pressure and driving pressure (Pplat − PEEP) matter more than peak pressure alone. The lung-protective sequence: reduce tidal volume first to bring driving pressure below 15 cmH₂O, then titrate PEEP and FiO₂ while watching oxygenation and hemodynamics.',
+    },
+
+    /* ── 9. PEEP vs Preload — Hemodynamic Consequences ─────────────────── */
+    {
+      id        : 'peep_preload_balance',
+      title     : 'PEEP And Preload',
+      badge     : 'Hemodynamics',
+      badgeColor: '#ff6060',
+      summary   : 'Oxygenation improves after a recruitment maneuver and PEEP increase, but the arterial line and capnogram suggest the price may be reduced venous return. Better SpO₂ does not always mean better physiology.',
+
+      initialPatient : { compliance:34, resistance:8, co2Prod:170, leak:0, cardiacOutput:0.72 },
+      initialVitals  : { hr:98, sysBP:88, diaBP:50, spo2:97, bis:46, etco2Display:27 },
+      initialVent    : { tv:480, rr:12, peep:14, fio2:60, ti:1.0 },
+
+      steps : [
+        /* ── Step 1 ── */
+        {
+          phase : 'Deterioration',
+          clue  : 'Key clue: After recruitment and PEEP increase to 14 cmH₂O, SpO₂ improves from 91% to 97%. Peak pressure is 34 cmH₂O and plateau is 29 cmH₂O. But EtCO₂ has gradually fallen from 36 to 27 mmHg and the arterial line has drifted from 118/68 to 88/50. The capnogram shape remains rectangular.',
+          question : 'SpO₂ has improved to 97%, but BP is 88/50 and EtCO₂ has gradually fallen to 27 mmHg after PEEP was increased to 14 cmH₂O. What is the best next step?',
+
+          passiveDeterior : {
+            rate    : 0.002,
+            vit     : { sysBP:68, etco2Display:20 },
+            patient : { cardiacOutput:0.58 },
+          },
+
+          choices : [
+            {
+              text      : 'A. Increase PEEP further — oxygenation improved so more PEEP will help more',
+              isCorrect : false,
+              feedback  : 'Incorrect. The SpO₂ response shows recruitment, but the falling EtCO₂ and blood pressure are signs of reduced pulmonary blood flow and cardiac output. Additional PEEP will further impair venous return and worsen hemodynamics.',
+              effects   : { patient:{ cardiacOutput:0.58, compliance:36 }, vit:{ sysBP:-14, spo2:1, etco2Display:-5 }, vent:{ peep:18 }, overlaySpeed:0.015 },
+            },
+            {
+              text      : 'B. Reduce PEEP to the lowest level that preserves oxygenation, and support preload and vascular tone',
+              isCorrect : true,
+              feedback  : 'Correct. The gradual EtCO₂ drop with hypotension after higher PEEP is the hemodynamic signature of reduced venous return and cardiac output. Backing down to an individualized PEEP while giving fluid or vasopressor support should restore blood pressure and EtCO₂ while maintaining acceptable oxygenation.',
+              effects   : { patient:{ cardiacOutput:0.90, compliance:32 }, vit:{ sysBP:24, etco2Display:8, spo2:-2 }, vent:{ peep:9 }, overlaySpeed:0.032 },
+            },
+            {
+              text      : 'C. Increase respiratory rate — EtCO₂ is low and needs to be treated',
+              isCorrect : false,
+              feedback  : 'Incorrect. The low EtCO₂ here reflects reduced CO₂ delivery to the lungs from falling cardiac output — not hypoventilation. Increasing rate may lower EtCO₂ further without fixing venous return, and adds minute ventilation stress.',
+              effects   : { patient:{ cardiacOutput:0.68 }, vit:{ sysBP:-6, etco2Display:-4 }, vent:{ rr:16 }, overlaySpeed:0.018 },
+            },
+            {
+              text      : 'D. Deepen volatile anesthetic — hypotension and tachycardia suggest the patient is light',
+              isCorrect : false,
+              feedback  : 'Incorrect. BIS is in the appropriate anesthetic range. The hemodynamic changes are from increased intrathoracic pressure impairing venous return, not from inadequate anesthetic depth. Additional volatile agents will worsen vasodilation and hypotension.',
+              effects   : { patient:{ cardiacOutput:0.62 }, vit:{ sysBP:-12, etco2Display:-3 }, vent:{}, overlaySpeed:0.016 },
+            },
+          ],
+        },
+
+        /* ── Step 2 ── */
+        {
+          phase : 'Resolution',
+          clue  : 'Key clue: After PEEP is reduced to 9 cmH₂O and blood pressure is supported, SpO₂ is 95%, EtCO₂ rises to 34 mmHg, and BP is 112/64. Peak pressure is 28 cmH₂O and plateau is 23 cmH₂O. The capnogram remains rectangular.',
+          question : 'Oxygenation is slightly lower but acceptable, while EtCO₂ and blood pressure have normalized. What is the best ongoing ventilator strategy?',
+
+          passiveDeterior : {
+            rate    : 0.001,
+            vit     : { spo2:94 },
+            patient : {},
+          },
+
+          choices : [
+            {
+              text      : 'A. Keep this individualized PEEP level, monitor driving pressure and hemodynamics, and titrate FiO₂ down as tolerated',
+              isCorrect : true,
+              feedback  : 'Correct. The best PEEP is not the one that maximizes SpO₂ — it is the one that balances alveolar recruitment, driving pressure, oxygenation, and cardiac output together. Titrating FiO₂ down while monitoring all four parameters is the lung-protective and hemodynamically sound approach.',
+              effects   : { patient:{ cardiacOutput:0.94 }, vit:{ sysBP:4, spo2:1, etco2Display:0 }, vent:{ fio2:50 }, overlaySpeed:0.030 },
+            },
+            {
+              text      : 'B. Return to PEEP 14 because the previous SpO₂ was higher',
+              isCorrect : false,
+              feedback  : 'Incorrect. Higher PEEP did improve SpO₂, but it did so at the cost of cardiac output. Optimizing one monitor while another deteriorates is not a complete physiological picture.',
+              effects   : { patient:{ cardiacOutput:0.68 }, vit:{ sysBP:-12, spo2:1, etco2Display:-5 }, vent:{ peep:14 }, overlaySpeed:0.016 },
+            },
+            {
+              text      : 'C. Reduce PEEP to 0 — blood pressure improved when PEEP was lowered so lower is always better',
+              isCorrect : false,
+              feedback  : 'Incorrect. The prior PEEP was excessive for this patient, not all PEEP. Removing PEEP entirely will derecruit unstable alveoli and worsen oxygenation — the improvement from backing off PEEP does not mean PEEP is globally harmful.',
+              effects   : { patient:{ compliance:26 }, vit:{ spo2:-5, etco2Display:1 }, vent:{ peep:0 }, overlaySpeed:0.016 },
+            },
+            {
+              text      : 'D. Increase tidal volume to improve both oxygenation and blood pressure simultaneously',
+              isCorrect : false,
+              feedback  : 'Incorrect. Larger tidal volumes increase airway pressure against still-compromised compliance and do not reliably improve venous return. The current balance of oxygenation, driving pressure, and perfusion is safer than trading higher volumes for marginal SpO₂ gains.',
+              effects   : { patient:{ compliance:30, cardiacOutput:0.86 }, vit:{ sysBP:-4, spo2:1 }, vent:{ tv:560 }, overlaySpeed:0.018 },
+            },
+          ],
+        },
+      ],
+
+      resolution : 'PEEP can improve oxygenation while simultaneously worsening cardiac output. The monitor pattern that reveals this: gradual EtCO₂ drop plus hypotension after a PEEP increase, with a rectangular (normal) capnogram. Optimize PEEP for the whole patient — SpO₂, EtCO₂, blood pressure, and driving pressure together.',
+    },
   ];
 
   /* ─────────────────────────────────────────────────────────────────────────
@@ -1208,6 +1800,7 @@
       'Airway'      : '🫁',
       'Respiratory' : '🌬',
     };
+
     if (filterRow) {
       const categories = ['All', ...new Set(SCENARIOS.map(s => s.badge))];
       filterRow.innerHTML = categories.map(cat => {
@@ -1233,8 +1826,8 @@
 
     // ── Scenario cards ─────────────────────────────────────────────────────
     container.innerHTML = SCENARIOS.map((s, i) =>
-      `<button class="scen-card" type="button" data-scen-idx="${i}" data-category="${s.badge}">
-         <span class="scen-card__badge" style="background:${s.badgeColor}22;color:${s.badgeColor};border:1px solid ${s.badgeColor}44">
+      `<button class="scen-card" type="button" data-scen-idx="${i}" data-scen-id="${s.id}" data-category="${s.badge}">
+         <span class="scen-card__badge" style="background:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).bg};color:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).fg};border:1px solid ${(BADGE_COLORS[s.badge]||_defaultBadgeColor).border}">
            ${CATEGORY_ICONS[s.badge] || ''} ${s.badge}
          </span>
          <div class="scen-card__title">${s.title}</div>
@@ -1263,10 +1856,11 @@
     const badge = $('scen-badge');
     const title = $('scen-title');
     if (badge) {
-      badge.textContent = s.badge;
-      badge.style.background = s.badgeColor + '22';
-      badge.style.color      = s.badgeColor;
-      badge.style.border     = `1px solid ${s.badgeColor}44`;
+      const _bc = (BADGE_COLORS && BADGE_COLORS[s.badge]) || { fg:'#475569', bg:'rgba(71,85,105,0.10)', border:'rgba(71,85,105,0.28)' };
+      badge.textContent      = s.badge;
+      badge.style.background = _bc.bg;
+      badge.style.color      = _bc.fg;
+      badge.style.border     = `1px solid ${_bc.border}`;
     }
     if (title) title.textContent = s.title;
 
