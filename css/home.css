@@ -1854,31 +1854,13 @@ body.home-body {
     transform: translateX(36%) translateZ(-180px) rotateY(-32deg) scale(0.82);
     opacity: 0.55;
   }
-  /* On mobile, strip the card's white frame so the art fills edge-to-edge
-     without a visible box. The card's border-radius still softens the corners,
-     but there's no contrast between frame and page background. */
+  /* Cards: reduce padding on mobile, keep original white background */
   .home-card {
-    padding: 6px;
-    background: transparent;
-    border-color: transparent;
-    box-shadow: none;
-  }
-  .home-card.is-active {
-    background: transparent;
-    box-shadow: 0 6px 24px rgba(18, 30, 45, 0.14);
-  }
-  /* Art area: let border-radius carry through to the inner art */
-  .home-card__art {
-    border-radius: 16px;
-  }
-  /* Chip: add subtle shadow so it reads against both light and dark art */
-  .home-card__chip {
-    box-shadow: 0 2px 8px rgba(18, 30, 45, 0.12);
+    padding: 14px;
   }
   .home-card__caption {
     font-size: 0.85rem;
-    margin-top: 8px;
-    color: var(--home-ink-2);
+    margin-top: 10px;
   }
 
   /* Mini Pyxis: tighter padding */
