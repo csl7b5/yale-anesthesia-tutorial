@@ -1717,7 +1717,7 @@
     overlay.active = true;
   }
 
-  function startScenario(scenario) {
+  async function startScenario(scenario) {
     saveBaseline();
     scenState.active        = true;
     scenState.scenario      = scenario;
@@ -1726,9 +1726,25 @@
     scenState.stepStartTime = simTime;
     scenState.stepHistory   = [];   // [{question, choice_text, is_correct, domain}]
 
+    // Track start in DB if this is a DB-generated scenario
+    if (scenario._dbId && window.supabase) {
+      try {
+        const { data: { session } } = await window.supabase.auth.getSession();
+        if (session) {
+          // Fire and forget update to case_assignments
+          window.supabase.from('case_assignments')
+            .update({ status: 'started', started_at: new Date().toISOString() })
+            .eq('scenario_id', scenario._dbId)
+            .eq('assigned_to', session.user.id)
+            .then();
+        }
+      } catch(e) {}
+    }
+
     // Expose for debrief-ui.js
     Object.defineProperty(window, '_scenStepHistory', { get: () => scenState.stepHistory ?? [], configurable: true });
     Object.defineProperty(window, '_activeScenTitle',  { get: () => scenState.scenario?.title ?? '', configurable: true });
+    Object.defineProperty(window, '_activeScenDbId',   { get: () => scenState.scenario?._dbId, configurable: true });
 
     Object.assign(patientState, scenario.initialPatient);
     Object.assign(vitals, scenario.initialVitals);
@@ -1793,6 +1809,39 @@
     const filterRow  = $('scen-filter-row');
     if (!container) return;
 
+    // Fetch DB scenarios and merge with hardcoded ones
+    // We only fetch if supabase is available, otherwise fallback to hardcoded
+    let mergedScenarios = [...SCENARIOS];
+    
+    // We fetch scenarios where status='approved' AND visibility='public'
+    // (If the student was logged in, we'd also fetch their assigned private cases here)
+    if (window.supabase) {
+      try {
+        const { data, error } = await window.supabase
+          .from('generated_scenarios')
+          .select('id, scenario_json, author_label, visibility')
+          .eq('status', 'approved')
+          .eq('visibility', 'public')
+          .order('published_at', { ascending: false });
+          
+        if (!error && data) {
+          data.forEach(dbScen => {
+            const parsed = dbScen.scenario_json;
+            if (parsed) {
+              parsed._dbId = dbScen.id; // Tag it so we know it came from DB
+              parsed._author = dbScen.author_label || 'Instructor';
+              parsed._visibility = dbScen.visibility;
+              mergedScenarios.push(parsed);
+            }
+          });
+        } else if (error) {
+          console.error("Error fetching scenarios:", error);
+        }
+      } catch (err) {
+        console.error("Failed to load DB scenarios:", err);
+      }
+    }
+
     // ── Category filter chips ──────────────────────────────────────────────
     const CATEGORY_ICONS = {
       'Emergency'   : '🚨',
@@ -1802,7 +1851,7 @@
     };
 
     if (filterRow) {
-      const categories = ['All', ...new Set(SCENARIOS.map(s => s.badge))];
+      const categories = ['All', ...new Set(mergedScenarios.map(s => s.badge).filter(Boolean))];
       filterRow.innerHTML = categories.map(cat => {
         const icon = cat === 'All' ? '⭐' : (CATEGORY_ICONS[cat] || '📋');
         return `<button class="scen-filter-chip${cat === 'All' ? ' scen-filter-chip--active' : ''}"
@@ -1825,21 +1874,23 @@
     }
 
     // ── Scenario cards ─────────────────────────────────────────────────────
-    container.innerHTML = SCENARIOS.map((s, i) =>
-      `<button class="scen-card" type="button" data-scen-idx="${i}" data-scen-id="${s.id}" data-category="${s.badge}">
+    container.innerHTML = mergedScenarios.map((s, i) => {
+      const authorHtml = s._dbId ? `<div class="scen-card__author">By ${s._author || 'Instructor'}</div>` : '';
+      return `<button class="scen-card" type="button" data-scen-idx="${i}" data-scen-id="${s.id || ''}" data-category="${s.badge}">
          <span class="scen-card__badge" style="background:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).bg};color:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).fg};border:1px solid ${(BADGE_COLORS[s.badge]||_defaultBadgeColor).border}">
            ${CATEGORY_ICONS[s.badge] || ''} ${s.badge}
          </span>
          <div class="scen-card__title">${s.title}</div>
+         ${authorHtml}
          <div class="scen-card__summary">${s.summary}</div>
          <div class="scen-card__cta">▶ Start scenario →</div>
-       </button>`
-    ).join('');
+       </button>`;
+    }).join('');
 
     container.querySelectorAll('.scen-card').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.scenIdx, 10);
-        startScenario(SCENARIOS[idx]);
+        startScenario(mergedScenarios[idx]);
       });
     });
   }
@@ -2051,7 +2102,7 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  function renderScenResolution() {
+  async function renderScenResolution() {
     const sel    = $('scen-select');
     const active = $('scen-active');
     const resol  = $('scen-resolution');
@@ -2060,6 +2111,21 @@
     if (resol)  resol.hidden  = false;
 
     const s = scenState.scenario;
+    
+    // Track completion in DB if this is a DB-generated scenario
+    if (s._dbId && window.supabase) {
+      try {
+        const { data: { session } } = await window.supabase.auth.getSession();
+        if (session) {
+          // Fire and forget update to case_assignments
+          window.supabase.from('case_assignments')
+            .update({ status: 'completed', completed_at: new Date().toISOString() })
+            .eq('scenario_id', s._dbId)
+            .eq('assigned_to', session.user.id)
+            .then();
+        }
+      } catch(e) {}
+    }
     const titleEl = $('scen-resolution-title');
     const textEl  = $('scen-resolution-text');
     if (titleEl) titleEl.textContent = s.title + ' — Complete';

@@ -22,6 +22,7 @@
   <link rel="icon" href="../favicon.png" type="image/png" />
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/instructor.css?v=2" />
+  <link rel="stylesheet" href="css/motif-wizard.css" />
 </head>
 <body data-required-role="instructor">
 
@@ -79,6 +80,7 @@
       <option value="export">⬇ Export</option>
       <option value="motifs">✏️ Scenario Motifs</option>
       <option value="generated">🤖 Generated Cases</option>
+      <option value="assignments">📋 Assignments</option>
     </select>
 
     <!-- ── Tabs ─────────────────────────────────────────────────────────── -->
@@ -107,7 +109,10 @@
       <button class="inst-tab" data-tab="generated">
         <span class="inst-tab__icon" aria-hidden="true">🤖</span>Generated Cases
       </button>
-      <button class="inst-tab" data-tab="export">
+      <button class="inst-tab" data-tab="assignments">
+        <span class="inst-tab__icon" aria-hidden="true">📋</span>Assignments
+      </button>
+      <button class="inst-tab" data-tab="export" style="grid-column: span 4;">
         <span class="inst-tab__icon" aria-hidden="true">⬇</span>Export
       </button>
     </nav>
@@ -225,6 +230,17 @@
       </div>
     </div>
 
+    <!-- ── Tab: Assignments ─────────────────────────────────────────────── -->
+    <div class="inst-panel" id="panel-assignments" hidden>
+      <div class="dash-section">
+        <h2 class="dash-section__title">Case Assignments</h2>
+        <p class="inst-hint">Track private case assignments assigned to cohorts or individual students.</p>
+        <div id="assignments-list">
+          <p class="inst-hint">Loading assignments…</p>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Tab: Export ──────────────────────────────────────────────────── -->
     <div class="inst-panel" id="panel-export" hidden>
       <div class="dash-section">
@@ -250,65 +266,6 @@
         <div id="motif-list">
           <p class="inst-hint">Loading motifs…</p>
         </div>
-      </div>
-      <!-- Motif editor (inline, shown/hidden) -->
-      <div id="motif-editor" class="dash-section" hidden>
-        <h2 class="dash-section__title" id="motif-editor-title">New Motif</h2>
-        <form id="motif-form" class="motif-form">
-          <div class="motif-form__row">
-            <label class="motif-form__label">Title *<input type="text" id="mf-title" class="motif-form__input" required placeholder="e.g. Malignant Hyperthermia" /></label>
-            <label class="motif-form__label">Clinical Domain *
-              <select id="mf-domain" class="motif-form__input" required>
-                <option value="">Select…</option>
-                <option value="cardiovascular">Cardiovascular</option>
-                <option value="respiratory">Respiratory</option>
-                <option value="pharmacology">Pharmacology / Allergy</option>
-                <option value="airway">Airway</option>
-                <option value="neurological">Neurological</option>
-                <option value="metabolic">Metabolic</option>
-                <option value="regional">Regional Anesthesia</option>
-              </select>
-            </label>
-          </div>
-          <div class="motif-form__row">
-            <label class="motif-form__label" style="flex:1">Summary * (shown on scenario card)
-              <textarea id="mf-summary" class="motif-form__input" rows="2" required placeholder="Brief patient-facing description of the scenario type"></textarea>
-            </label>
-          </div>
-          <div class="motif-form__row">
-            <label class="motif-form__label" style="flex:1">Badge label
-              <input type="text" id="mf-badge" class="motif-form__input" maxlength="6" placeholder="e.g. RESP" value="CASE" />
-            </label>
-            <label class="motif-form__label">Badge color
-              <input type="color" id="mf-badge-color" class="motif-form__input" value="#64748b" style="height:38px" />
-            </label>
-          </div>
-          <div class="motif-form__row">
-            <label class="motif-form__label" style="flex:1">Learning objectives (one per line)
-              <textarea id="mf-objectives" class="motif-form__input" rows="4" placeholder="Recognize signs of...&#10;Select appropriate..."></textarea>
-            </label>
-          </div>
-          <fieldset class="motif-form__fieldset">
-            <legend class="motif-form__legend">Physiology Constraints <span class="inst-hint" style="font-weight:400">(AI-generated values stay within these ranges)</span></legend>
-            <div class="motif-form__constraints">
-              <label>Cardiac Output (L/min) min<input type="number" id="mf-co-min" class="motif-form__input motif-form__input--sm" step="0.05" min="0.1" max="2" value="0.5" /></label>
-              <label>max<input type="number" id="mf-co-max" class="motif-form__input motif-form__input--sm" step="0.05" min="0.1" max="2" value="1.2" /></label>
-              <label>Compliance (mL/cmH₂O) min<input type="number" id="mf-comp-min" class="motif-form__input motif-form__input--sm" step="1" min="5" max="100" value="30" /></label>
-              <label>max<input type="number" id="mf-comp-max" class="motif-form__input motif-form__input--sm" step="1" min="5" max="100" value="70" /></label>
-              <label>Resistance (cmH₂O/L/s) min<input type="number" id="mf-res-min" class="motif-form__input motif-form__input--sm" step="0.5" min="1" max="50" value="3" /></label>
-              <label>max<input type="number" id="mf-res-max" class="motif-form__input motif-form__input--sm" step="0.5" min="1" max="50" value="15" /></label>
-            </div>
-          </fieldset>
-          <fieldset class="motif-form__fieldset">
-            <legend class="motif-form__legend">Steps <span class="inst-hint" style="font-weight:400">(the AI writes clue/question text from these prompts)</span></legend>
-            <div id="mf-steps-list"></div>
-            <button type="button" class="inst-btn" id="btn-add-step" style="margin-top:8px">+ Add Step</button>
-          </fieldset>
-          <div class="motif-form__actions">
-            <button type="submit" class="inst-btn inst-btn--primary" id="mf-save-btn">Save Motif</button>
-            <button type="button" class="inst-btn" id="mf-cancel-btn">Cancel</button>
-          </div>
-        </form>
       </div>
     </div>
 
@@ -444,6 +401,223 @@
         <button type="button" class="inst-btn inst-btn--outline" onclick="window.closeAccountModal && window.closeAccountModal()">Close</button>
       </form>
       <span id="pw-update-status" style="display:block;font-size:0.82rem;margin-top:0.6rem"></span>
+    </div>
+  </dialog>
+
+  <!-- ── Publish / Assign Case Modal ──────────────────────────────────────── -->
+  <dialog id="publish-case-modal" class="debrief-dialog">
+    <div class="debrief-dialog__inner" style="max-width:500px">
+      <div class="cohort-dialog__header">
+        <h2 class="cohort-dialog__title debrief-dialog__title">Publish or Assign Case</h2>
+        <button type="button" class="cohort-dialog__close" id="publish-modal-close" aria-label="Close publish manager">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      
+      <form id="publish-case-form" style="display:flex;flex-direction:column;gap:1.2rem;margin-top:1rem">
+        <input type="hidden" id="pub-case-id" />
+        
+        <div>
+          <label class="inst-account-label" style="margin-bottom:0.4rem">Visibility & Distribution</label>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+              <input type="radio" name="pub-visibility" value="public" checked />
+              <div style="display:flex;flex-direction:column">
+                <span style="font-weight:600">Publish Publicly</span>
+                <span class="inst-hint" style="margin:0">Available to all students in the main simulator directory.</span>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+              <input type="radio" name="pub-visibility" value="private" />
+              <div style="display:flex;flex-direction:column">
+                <span style="font-weight:600">Assign Privately</span>
+                <span class="inst-hint" style="margin:0">Only visible to specific cohorts or students. Sends an email notification.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div id="pub-assign-section" hidden style="background:rgba(99,102,241,0.05);padding:1rem;border-radius:6px;border:1px solid rgba(99,102,241,0.15)">
+          <label class="inst-account-label" for="pub-cohort-select">Assign to Cohort</label>
+          <p class="inst-hint" style="margin-top:0">All members of this cohort will be assigned the case and emailed.</p>
+          <select id="pub-cohort-select" class="inst-select inst-select--wide">
+            <option value="">— Select a cohort —</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="inst-account-label" for="pub-author-label">Author Credit (shown to students)</label>
+          <input type="text" id="pub-author-label" class="inst-input" placeholder="e.g. Dr. Smith" />
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem">
+          <button type="button" class="inst-btn" id="btn-cancel-publish">Cancel</button>
+          <button type="submit" class="inst-btn inst-btn--primary" id="btn-save-publish">Publish Case</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ── Motif Wizard Modal ─────────────────────────────────────────────── -->
+  <dialog id="motif-wizard-modal" class="motif-wizard-dialog">
+    <div class="motif-wizard__inner">
+      <div class="motif-wizard__header">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <h2 class="motif-wizard__title">Create Motif</h2>
+          <button type="button" class="cohort-dialog__close" id="btn-close-wizard" aria-label="Close wizard">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        
+        <div class="motif-wizard__progress">
+          <div class="motif-wizard__step-indicator motif-wizard__step-indicator--active" id="wiz-step-ind-1">
+            <div class="motif-wizard__step-dot">1</div>
+            <div class="motif-wizard__step-label">Basics</div>
+          </div>
+          <div class="motif-wizard__step-indicator" id="wiz-step-ind-2">
+            <div class="motif-wizard__step-dot">2</div>
+            <div class="motif-wizard__step-label">Physiology</div>
+          </div>
+          <div class="motif-wizard__step-indicator" id="wiz-step-ind-3">
+            <div class="motif-wizard__step-dot">3</div>
+            <div class="motif-wizard__step-label">Steps</div>
+          </div>
+          <div class="motif-wizard__step-indicator" id="wiz-step-ind-4">
+            <div class="motif-wizard__step-dot">4</div>
+            <div class="motif-wizard__step-label">Review</div>
+          </div>
+        </div>
+      </div>
+
+      <form id="motif-wizard-form" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="motif-wizard__body">
+          <!-- STEP 1: Basics -->
+          <div class="motif-wizard__step-content active" id="wiz-content-1">
+            <h3 style="margin:0 0 1rem; font-size:1.05rem;">Basic Information</h3>
+            <div class="wizard-grid">
+              <div class="wizard-field">
+                <label class="wizard-label">Title *</label>
+                <input type="text" id="mf-title" class="wizard-input" required placeholder="e.g. Tension Pneumothorax" />
+              </div>
+              <div class="wizard-field">
+                <label class="wizard-label">Clinical Domain *</label>
+                <select id="mf-domain" class="wizard-input" required>
+                  <option value="">Select…</option>
+                  <option value="cardiovascular">Cardiovascular</option>
+                  <option value="respiratory">Respiratory</option>
+                  <option value="pharmacology">Pharmacology / Allergy</option>
+                  <option value="airway">Airway</option>
+                  <option value="neurological">Neurological</option>
+                  <option value="metabolic">Metabolic</option>
+                  <option value="regional">Regional Anesthesia</option>
+                  <option value="emergency">Emergency</option>
+                  <option value="hemodynamics">Hemodynamics</option>
+                </select>
+              </div>
+              <div class="wizard-field wizard-field--full">
+                <label class="wizard-label">Summary * <span class="inst-hint">(shown on scenario card)</span></label>
+                <textarea id="mf-summary" class="wizard-input" rows="2" required placeholder="Brief patient-facing description..."></textarea>
+              </div>
+              <div class="wizard-field">
+                <label class="wizard-label">Badge Label</label>
+                <input type="text" id="mf-badge" class="wizard-input" maxlength="12" placeholder="e.g. Airway" value="Airway" />
+              </div>
+              <div class="wizard-field">
+                <label class="wizard-label">Badge Color</label>
+                <input type="color" id="mf-badge-color" class="wizard-input" value="#3399ff" style="height:38px; padding:0 0.5rem" />
+              </div>
+              <div class="wizard-field wizard-field--full">
+                <label class="wizard-label">Learning Objectives <span class="inst-hint">(one per line)</span></label>
+                <textarea id="mf-objectives" class="wizard-input" rows="3" placeholder="Recognize signs of...&#10;Select appropriate..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: Physiology Constraints -->
+          <div class="motif-wizard__step-content" id="wiz-content-2">
+            <h3 style="margin:0 0 0.5rem; font-size:1.05rem;">Physiology Constraints</h3>
+            <p class="inst-hint" style="margin-bottom:1.5rem">These ranges bound the randomized parameters generated by the AI for each case. The actual values used will be somewhere within these bounds.</p>
+            
+            <div class="physio-slider-group">
+              <div class="physio-slider-header">
+                <label class="wizard-label" style="margin:0">Cardiac Output (L/min)</label>
+                <div class="physio-inputs">
+                  <input type="number" id="mf-co-min" class="wizard-input physio-input" step="0.05" min="0.1" max="2" value="0.5" />
+                  <span style="color:#6b7280;font-size:0.8rem">to</span>
+                  <input type="number" id="mf-co-max" class="wizard-input physio-input" step="0.05" min="0.1" max="2" value="1.2" />
+                </div>
+              </div>
+            </div>
+            
+            <div class="physio-slider-group">
+              <div class="physio-slider-header">
+                <label class="wizard-label" style="margin:0">Compliance (mL/cmH₂O)</label>
+                <div class="physio-inputs">
+                  <input type="number" id="mf-comp-min" class="wizard-input physio-input" step="1" min="5" max="120" value="30" />
+                  <span style="color:#6b7280;font-size:0.8rem">to</span>
+                  <input type="number" id="mf-comp-max" class="wizard-input physio-input" step="1" min="5" max="120" value="70" />
+                </div>
+              </div>
+            </div>
+            
+            <div class="physio-slider-group">
+              <div class="physio-slider-header">
+                <label class="wizard-label" style="margin:0">Resistance (cmH₂O/L/s)</label>
+                <div class="physio-inputs">
+                  <input type="number" id="mf-res-min" class="wizard-input physio-input" step="0.5" min="1" max="60" value="3" />
+                  <span style="color:#6b7280;font-size:0.8rem">to</span>
+                  <input type="number" id="mf-res-max" class="wizard-input physio-input" step="0.5" min="1" max="60" value="15" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Steps -->
+          <div class="motif-wizard__step-content" id="wiz-content-3">
+            <h3 style="margin:0 0 0.5rem; font-size:1.05rem;">Clinical Sequence</h3>
+            <p class="inst-hint" style="margin-bottom:1.5rem">Define the chronological flow of the case. The AI uses these prompts to generate the dynamic clinical narrative.</p>
+            
+            <div id="mf-steps-list"></div>
+            
+            <button type="button" class="inst-btn inst-btn--outline" id="btn-add-step" style="width:100%; border-style:dashed; margin-top:0.5rem;">+ Add Clinical Step</button>
+          </div>
+
+          <!-- STEP 4: Review -->
+          <div class="motif-wizard__step-content" id="wiz-content-4">
+            <h3 style="margin:0 0 1rem; font-size:1.05rem;">Review Motif</h3>
+            
+            <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:1.25rem;">
+              <h4 id="wiz-review-title" style="margin:0 0 0.5rem; font-size:1.2rem; color:#111827"></h4>
+              <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+                <span id="wiz-review-badge" class="member-badge" style="margin:0; font-weight:600"></span>
+                <span id="wiz-review-domain" class="inst-hint" style="margin:0; padding-top:4px"></span>
+              </div>
+              <p id="wiz-review-summary" style="font-size:0.9rem; line-height:1.5; color:#374151; margin-bottom:1.2rem;"></p>
+              
+              <div style="display:flex; gap:1.5rem; margin-bottom:1.2rem;">
+                <div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.2rem;">Steps</div>
+                  <div id="wiz-review-step-count" style="font-weight:600; font-size:1.1rem; color:#111827;">0</div>
+                </div>
+                <div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.2rem;">Objectives</div>
+                  <div id="wiz-review-obj-count" style="font-weight:600; font-size:1.1rem; color:#111827;">0</div>
+                </div>
+              </div>
+              
+              <div style="padding-top:1rem; border-top:1px solid #e5e7eb">
+                <p class="inst-hint" style="margin:0">Once saved, this motif will be available to generate new AI cases.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="motif-wizard__footer">
+          <button type="button" class="inst-btn inst-btn--outline" id="btn-wiz-prev" style="visibility:hidden">← Back</button>
+          <button type="button" class="inst-btn inst-btn--primary" id="btn-wiz-next">Continue →</button>
+          <button type="submit" class="inst-btn inst-btn--primary" id="btn-wiz-save" style="display:none">Save Motif</button>
+        </div>
+      </form>
     </div>
   </dialog>
 

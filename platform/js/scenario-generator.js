@@ -127,48 +127,163 @@
     editorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  let currentWizStep = 1;
+  const TOTAL_WIZ_STEPS = 4;
+
+  async function openMotifEditor(motifId) {
+    editingMotifId = motifId;
+    stepCount = 0;
+    qs('#mf-steps-list').innerHTML = '';
+    currentWizStep = 1;
+    updateWizardUI();
+
+    if (motifId) {
+      // Edit existing
+      const { data, error } = await window.SB.client
+        .from('scenario_motifs')
+        .select('*')
+        .eq('id', motifId)
+        .single();
+      if (error) { alert('Failed to load motif'); return; }
+
+      qs('#mf-title').value = data.title;
+      qs('#mf-domain').value = data.clinical_domain;
+      qs('#mf-summary').value = data.summary;
+      qs('#mf-badge').value = data.badge;
+      qs('#mf-badge-color').value = data.badge_color || '#64748b';
+      qs('#mf-objectives').value = (data.learning_objectives || []).join('\n');
+
+      if (data.physiology_constraints) {
+        const p = data.physiology_constraints;
+        if (p.cardiacOutput) { qs('#mf-co-min').value = p.cardiacOutput[0]; qs('#mf-co-max').value = p.cardiacOutput[1]; }
+        if (p.compliance)    { qs('#mf-comp-min').value = p.compliance[0]; qs('#mf-comp-max').value = p.compliance[1]; }
+        if (p.resistance)    { qs('#mf-res-min').value = p.resistance[0]; qs('#mf-res-max').value = p.resistance[1]; }
+      }
+
+      (data.steps || []).forEach(step => addStepRow(step));
+    } else {
+      // New motif
+      qs('#motif-wizard-form').reset();
+      addStepRow();
+    }
+
+    qs('#motif-wizard-modal').showModal();
+  }
+
+  function closeMotifEditor() {
+    qs('#motif-wizard-modal').close();
+    editingMotifId = null;
+  }
+
+  function updateWizardUI() {
+    // Content sections
+    for (let i = 1; i <= TOTAL_WIZ_STEPS; i++) {
+      const content = qs(`#wiz-content-${i}`);
+      if (content) {
+        if (i === currentWizStep) {
+          content.classList.add('active');
+        } else {
+          content.classList.remove('active');
+        }
+      }
+      
+      // Indicators
+      const ind = qs(`#wiz-step-ind-${i}`);
+      if (ind) {
+        ind.classList.remove('motif-wizard__step-indicator--active', 'motif-wizard__step-indicator--completed');
+        if (i < currentWizStep) ind.classList.add('motif-wizard__step-indicator--completed');
+        if (i === currentWizStep) ind.classList.add('motif-wizard__step-indicator--active');
+      }
+    }
+
+    // Buttons
+    qs('#btn-wiz-prev').style.visibility = currentWizStep === 1 ? 'hidden' : 'visible';
+    
+    if (currentWizStep === TOTAL_WIZ_STEPS) {
+      qs('#btn-wiz-next').style.display = 'none';
+      qs('#btn-wiz-save').style.display = 'inline-block';
+      populateReviewStep();
+    } else {
+      qs('#btn-wiz-next').style.display = 'inline-block';
+      qs('#btn-wiz-save').style.display = 'none';
+    }
+  }
+
+  function populateReviewStep() {
+    qs('#wiz-review-title').textContent = qs('#mf-title').value || '(Untitled)';
+    qs('#wiz-review-summary').textContent = qs('#mf-summary').value || '(No summary provided)';
+    
+    const badge = qs('#mf-badge').value || 'CASE';
+    const badgeColor = qs('#mf-badge-color').value || '#64748b';
+    const badgeEl = qs('#wiz-review-badge');
+    badgeEl.textContent = badge;
+    badgeEl.style.backgroundColor = badgeColor + '20'; // Add transparency
+    badgeEl.style.color = badgeColor;
+    badgeEl.style.borderColor = badgeColor + '40';
+
+    const domainSelect = qs('#mf-domain');
+    qs('#wiz-review-domain').textContent = domainSelect.options[domainSelect.selectedIndex]?.text || '';
+    
+    qs('#wiz-review-step-count').textContent = qs('#mf-steps-list').querySelectorAll('.motif-step-card').length;
+    
+    const objText = qs('#mf-objectives').value.trim();
+    qs('#wiz-review-obj-count').textContent = objText ? objText.split('\n').filter(Boolean).length : 0;
+  }
+
   function addStepRow(existingStep) {
     const list = qs('#mf-steps-list');
     if (!list) return;
     const idx = stepCount++;
     const div = document.createElement('div');
-    div.className = 'motif-step-row';
+    div.className = 'motif-step-card';
     div.dataset.stepIdx = idx;
+    
     div.innerHTML = `
-      <div class="motif-step-row__header">
-        <strong>Step ${idx + 1}</strong>
-        <button type="button" class="inst-btn inst-btn--sm inst-btn--danger motif-step-remove">Remove</button>
+      <div class="motif-step-card__header">
+        <div class="motif-step-card__title">Step <span class="step-num">${idx + 1}</span></div>
+        <button type="button" class="motif-step-card__remove" title="Remove Step">Remove</button>
       </div>
-      <div class="motif-form__row">
-        <label class="motif-form__label">Phase
-          <input type="text" class="motif-form__input mf-step-phase" placeholder="Deterioration / Intervention / Resolution" value="${escHtml(existingStep?.phase || '')}" />
-        </label>
-        <label class="motif-form__label">Clinical domain tag
-          <input type="text" class="motif-form__input mf-step-domain" placeholder="e.g. hemodynamic_monitoring" value="${escHtml(existingStep?.clinical_domain || '')}" />
-        </label>
+      
+      <div class="wizard-grid" style="row-gap:0.75rem">
+        <div class="wizard-field">
+          <label class="wizard-label">Phase</label>
+          <input type="text" class="wizard-input mf-step-phase" placeholder="Deterioration / Intervention..." value="${escHtml(existingStep?.phase || '')}" />
+        </div>
+        <div class="wizard-field">
+          <label class="wizard-label">Clinical Domain Tag</label>
+          <input type="text" class="wizard-input mf-step-domain" placeholder="e.g. hemodynamic_monitoring" value="${escHtml(existingStep?.clinical_domain || '')}" />
+        </div>
+        <div class="wizard-field wizard-field--full">
+          <label class="wizard-label">Narrative Prompt</label>
+          <textarea class="wizard-input mf-step-prompt" rows="2" placeholder="Describe the physiology...">${escHtml(existingStep?.narrative_prompt || '')}</textarea>
+        </div>
+        <div class="wizard-field wizard-field--full">
+          <label class="wizard-label">Base Effect Profile (Physics)</label>
+          <input type="text" class="wizard-input mf-step-effect" placeholder="e.g. moderate_hypotension" value="${escHtml(existingStep?.effect_profile || '')}" />
+        </div>
       </div>
-      <label class="motif-form__label" style="display:block;margin-bottom:10px">Narrative prompt for AI
-        <textarea class="motif-form__input mf-step-prompt" rows="2" placeholder="Describe what the patient looks like at this stage — used to guide the AI's clue and question text">${escHtml(existingStep?.narrative_prompt || '')}</textarea>
-      </label>
-      <div class="motif-form__row">
-        <label class="motif-form__label">Step effect profile (physics for the step)
-          <input type="text" class="motif-form__input mf-step-effect" placeholder="e.g. moderate_hypotension" value="${escHtml(existingStep?.effect_profile || '')}" />
-        </label>
+      
+      <div style="margin-top:1.5rem">
+        <label class="wizard-label">Clinical Choices</label>
+        <div class="choice-grid">
+          ${(existingStep?.choices || [{},{},{},{}]).map((c, ci) => `
+            <div class="choice-row motif-choice-row">
+              <div class="choice-row__label">${String.fromCharCode(65+ci)}</div>
+              <div class="choice-row__input">
+                <input type="text" class="wizard-input mf-choice-action" style="width:100%" placeholder="Clinical action description" value="${escHtml(c.clinical_action || '')}" />
+                <input type="text" class="wizard-input mf-choice-effect" style="width:100%; margin-top:0.4rem" placeholder="Effect profile (physics impact)" value="${escHtml(c.effect_profile || '')}" />
+              </div>
+              <label class="choice-row__correct">
+                <input type="checkbox" class="mf-choice-correct" style="width:16px;height:16px;cursor:pointer" ${c.is_correct ? 'checked' : ''} />
+                Correct
+              </label>
+            </div>
+          `).join('')}
+        </div>
       </div>
-      <div class="mf-step-choices">
-        ${(existingStep?.choices || [{},{},{},{}]).map((c, ci) => `
-          <div class="motif-form__row motif-choice-row">
-            <label style="flex:0 0 24px;font-weight:700">${String.fromCharCode(65+ci)}.</label>
-            <input type="text" class="motif-form__input mf-choice-action" placeholder="Clinical action" value="${escHtml(c.clinical_action || '')}" />
-            <label style="white-space:nowrap;display:flex;align-items:center;gap:4px">
-              <input type="checkbox" class="mf-choice-correct" ${c.is_correct ? 'checked' : ''} /> Correct
-            </label>
-            <input type="text" class="motif-form__input motif-form__input--sm mf-choice-effect" placeholder="Effect profile" value="${escHtml(c.effect_profile || '')}" />
-          </div>
-        `).join('')}
-      </div>`;
+    `;
 
-    div.querySelector('.motif-step-remove').addEventListener('click', () => {
+    div.querySelector('.motif-step-card__remove').addEventListener('click', () => {
       div.remove();
       renumberSteps();
     });
@@ -176,13 +291,13 @@
   }
 
   function renumberSteps() {
-    qs('#mf-steps-list').querySelectorAll('.motif-step-row__header strong').forEach((el, i) => {
-      el.textContent = `Step ${i + 1}`;
+    qs('#mf-steps-list').querySelectorAll('.motif-step-card__header .step-num').forEach((el, i) => {
+      el.textContent = i + 1;
     });
   }
 
   function collectMotifFormData() {
-    const steps = Array.from(qs('#mf-steps-list').querySelectorAll('.motif-step-row')).map(row => {
+    const steps = Array.from(qs('#mf-steps-list').querySelectorAll('.motif-step-card')).map(row => {
       const choices = Array.from(row.querySelectorAll('.motif-choice-row')).map((cr, ci) => ({
         label:           String.fromCharCode(65 + ci),
         clinical_action: cr.querySelector('.mf-choice-action').value.trim(),
@@ -216,7 +331,7 @@
 
   async function saveMotif(e) {
     e.preventDefault();
-    const saveBtn = qs('#mf-save-btn');
+    const saveBtn = qs('#btn-wiz-save');
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving…';
 
@@ -245,11 +360,6 @@
     }
   }
 
-  function closeMotifEditor() {
-    qs('#motif-editor').hidden = true;
-    editingMotifId = null;
-  }
-
   async function archiveMotif(motifId, archive) {
     if (archive && !confirm('Archive this motif? It will no longer be available for generation.')) return;
     const { error } = await window.SB.client
@@ -268,7 +378,7 @@
 
     const { data, error } = await window.SB.client
       .from('generated_scenarios')
-      .select('id, created_at, patient_summary, status, reviewer_notes, motif_id, scenario_motifs(title)')
+      .select('id, created_at, patient_summary, status, visibility, reviewer_notes, motif_id, scenario_motifs(title)')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -287,26 +397,32 @@
           <th>Patient</th><th>Motif</th><th>Status</th><th>Generated</th><th>Actions</th>
         </tr></thead>
         <tbody>
-          ${data.map(c => `
+          ${data.map(c => {
+            const visibilityLabel = c.status === 'approved' 
+              ? `<br><span style="font-size:0.75rem;opacity:0.8">${c.visibility === 'public' ? '🌎 Public' : '🔒 Assigned'}</span>`
+              : '';
+            return `
             <tr>
               <td>${escHtml(c.patient_summary || '—')}</td>
               <td>${escHtml(c.scenario_motifs?.title || '—')}</td>
-              <td><span class="motif-status motif-status--${c.status}">${c.status}</span></td>
+              <td><span class="motif-status motif-status--${c.status}">${c.status}</span>${visibilityLabel}</td>
               <td style="white-space:nowrap">${new Date(c.created_at).toLocaleDateString()}</td>
               <td>
                 ${c.status === 'pending' ? `
-                  <button class="inst-btn inst-btn--sm inst-btn--primary" data-approve="${c.id}">Approve</button>
+                  <button class="inst-btn inst-btn--sm inst-btn--primary" data-publish="${c.id}">Publish / Assign</button>
                   <button class="inst-btn inst-btn--sm inst-btn--danger"  data-reject="${c.id}">Reject</button>
-                ` : ''}
+                ` : `
+                  <button class="inst-btn inst-btn--sm" data-publish="${c.id}">Edit Visibility</button>
+                `}
                 <button class="inst-btn inst-btn--sm" data-preview="${c.id}">Preview</button>
               </td>
             </tr>
-          `).join('')}
+          `}).join('')}
         </tbody>
       </table>`;
 
-    listEl.querySelectorAll('[data-approve]').forEach(btn =>
-      btn.addEventListener('click', () => reviewCase(btn.dataset.approve, 'approved'))
+    listEl.querySelectorAll('[data-publish]').forEach(btn =>
+      btn.addEventListener('click', () => openPublishModal(btn.dataset.publish))
     );
     listEl.querySelectorAll('[data-reject]').forEach(btn =>
       btn.addEventListener('click', () => reviewCase(btn.dataset.reject, 'rejected'))
@@ -326,6 +442,33 @@
       .eq('id', caseId);
     if (error) { alert('Update failed: ' + error.message); return; }
     loadGeneratedCases();
+  }
+
+  // ── PUBLISH MODAL ────────────────────────────────────────────────────────
+
+  async function openPublishModal(caseId) {
+    const modal = qs('#publish-case-modal');
+    qs('#pub-case-id').value = caseId;
+    
+    // Auto-fill author name from profile if available
+    try {
+      const { data } = await window.SB.client.from('profiles').select('name').eq('id', (await getSession()).user.id).single();
+      if (data?.name && !qs('#pub-author-label').value) {
+        qs('#pub-author-label').value = 'Dr. ' + data.name.split(' ').pop();
+      }
+    } catch(e) {}
+    
+    // Load cohorts for the dropdown
+    try {
+      const { data } = await window.SB.client.from('cohorts').select('id, name').order('name');
+      const sel = qs('#pub-cohort-select');
+      if (data && sel) {
+        sel.innerHTML = '<option value="">— Select a cohort —</option>' + 
+          data.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
+      }
+    } catch(e) {}
+
+    modal.showModal();
   }
 
   async function previewCase(caseId) {
@@ -394,6 +537,83 @@
     runBtn.disabled = false;
   }
 
+  // ── PUBLISH MODAL HANDLERS ───────────────────────────────────────────────
+
+  async function handlePublishSubmit(e) {
+    e.preventDefault();
+    const saveBtn = qs('#btn-save-publish');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    const caseId = qs('#pub-case-id').value;
+    const visibility = qs('input[name="pub-visibility"]:checked').value;
+    const authorLabel = qs('#pub-author-label').value.trim();
+    const cohortId = qs('#pub-cohort-select').value;
+
+    if (visibility === 'private' && !cohortId) {
+      alert("Please select a cohort to assign the private case to.");
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Publish Case';
+      return;
+    }
+
+    try {
+      // 1. Update the case record
+      const { error: updErr } = await window.SB.client
+        .from('generated_scenarios')
+        .update({
+          status: 'approved',
+          visibility: visibility,
+          author_label: authorLabel,
+          published_at: new Date().toISOString()
+        })
+        .eq('id', caseId);
+
+      if (updErr) throw updErr;
+
+      // 2. If assigning to a cohort, get cohort members and create assignments
+      if (cohortId) {
+        // Find users in this cohort
+        const { data: members, error: memErr } = await window.SB.client
+          .from('cohort_members')
+          .select('user_id')
+          .eq('cohort_id', cohortId);
+        
+        if (memErr) throw memErr;
+
+        if (members && members.length > 0) {
+          const assignments = members.map(m => ({
+            scenario_id: caseId,
+            assigned_to: m.user_id,
+            status: 'assigned'
+          }));
+
+          // Upsert assignments
+          const { error: assignErr } = await window.SB.client
+            .from('case_assignments')
+            .upsert(assignments, { onConflict: 'scenario_id,assigned_to', ignoreDuplicates: true });
+            
+          if (assignErr) throw assignErr;
+
+          // 3. Trigger email notification edge function
+          const session = await getSession();
+          window.SB.client.functions.invoke('send-case-assignment', {
+            body: { scenario_id: caseId, cohort_id: cohortId },
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          }).catch(err => console.error("Email notification failed:", err)); // Non-blocking
+        }
+      }
+
+      qs('#publish-case-modal').close();
+      loadGeneratedCases();
+    } catch (err) {
+      alert('Failed to publish: ' + err.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Publish Case';
+    }
+  }
+
   // ── Wiring ───────────────────────────────────────────────────────────────
 
   function escHtml(str) {
@@ -409,14 +629,104 @@
       } else if (tab?.dataset.tab === 'generated') {
         loadGeneratedCases();
         populateMotifSelect();
+      } else if (tab?.dataset.tab === 'assignments') {
+        loadAssignments();
       }
     });
 
-    // Motif editor
+  // ── ASSIGNMENTS TAB ──────────────────────────────────────────────────────
+
+  async function loadAssignments() {
+    const listEl = qs('#assignments-list');
+    if (!listEl) return;
+
+    // Fetch assignments joined with user info and scenario info
+    const { data, error } = await window.SB.client
+      .from('case_assignments')
+      .select(`
+        id, 
+        created_at, 
+        status, 
+        notified_at,
+        started_at,
+        completed_at,
+        generated_scenarios (
+          id,
+          patient_summary,
+          scenario_motifs ( title )
+        ),
+        profiles:assigned_to ( name, affiliation )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error || !data) {
+      listEl.innerHTML = `<p class="inst-hint" style="color:#ef4444">Failed to load assignments: ${error?.message}</p>`;
+      return;
+    }
+    if (data.length === 0) {
+      listEl.innerHTML = '<p class="inst-hint">No assignments yet. Use the "Publish / Assign" button on a generated case to assign it.</p>';
+      return;
+    }
+
+    listEl.innerHTML = `
+      <div class="inst-table-wrap">
+        <table class="inst-table">
+          <thead><tr>
+            <th>Student</th><th>Case</th><th>Status</th><th>Assigned</th><th>Activity</th>
+          </tr></thead>
+          <tbody>
+            ${data.map(a => {
+              const studentName = a.profiles?.name || 'Unknown Student';
+              const caseTitle = a.generated_scenarios?.scenario_motifs?.title || 'Unknown Case';
+              
+              let statusBadge = '';
+              if (a.status === 'completed') statusBadge = '<span class="motif-status motif-status--active">Completed</span>';
+              else if (a.status === 'started') statusBadge = '<span class="motif-status motif-status--pending">In Progress</span>';
+              else statusBadge = '<span class="motif-status motif-status--archived">Assigned</span>';
+
+              const dates = [];
+              if (a.started_at) dates.push(`Started: ${new Date(a.started_at).toLocaleDateString()}`);
+              if (a.completed_at) dates.push(`Done: ${new Date(a.completed_at).toLocaleDateString()}`);
+              
+              return `
+              <tr>
+                <td style="font-weight:600">${escHtml(studentName)}</td>
+                <td>${escHtml(caseTitle)}</td>
+                <td>${statusBadge}</td>
+                <td style="white-space:nowrap">${new Date(a.created_at).toLocaleDateString()}</td>
+                <td style="font-size:0.8rem; color:#6b7280">${dates.length ? dates.join('<br>') : '—'}</td>
+              </tr>
+            `}).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+    // Motif editor (Wizard)
     qs('#btn-add-motif')?.addEventListener('click', () => openMotifEditor(null));
     qs('#btn-add-step')?.addEventListener('click', () => addStepRow());
-    qs('#mf-cancel-btn')?.addEventListener('click', closeMotifEditor);
-    qs('#motif-form')?.addEventListener('submit', saveMotif);
+    qs('#btn-close-wizard')?.addEventListener('click', closeMotifEditor);
+    qs('#motif-wizard-form')?.addEventListener('submit', saveMotif);
+    
+    qs('#btn-wiz-next')?.addEventListener('click', () => {
+      // Basic validation check before moving to next step
+      const form = qs('#motif-wizard-form');
+      if (currentWizStep === 1 && (!qs('#mf-title').value || !qs('#mf-domain').value || !qs('#mf-summary').value)) {
+        form.reportValidity(); // triggers HTML5 validation bubbles
+        return;
+      }
+      if (currentWizStep < TOTAL_WIZ_STEPS) {
+        currentWizStep++;
+        updateWizardUI();
+      }
+    });
+
+    qs('#btn-wiz-prev')?.addEventListener('click', () => {
+      if (currentWizStep > 1) {
+        currentWizStep--;
+        updateWizardUI();
+      }
+    });
 
     // Generator
     qs('#btn-generate-case')?.addEventListener('click', () => {
@@ -428,6 +738,19 @@
       qs('#generate-form-wrap').hidden = true;
     });
     qs('#btn-run-generator')?.addEventListener('click', runGenerator);
+
+    // Publish / Assign modal
+    qs('#publish-modal-close')?.addEventListener('click', () => qs('#publish-case-modal').close());
+    qs('#btn-cancel-publish')?.addEventListener('click', () => qs('#publish-case-modal').close());
+    qs('#publish-case-form')?.addEventListener('submit', handlePublishSubmit);
+    
+    // Toggle cohort dropdown based on visibility radio
+    document.querySelectorAll('input[name="pub-visibility"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        qs('#pub-assign-section').hidden = e.target.value !== 'private';
+        qs('#pub-cohort-select').required = e.target.value === 'private';
+      });
+    });
   }
 
   if (document.readyState === 'loading') {

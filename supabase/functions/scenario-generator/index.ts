@@ -123,7 +123,7 @@ Deno.serve(async (req: Request) => {
           { role: "system", content: systemPrompt },
           { role: "user",   content: userMessage  },
         ],
-        max_tokens: 2500,
+        max_tokens: 4096,
         temperature: 0.85,
       }),
     });
@@ -146,6 +146,16 @@ Deno.serve(async (req: Request) => {
     } catch {
       console.error("Failed to parse AI output:", rawContent);
       return jsonErr(502, "parse_error", "AI returned invalid JSON. Please retry.");
+    }
+
+    // Step-count guard: ensure the AI returned narratives for all motif steps.
+    // A truncated response would silently drop the last step(s); we reject it instead.
+    const expectedSteps = motif.steps.length;
+    const returnedSteps = Array.isArray(aiOutput.step_narratives) ? aiOutput.step_narratives.length : 0;
+    if (returnedSteps < expectedSteps) {
+      console.error(`Step count mismatch: expected ${expectedSteps}, got ${returnedSteps}. Raw:`, rawContent.slice(0, 500));
+      return jsonErr(502, "truncated_output",
+        `AI returned only ${returnedSteps} of ${expectedSteps} steps. Please retry — this is usually a token limit issue.`);
     }
 
     // Build the full scenario JSON by merging AI patient context + motif step templates + effect profiles
