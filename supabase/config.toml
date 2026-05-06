@@ -3,3 +3,6 @@
 # Bearer token with auth.getUser(jwt) before calling OpenAI or logging usage.
 [functions.ai-chat]
 verify_jwt = false
+
+[functions.provision-educator]
+verify_jwt = true

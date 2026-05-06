@@ -298,12 +298,259 @@
     }
   }
 
+  function formatFunctionsInvokeError(err) {
+    if (!err) return '';
+    const parts = [err.message || String(err)];
+    const c = err.context;
+    if (c && typeof c === 'object') {
+      if (c.status != null) parts.push('HTTP ' + c.status);
+      const b = c.body;
+      if (b != null) parts.push(typeof b === 'string' ? b : JSON.stringify(b));
+    }
+    if (err.details) parts.push(String(err.details));
+    return parts.filter(Boolean).join(' — ');
+  }
+
+  /* ── Admin: educator requests ───────────────────────────────────────── */
+  function escHtmlReq(str) {
+    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  const MASTER_ADMIN_EMAIL = 'firenixx2k@gmail.com';
+
+  /** True only for signed-in firenixx2k@gmail.com — matches RLS is_master_admin() / Edge Function MASTER_ADMIN_EMAIL. */
+  let sessionCanManageEducatorRequests = false;
+
+  function isMasterAdminEmail(email) {
+    return String(email || '').trim().toLowerCase() === MASTER_ADMIN_EMAIL;
+  }
+
+  function withTimeout(thenable, ms, label) {
+    return new Promise((resolve, reject) => {
+      const t = setTimeout(
+        () => reject(new Error(label || `Still loading after ${ms / 1000}s — check network or Supabase status.`)),
+        ms
+      );
+      Promise.resolve(thenable).then(
+        (v) => { clearTimeout(t); resolve(v); },
+        (e) => { clearTimeout(t); reject(e); }
+      );
+    });
+  }
+
+  async function loadEducatorRequests() {
+    const el = $('requests-list');
+    if (!el) {
+      console.warn('instructor-dashboard: #requests-list missing from DOM');
+      return;
+    }
+    if (!sessionCanManageEducatorRequests) {
+      if (el) el.innerHTML = '';
+      return;
+    }
+
+    el.innerHTML = '<p class="inst-hint">Loading…</p>';
+
+    try {
+      const query = SB.client
+        .from('educator_requests')
+        .select(
+          'id, name, email, institution, role_title, use_case, message, status, admin_notes, created_at, provisioned_at'
+        )
+        .order('created_at', { ascending: false });
+
+      const { data, error } = await withTimeout(
+        query,
+        20000,
+        'Timed out loading requests. Check your network, Supabase status, then hard-refresh (Cmd+Shift+R).'
+      );
+
+      if (error) {
+        const hint =
+          /permission|policy|rls|42501|JWT|jwt/i.test(String(error.message || ''))
+            ? ' Run migration 025_educator_requests_security_definer.sql (or 024) in the Supabase SQL editor so admin policies can read auth email.'
+            : '';
+        el.innerHTML =
+          `<p class="inst-hint" style="color:#dc2626">Failed to load requests: ${escHtmlReq(error.message)}.${hint}</p>`;
+        return;
+      }
+
+      const rows = Array.isArray(data) ? data : [];
+      if (!rows.length) {
+        el.innerHTML =
+          '<p class="inst-hint">No requests yet.</p><p class="inst-hint" style="margin-top:6px">If you submitted a test recently, run <strong>025_educator_requests_security_definer.sql</strong> (admin read) and <strong>026_educator_auto_provision.sql</strong> (secure submit RPC), then hard-refresh.</p>';
+        return;
+      }
+
+      const statusColor = { pending: '#d97706', approved: '#16a34a', rejected: '#dc2626' };
+      el.innerHTML = rows.map(r => `
+      <div class="dash-section" style="margin-bottom:12px;padding:14px 18px;border-left:3px solid ${statusColor[r.status] || '#e5e7eb'}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <strong style="font-size:0.95rem">${escHtmlReq(r.name)}</strong>
+            <span style="font-size:0.78rem;color:#6b7280;margin-left:8px">${escHtmlReq(r.email)}</span><br>
+            <span style="font-size:0.82rem;color:#374151">${escHtmlReq(r.institution)}${r.role_title ? ' · ' + escHtmlReq(r.role_title) : ''}</span>
+            ${r.use_case    ? `<p style="margin:6px 0 2px;font-size:0.8rem;color:#374151"><strong>Use case:</strong> ${escHtmlReq(r.use_case)}</p>` : ''}
+            ${r.message     ? `<p style="margin:4px 0 2px;font-size:0.8rem;color:#374151"><strong>Message:</strong> ${escHtmlReq(r.message)}</p>` : ''}
+            ${r.status === 'approved' && r.provisioned_at
+              ? `<p style="margin:8px 0 0;font-size:0.75rem;color:#059669;font-weight:600">✓ Instructor account provisioned (${new Date(r.provisioned_at).toLocaleString()})</p>`
+              : r.status === 'approved' && !r.provisioned_at
+              ? `<p style="margin:8px 0 0;font-size:0.75rem;color:#b45309;font-weight:600">Approved — pending provisioning (click Save again if needed).</p>`
+              : ''}
+            <p style="margin:6px 0 0;font-size:0.72rem;color:#9ca3af">${new Date(r.created_at).toLocaleString()}</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:120px">
+            <select class="req-status-select motif-form__input" data-req-id="${r.id}" style="font-size:0.78rem;padding:4px 6px">
+              <option value="pending"  ${r.status === 'pending'  ? 'selected' : ''}>Pending</option>
+              <option value="approved" ${r.status === 'approved' ? 'selected' : ''}>Approved</option>
+              <option value="rejected" ${r.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+            </select>
+            <input class="req-notes-input motif-form__input" data-req-id="${r.id}"
+              type="text" placeholder="Admin notes…" value="${escHtmlReq(r.admin_notes || '')}"
+              style="font-size:0.78rem;padding:4px 6px" />
+            <button class="inst-btn inst-btn--outline req-save-btn" data-req-id="${r.id}"
+              style="font-size:0.75rem;padding:4px 8px">Save</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+      el.querySelectorAll('.req-save-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id     = btn.dataset.reqId;
+          const status = el.querySelector(`.req-status-select[data-req-id="${id}"]`).value;
+          const notes  = el.querySelector(`.req-notes-input[data-req-id="${id}"]`).value.trim() || null;
+          btn.textContent = 'Saving…';
+          btn.disabled = true;
+
+          const { error } = await SB.client
+            .from('educator_requests')
+            .update({ status, admin_notes: notes })
+            .eq('id', id);
+
+          if (error) {
+            btn.textContent = 'Error';
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = 'Save'; }, 2400);
+            return;
+          }
+
+          if (status === 'approved') {
+            btn.textContent = 'Provisioning…';
+            const { data: sess } = await SB.client.auth.getSession();
+            const tok = sess?.session?.access_token;
+            if (!tok) {
+              alert('Saved as approved, but provisioning needs a signed-in admin session — please refresh, sign in, and click Save again on this row.');
+            } else {
+              /* Session JWT is attached automatically when logged in; avoid duplicate/overriding headers. */
+              const { data: prov, error: fnErr } = await SB.client.functions.invoke(
+                'provision-educator',
+                { body: { request_id: id } },
+              );
+
+              let body =
+                typeof prov === 'string'
+                  ? (() => {
+                      try {
+                        return JSON.parse(prov);
+                      } catch (_) {
+                        return { raw: prov };
+                      }
+                    })()
+                  : prov;
+
+              if (fnErr) {
+                const formatted = formatFunctionsInvokeError(fnErr);
+                const low = formatted.toLowerCase();
+                const looksUndeployed =
+                  /failed to send|functionsrelayerror|fetch|network|cors|403|404|not found/i.test(low);
+                alert(
+                  'Saved status, but provisioning failed:\n\n' +
+                    formatted +
+                    (looksUndeployed
+                      ? '\n\nThis usually means the Edge Function is not deployed to this Supabase project, or a blocker stopped the browser from reaching Supabase.' +
+                          '\n\nFix: deploy `provision-educator` (see supabase/functions/provision-educator/) and redeploy:' +
+                          '\n  supabase functions deploy provision-educator'
+                      : ''),
+                );
+              } else if (body && typeof body === 'object' && body.error) {
+                alert('Provisioning: ' + body.error + (body.message ? ' — ' + body.message : ''));
+              } else if (
+                body?.ok &&
+                body.email_sent === false &&
+                !body.idempotent
+              ) {
+                const hint =
+                  (body.email_detail && String(body.email_detail).trim()) ||
+                  'Check Supabase → Edge Functions → provision-educator → Logs. Common issues: secret names must be exactly RESEND_API_KEY and MAIL_FROM; keys must be attached to this function; MAIL_FROM must use a domain verified in Resend (not just added in Supabase).';
+                alert(
+                  'Instructor upgraded, but no approval email was delivered.\n\n' + hint,
+                );
+              }
+            }
+          }
+
+          btn.textContent = 'Saved ✓';
+          btn.disabled = false;
+          await loadEducatorRequests();
+          setTimeout(() => { btn.textContent = 'Save'; }, 2000);
+        });
+      });
+    } catch (err) {
+      console.error('loadEducatorRequests:', err);
+      el.innerHTML =
+        `<p class="inst-hint" style="color:#dc2626">${escHtmlReq(err.message || String(err))} If this persists, run migration 025_educator_requests_security_definer.sql and hard-refresh.</p>`;
+    }
+  }
+
+  /** Desktop tab + mobile option only for master admin — not present in HTML for other educators. */
+  function mountMasterAdminRequestsUI() {
+    const nav = $('inst-tabs');
+    if (!nav || $('tab-requests')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'inst-tab';
+    btn.dataset.tab = 'requests';
+    btn.id = 'tab-requests';
+    btn.style.gridColumn = 'span 4';
+    const icon = document.createElement('span');
+    icon.className = 'inst-tab__icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '📬';
+    btn.appendChild(icon);
+    btn.appendChild(document.createTextNode('Account Requests'));
+    nav.appendChild(btn);
+
+    const mobNav = $('inst-tab-select');
+    if (mobNav && !mobNav.querySelector('option[value="requests"]')) {
+      const opt = document.createElement('option');
+      opt.value = 'requests';
+      opt.textContent = '📬 Account Requests';
+      mobNav.appendChild(opt);
+    }
+  }
+
+  function removeEducatorRequestsUI() {
+    $('inst-tab-select')?.querySelector('option[value="requests"]')?.remove();
+    $('tab-requests')?.remove();
+    $('panel-requests')?.remove();
+  }
+
   /* ── Init ───────────────────────────────────────────────────────────── */
   async function init() {
     const user = await SB.getUser();
     if (!user) return;
+    sessionCanManageEducatorRequests = isMasterAdminEmail(user.email);
     const profile = await SB.getProfile();
     if (profile) applyWelcomeHeader(profile);
+
+    if (sessionCanManageEducatorRequests) {
+      mountMasterAdminRequestsUI();
+      $('btn-refresh-requests')?.addEventListener('click', loadEducatorRequests);
+      loadEducatorRequests();
+    } else {
+      removeEducatorRequestsUI();
+    }
 
     setupTabs();
     setupCohortModal();
@@ -1158,13 +1405,26 @@
       if (tabSelect && tabSelect.value !== tabName) tabSelect.value = tabName;
     }
 
+    function onTabNavigate(tabName) {
+      if (!tabName) return;
+      let name = tabName;
+      if (name === 'requests' && !sessionCanManageEducatorRequests) {
+        const sel = tabSelect;
+        if (sel && [...sel.options].some(o => o.value === 'overview')) sel.value = 'overview';
+        name = 'overview';
+      }
+      activateTab(name);
+      if (name === 'requests' && sessionCanManageEducatorRequests) loadEducatorRequests();
+      window.dispatchEvent(new CustomEvent('instructor-tab', { detail: { tab: name } }));
+    }
+
     tabs.forEach(tab => {
-      tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+      tab.addEventListener('click', () => onTabNavigate(tab.dataset.tab));
     });
 
-    // Mobile: dropdown drives navigation
+    // Mobile: dropdown drives navigation (must emit same event as tab buttons so other scripts load data)
     if (tabSelect) {
-      tabSelect.addEventListener('change', () => activateTab(tabSelect.value));
+      tabSelect.addEventListener('change', () => onTabNavigate(tabSelect.value));
     }
   }
 

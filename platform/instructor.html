@@ -408,43 +408,49 @@
   <dialog id="publish-case-modal" class="debrief-dialog">
     <div class="debrief-dialog__inner" style="max-width:500px">
       <div class="cohort-dialog__header">
-        <h2 class="cohort-dialog__title debrief-dialog__title">Publish or Assign Case</h2>
+        <h2 class="cohort-dialog__title debrief-dialog__title" id="publish-modal-title">Publish or Assign Case</h2>
         <button type="button" class="cohort-dialog__close" id="publish-modal-close" aria-label="Close publish manager">
           <span aria-hidden="true">×</span>
         </button>
       </div>
-      
+
       <form id="publish-case-form" style="display:flex;flex-direction:column;gap:1.2rem;margin-top:1rem">
         <input type="hidden" id="pub-case-id" />
-        
+
         <div>
-          <label class="inst-account-label" style="margin-bottom:0.4rem">Visibility & Distribution</label>
+          <label class="inst-account-label" style="margin-bottom:0.4rem">Visibility</label>
           <div style="display:flex;flex-direction:column;gap:0.5rem">
             <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
               <input type="radio" name="pub-visibility" value="public" checked />
               <div style="display:flex;flex-direction:column">
-                <span style="font-weight:600">Publish Publicly</span>
-                <span class="inst-hint" style="margin:0">Available to all students in the main simulator directory.</span>
+                <span style="font-weight:600">🌎 Public</span>
+                <span class="inst-hint" style="margin:0">Visible to all students in the simulator directory.</span>
               </div>
             </label>
             <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
-              <input type="radio" name="pub-visibility" value="private" />
+              <input type="radio" name="pub-visibility" value="cohort" />
               <div style="display:flex;flex-direction:column">
-                <span style="font-weight:600">Assign Privately</span>
-                <span class="inst-hint" style="margin:0">Only visible to specific cohorts or students. Sends an email notification.</span>
+                <span style="font-weight:600">👥 Assign to Cohort</span>
+                <span class="inst-hint" style="margin:0">Only visible to members of a specific cohort.</span>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+              <input type="radio" name="pub-visibility" value="hidden" />
+              <div style="display:flex;flex-direction:column">
+                <span style="font-weight:600">🔒 Completely Private</span>
+                <span class="inst-hint" style="margin:0">Hidden from all students. Only you can see it.</span>
               </div>
             </label>
           </div>
         </div>
 
         <div id="pub-assign-section" hidden style="background:rgba(99,102,241,0.05);padding:1rem;border-radius:6px;border:1px solid rgba(99,102,241,0.15)">
-          <label class="inst-account-label" for="pub-cohort-select">Assign to Cohort</label>
-          <p class="inst-hint" style="margin-top:0">All members of this cohort will be assigned the case and emailed.</p>
+          <label class="inst-account-label" for="pub-cohort-select">Select Cohort</label>
           <select id="pub-cohort-select" class="inst-select inst-select--wide">
             <option value="">— Select a cohort —</option>
           </select>
         </div>
-        
+
         <div>
           <label class="inst-account-label" for="pub-author-label">Author Credit (shown to students)</label>
           <input type="text" id="pub-author-label" class="inst-input" placeholder="e.g. Dr. Smith" />
@@ -452,7 +458,52 @@
 
         <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem">
           <button type="button" class="inst-btn" id="btn-cancel-publish">Cancel</button>
-          <button type="submit" class="inst-btn inst-btn--primary" id="btn-save-publish">Publish Case</button>
+          <button type="submit" class="inst-btn inst-btn--primary" id="btn-save-publish">Save</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ── Edit Generated Case Modal ─────────────────────────────────────────── -->
+  <dialog id="edit-case-modal" class="debrief-dialog">
+    <div class="debrief-dialog__inner" style="max-width:680px;max-height:85vh;overflow-y:auto">
+      <div class="cohort-dialog__header" style="position:sticky;top:0;background:#fff;z-index:1;padding-bottom:0.75rem;border-bottom:1px solid #e5e7eb;margin-bottom:1rem">
+        <h2 class="cohort-dialog__title debrief-dialog__title">Edit Case Mechanics</h2>
+        <button type="button" class="cohort-dialog__close" id="edit-case-close" aria-label="Close editor">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <input type="hidden" id="edit-case-id" />
+      <form id="edit-case-form" style="display:flex;flex-direction:column;gap:1.4rem">
+
+        <!-- Overview -->
+        <fieldset style="border:1px solid #e5e7eb;border-radius:8px;padding:1rem">
+          <legend style="font-size:0.8rem;font-weight:700;color:#374151;padding:0 6px;text-transform:uppercase;letter-spacing:.05em">Overview</legend>
+          <div style="display:flex;flex-direction:column;gap:0.6rem">
+            <label class="inst-account-label" for="edit-title">Title
+              <input type="text" id="edit-title" class="inst-input" placeholder="Case title" maxlength="120" />
+            </label>
+            <label class="inst-account-label" for="edit-summary">Patient Summary
+              <textarea id="edit-summary" class="inst-input" rows="2" placeholder="Brief patient description shown on the scenario card" style="resize:vertical"></textarea>
+            </label>
+            <div style="display:flex;gap:0.75rem">
+              <label class="inst-account-label" style="flex:1" for="edit-badge">Badge Label
+                <input type="text" id="edit-badge" class="inst-input" placeholder="e.g. Hemodynamics" maxlength="30" />
+              </label>
+              <label class="inst-account-label" style="flex:1" for="edit-badge-color">Badge Color
+                <input type="color" id="edit-badge-color" class="inst-input" style="height:38px;padding:2px 4px;cursor:pointer" />
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Steps (dynamically rendered by JS) -->
+        <div id="edit-steps-container"></div>
+
+        <p id="edit-case-status" style="font-size:0.82rem;min-height:1.2em;color:#16a34a"></p>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem">
+          <button type="button" class="inst-btn" id="btn-cancel-edit">Cancel</button>
+          <button type="submit" class="inst-btn inst-btn--primary" id="btn-save-edit">Save Changes</button>
         </div>
       </form>
     </div>
@@ -621,10 +672,23 @@
     </div>
   </dialog>
 
+  <!-- ── Master admin only: Account Requests tab is injected in instructor-dashboard.js;
+        this panel is removed from the DOM entirely for other educator accounts. ─────── -->
+  <div class="inst-panel" id="panel-requests" hidden>
+    <div class="dash-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <h2 class="dash-section__title" style="margin:0">Educator Account Requests</h2>
+        <button class="inst-btn inst-btn--outline" id="btn-refresh-requests" type="button">↻ Refresh</button>
+      </div>
+      <p class="inst-hint">Submitted requests for instructor access. Update status and add notes as needed.</p>
+      <div id="requests-list"><p class="inst-hint">Loading…</p></div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/auth-guard.js"></script>
-  <script src="js/instructor-dashboard.js"></script>
+  <script src="js/instructor-dashboard.js?v=20260506-requests-tab-conditional"></script>
   <script src="js/scenario-generator.js"></script>
 
 </body>

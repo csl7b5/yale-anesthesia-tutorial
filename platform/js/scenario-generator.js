@@ -378,9 +378,9 @@
 
     const { data, error } = await window.SB.client
       .from('generated_scenarios')
-      .select('id, created_at, patient_summary, status, visibility, reviewer_notes, motif_id, scenario_motifs(title)')
+      .select('id, created_at, patient_summary, status, visibility, is_archived, reviewer_notes, motif_id, scenario_motifs(title, badge, badge_color)')
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(100);
 
     if (error || !data) {
       listEl.innerHTML = `<p class="inst-hint" style="color:#ef4444">Failed to load cases: ${error?.message}</p>`;
@@ -391,45 +391,152 @@
       return;
     }
 
-    listEl.innerHTML = `
-      <table class="inst-table">
-        <thead><tr>
-          <th>Patient</th><th>Motif</th><th>Status</th><th>Generated</th><th>Actions</th>
-        </tr></thead>
-        <tbody>
-          ${data.map(c => {
-            const visibilityLabel = c.status === 'approved' 
-              ? `<br><span style="font-size:0.75rem;opacity:0.8">${c.visibility === 'public' ? '🌎 Public' : '🔒 Assigned'}</span>`
-              : '';
-            return `
-            <tr>
-              <td>${escHtml(c.patient_summary || '—')}</td>
-              <td>${escHtml(c.scenario_motifs?.title || '—')}</td>
-              <td><span class="motif-status motif-status--${c.status}">${c.status}</span>${visibilityLabel}</td>
-              <td style="white-space:nowrap">${new Date(c.created_at).toLocaleDateString()}</td>
-              <td>
-                ${c.status === 'pending' ? `
-                  <button class="inst-btn inst-btn--sm inst-btn--primary" data-publish="${c.id}">Publish / Assign</button>
-                  <button class="inst-btn inst-btn--sm inst-btn--danger"  data-reject="${c.id}">Reject</button>
-                ` : `
-                  <button class="inst-btn inst-btn--sm" data-publish="${c.id}">Edit Visibility</button>
-                `}
-                <button class="inst-btn inst-btn--sm" data-preview="${c.id}">Preview</button>
-              </td>
-            </tr>
-          `}).join('')}
-        </tbody>
-      </table>`;
+    const active   = data.filter(c => !c.is_archived);
+    const archived = data.filter(c =>  c.is_archived);
+
+    function renderRow(c) {
+      const m = c.scenario_motifs || {};
+      const badge      = m.badge      || 'CASE';
+      const badgeColor = m.badge_color || '#64748b';
+      const badgePill  = `<span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:0.68rem;font-weight:700;
+        background:${badgeColor}22;color:${badgeColor};border:1px solid ${badgeColor}55">${escHtml(badge)}</span>`;
+
+      const visLabel = c.status === 'approved'
+        ? `<br><span style="font-size:0.72rem;opacity:0.75">${c.visibility === 'public' ? '🌎 Public' : c.visibility === 'hidden' ? '🔒 Private' : '👥 Cohort'}</span>`
+        : '';
+      const statusChip = c.is_archived
+        ? `<span class="motif-status motif-status--archived">Archived</span>`
+        : `<span class="motif-status motif-status--${c.status}">${c.status}</span>${visLabel}`;
+
+      const actionBtns = c.is_archived
+        ? `<button class="inst-btn inst-btn--sm" data-unarchive="${c.id}">Unarchive</button>
+           <button class="inst-btn inst-btn--sm inst-btn--danger" data-delete="${c.id}">Delete</button>`
+        : `${c.status === 'pending' ? `
+             <button class="inst-btn inst-btn--sm inst-btn--primary" data-publish="${c.id}">Publish</button>
+             <button class="inst-btn inst-btn--sm inst-btn--danger"  data-reject="${c.id}">Reject</button>
+           ` : `
+             <button class="inst-btn inst-btn--sm" data-visibility="${c.id}">👁 Visibility</button>
+           `}
+           <button class="inst-btn inst-btn--sm" data-edit="${c.id}">✏️ Edit</button>
+           <button class="inst-btn inst-btn--sm" data-preview="${c.id}">Preview</button>
+           <button class="inst-btn inst-btn--sm inst-btn--danger" data-archive="${c.id}">Archive</button>`;
+
+      return `
+        <tr>
+          <td>${escHtml(c.patient_summary || '—')}</td>
+          <td>${escHtml(m.title || '—')}<br>${badgePill}</td>
+          <td>${statusChip}</td>
+          <td style="white-space:nowrap">${new Date(c.created_at).toLocaleDateString()}</td>
+          <td style="white-space:nowrap;display:flex;flex-wrap:wrap;gap:4px">${actionBtns}</td>
+        </tr>`;
+    }
+
+    let html = `<table class="inst-table"><thead><tr>
+      <th>Patient</th><th>Motif / Badge</th><th>Status</th><th>Generated</th><th>Actions</th>
+    </tr></thead><tbody>${active.map(renderRow).join('')}`;
+
+    if (archived.length) {
+      html += `<tr><td colspan="5" style="padding:10px 8px 4px;font-size:0.75rem;color:#9ca3af;font-weight:600;letter-spacing:.04em;border-top:2px solid #f3f4f6">
+        ARCHIVED (${archived.length})</td></tr>
+        ${archived.map(renderRow).join('')}`;
+    }
+    html += '</tbody></table>';
+    listEl.innerHTML = html;
 
     listEl.querySelectorAll('[data-publish]').forEach(btn =>
-      btn.addEventListener('click', () => openPublishModal(btn.dataset.publish))
-    );
+      btn.addEventListener('click', () => openPublishModal(btn.dataset.publish, false)));
+    listEl.querySelectorAll('[data-visibility]').forEach(btn =>
+      btn.addEventListener('click', () => openPublishModal(btn.dataset.visibility, true)));
     listEl.querySelectorAll('[data-reject]').forEach(btn =>
-      btn.addEventListener('click', () => reviewCase(btn.dataset.reject, 'rejected'))
-    );
+      btn.addEventListener('click', () => reviewCase(btn.dataset.reject, 'rejected')));
     listEl.querySelectorAll('[data-preview]').forEach(btn =>
-      btn.addEventListener('click', () => previewCase(btn.dataset.preview))
-    );
+      btn.addEventListener('click', () => previewCase(btn.dataset.preview)));
+    listEl.querySelectorAll('[data-edit]').forEach(btn =>
+      btn.addEventListener('click', () => openEditModal(btn.dataset.edit)));
+    listEl.querySelectorAll('[data-archive]').forEach(btn =>
+      btn.addEventListener('click', () => archiveCase(btn.dataset.archive, true)));
+    listEl.querySelectorAll('[data-unarchive]').forEach(btn =>
+      btn.addEventListener('click', () => archiveCase(btn.dataset.unarchive, false)));
+    listEl.querySelectorAll('[data-delete]').forEach(btn =>
+      btn.addEventListener('click', () => deleteCase(btn.dataset.delete)));
+  }
+
+  async function loadAssignments() {
+    const listEl = qs('#assignments-list');
+    if (!listEl) return;
+
+    const { data, error } = await window.SB.client
+      .from('case_assignments')
+      .select(`
+        id,
+        created_at,
+        status,
+        notified_at,
+        started_at,
+        completed_at,
+        assigned_to,
+        generated_scenarios (
+          id,
+          patient_summary,
+          scenario_motifs ( title )
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    let profileMap = {};
+    if (data && data.length) {
+      const userIds = [...new Set(data.map(a => a.assigned_to).filter(Boolean))];
+      if (userIds.length) {
+        const { data: profiles } = await window.SB.client
+          .from('profiles')
+          .select('id, display_name, institution')
+          .in('id', userIds);
+        if (profiles) profiles.forEach(p => { profileMap[p.id] = p; });
+      }
+    }
+    if (data) data.forEach(a => { a._profile = profileMap[a.assigned_to] || null; });
+
+    if (error || !data) {
+      listEl.innerHTML = `<p class="inst-hint" style="color:#ef4444">Failed to load assignments: ${error?.message}</p>`;
+      return;
+    }
+    if (data.length === 0) {
+      listEl.innerHTML = '<p class="inst-hint">No assignments yet. Use visibility options on a generated case to assign to a cohort.</p>';
+      return;
+    }
+
+    listEl.innerHTML = `
+      <div class="inst-table-wrap">
+        <table class="inst-table">
+          <thead><tr>
+            <th>Student</th><th>Case</th><th>Status</th><th>Assigned</th><th>Activity</th>
+          </tr></thead>
+          <tbody>
+            ${data.map(a => {
+              const studentName = a._profile?.display_name || a.assigned_to?.slice(0, 8) || 'Unknown Student';
+              const caseTitle = a.generated_scenarios?.scenario_motifs?.title || 'Unknown Case';
+
+              let statusBadge = '';
+              if (a.status === 'completed') statusBadge = '<span class="motif-status motif-status--active">Completed</span>';
+              else if (a.status === 'started') statusBadge = '<span class="motif-status motif-status--pending">In Progress</span>';
+              else statusBadge = '<span class="motif-status motif-status--archived">Assigned</span>';
+
+              const dates = [];
+              if (a.started_at) dates.push(`Started: ${new Date(a.started_at).toLocaleDateString()}`);
+              if (a.completed_at) dates.push(`Done: ${new Date(a.completed_at).toLocaleDateString()}`);
+
+              return `
+              <tr>
+                <td style="font-weight:600">${escHtml(studentName)}</td>
+                <td>${escHtml(caseTitle)}</td>
+                <td>${statusBadge}</td>
+                <td style="white-space:nowrap">${new Date(a.created_at).toLocaleDateString()}</td>
+                <td style="font-size:0.8rem; color:#6b7280">${dates.length ? dates.join('<br>') : '—'}</td>
+              </tr>
+            `}).join('')}
+          </tbody>
+        </table>
+      </div>`;
   }
 
   async function reviewCase(caseId, status) {
@@ -444,12 +551,219 @@
     loadGeneratedCases();
   }
 
+  async function archiveCase(caseId, archive) {
+    if (archive && !confirm('Archive this case? Students will no longer see it, but you can unarchive it at any time.')) return;
+    const { error } = await window.SB.client
+      .from('generated_scenarios')
+      .update({ is_archived: archive })
+      .eq('id', caseId);
+    if (error) { alert('Update failed: ' + error.message); return; }
+    loadGeneratedCases();
+  }
+
+  async function togglePrivacy(caseId) {
+    // Fetch current visibility first
+    const { data, error: fetchErr } = await window.SB.client
+      .from('generated_scenarios')
+      .select('visibility')
+      .eq('id', caseId)
+      .single();
+    if (fetchErr || !data) { alert('Could not fetch case visibility.'); return; }
+
+    const newVis = data.visibility === 'private' ? 'public' : 'private';
+    const { error } = await window.SB.client
+      .from('generated_scenarios')
+      .update({ visibility: newVis })
+      .eq('id', caseId);
+    if (error) { alert('Update failed: ' + error.message); return; }
+    loadGeneratedCases();
+  }
+
+  async function deleteCase(caseId) {
+    if (!confirm('Permanently delete this case? This cannot be undone.')) return;
+    const { error } = await window.SB.client
+      .from('generated_scenarios')
+      .delete()
+      .eq('id', caseId);
+    if (error) { alert('Delete failed: ' + error.message); return; }
+    loadGeneratedCases();
+  }
+
+  // ── EDIT CASE MODAL ──────────────────────────────────────────────────────
+
+  async function openEditModal(caseId) {
+    const modal = qs('#edit-case-modal');
+    if (!modal) return;
+
+    qs('#edit-case-id').value = caseId;
+    qs('#edit-case-status').textContent = '';
+    qs('#edit-steps-container').innerHTML = '<p class="inst-hint">Loading…</p>';
+    modal.showModal();
+
+    const { data, error } = await window.SB.client
+      .from('generated_scenarios')
+      .select('scenario_json, patient_summary, scenario_motifs(badge, badge_color)')
+      .eq('id', caseId)
+      .single();
+
+    if (error || !data) {
+      qs('#edit-steps-container').innerHTML = `<p class="inst-hint" style="color:#ef4444">Failed to load case: ${error?.message}</p>`;
+      return;
+    }
+
+    const s = data.scenario_json || {};
+    qs('#edit-title').value         = s.title || '';
+    qs('#edit-summary').value       = data.patient_summary || s.summary || '';
+    qs('#edit-badge').value         = s.badge || data.scenario_motifs?.badge || '';
+    qs('#edit-badge-color').value   = s.badgeColor || data.scenario_motifs?.badge_color || '#64748b';
+
+    // Render steps
+    const steps = s.steps || [];
+    if (!steps.length) {
+      qs('#edit-steps-container').innerHTML = '<p class="inst-hint">No steps found in this case.</p>';
+      return;
+    }
+
+    qs('#edit-steps-container').innerHTML = steps.map((step, si) => `
+      <fieldset style="border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin-bottom:0.75rem">
+        <legend style="font-size:0.78rem;font-weight:700;color:#374151;padding:0 6px;text-transform:uppercase;letter-spacing:.05em">
+          Step ${si + 1} — ${escHtml(step.phase || '')}
+        </legend>
+        <div style="display:flex;flex-direction:column;gap:0.6rem">
+          <label class="inst-account-label">Clue / Clinical Context
+            <textarea class="inst-input edit-step-clue" data-step="${si}" rows="3" style="resize:vertical">${escHtml(step.clue || '')}</textarea>
+          </label>
+          <label class="inst-account-label">Question Prompt
+            <textarea class="inst-input edit-step-question" data-step="${si}" rows="2" style="resize:vertical">${escHtml(step.question || '')}</textarea>
+          </label>
+          <div style="margin-top:0.4rem">
+            <p style="font-size:0.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin:0 0 0.4rem">Choices</p>
+            ${(step.choices || []).map((ch, ci) => `
+              <div style="display:flex;gap:0.5rem;align-items:flex-start;margin-bottom:0.5rem;padding:0.5rem;background:${ch.isCorrect ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.04)'};border-radius:6px;border:1px solid ${ch.isCorrect ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.12)'}">
+                <label style="display:flex;flex-direction:column;gap:2px;min-width:20px;align-items:center;margin-top:4px">
+                  <input type="checkbox" class="edit-choice-correct" data-step="${si}" data-choice="${ci}" ${ch.isCorrect ? 'checked' : ''} title="Mark as correct answer" />
+                  <span style="font-size:0.6rem;color:#9ca3af">✓</span>
+                </label>
+                <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+                  <textarea class="inst-input edit-choice-text" data-step="${si}" data-choice="${ci}" rows="2" style="resize:vertical;font-size:0.82rem">${escHtml(ch.text || '')}</textarea>
+                  <textarea class="inst-input edit-choice-feedback" data-step="${si}" data-choice="${ci}" rows="2" placeholder="Feedback shown after selection…" style="resize:vertical;font-size:0.78rem;color:#6b7280">${escHtml(ch.feedback || '')}</textarea>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </fieldset>
+    `).join('');
+  }
+
+  async function saveEditedCase(e) {
+    e.preventDefault();
+    const caseId  = qs('#edit-case-id').value;
+    const statusEl = qs('#edit-case-status');
+    const saveBtn  = qs('#btn-save-edit');
+    saveBtn.disabled = true;
+    statusEl.textContent = 'Saving…';
+    statusEl.style.color = '#6b7280';
+
+    // Fetch current scenario_json to merge edits into
+    const { data, error: fetchErr } = await window.SB.client
+      .from('generated_scenarios')
+      .select('scenario_json')
+      .eq('id', caseId)
+      .single();
+
+    if (fetchErr || !data) {
+      statusEl.textContent = 'Failed to fetch case for saving.';
+      statusEl.style.color = '#ef4444';
+      saveBtn.disabled = false;
+      return;
+    }
+
+    const s = JSON.parse(JSON.stringify(data.scenario_json || {})); // deep clone
+
+    // Apply overview edits
+    s.title      = qs('#edit-title').value.trim();
+    s.badge      = qs('#edit-badge').value.trim();
+    s.badgeColor = qs('#edit-badge-color').value;
+
+    const newSummary = qs('#edit-summary').value.trim();
+
+    // Apply step edits
+    const steps = s.steps || [];
+    qs('#edit-steps-container').querySelectorAll('.edit-step-clue').forEach(el => {
+      const si = +el.dataset.step;
+      if (steps[si]) steps[si].clue = el.value.trim();
+    });
+    qs('#edit-steps-container').querySelectorAll('.edit-step-question').forEach(el => {
+      const si = +el.dataset.step;
+      if (steps[si]) steps[si].question = el.value.trim();
+    });
+    qs('#edit-steps-container').querySelectorAll('.edit-choice-text').forEach(el => {
+      const si = +el.dataset.step, ci = +el.dataset.choice;
+      if (steps[si]?.choices?.[ci]) steps[si].choices[ci].text = el.value.trim();
+    });
+    qs('#edit-steps-container').querySelectorAll('.edit-choice-feedback').forEach(el => {
+      const si = +el.dataset.step, ci = +el.dataset.choice;
+      if (steps[si]?.choices?.[ci]) steps[si].choices[ci].feedback = el.value.trim();
+    });
+    qs('#edit-steps-container').querySelectorAll('.edit-choice-correct').forEach(el => {
+      const si = +el.dataset.step, ci = +el.dataset.choice;
+      if (steps[si]?.choices?.[ci]) steps[si].choices[ci].isCorrect = el.checked;
+    });
+    s.steps = steps;
+
+    const { error } = await window.SB.client
+      .from('generated_scenarios')
+      .update({ scenario_json: s, patient_summary: newSummary })
+      .eq('id', caseId);
+
+    if (error) {
+      statusEl.textContent = 'Save failed: ' + error.message;
+      statusEl.style.color = '#ef4444';
+    } else {
+      statusEl.textContent = '✓ Saved successfully.';
+      statusEl.style.color = '#16a34a';
+      setTimeout(() => { qs('#edit-case-modal').close(); loadGeneratedCases(); }, 1200);
+    }
+    saveBtn.disabled = false;
+  }
+
   // ── PUBLISH MODAL ────────────────────────────────────────────────────────
 
-  async function openPublishModal(caseId) {
+  async function openPublishModal(caseId, isVisibilityEdit = false) {
     const modal = qs('#publish-case-modal');
     qs('#pub-case-id').value = caseId;
-    
+
+    // Set modal title based on context
+    const titleEl = qs('#publish-modal-title');
+    if (titleEl) titleEl.textContent = isVisibilityEdit ? 'Manage Visibility' : 'Publish or Assign Case';
+    const saveBtn = qs('#btn-save-publish');
+    if (saveBtn) saveBtn.textContent = isVisibilityEdit ? 'Save Visibility' : 'Publish Case';
+
+    // If editing existing visibility, pre-select current value
+    if (isVisibilityEdit) {
+      try {
+        const { data } = await window.SB.client
+          .from('generated_scenarios')
+          .select('visibility')
+          .eq('id', caseId)
+          .single();
+        if (data) {
+          const vis = data.visibility === 'public' ? 'public'
+                    : data.visibility === 'hidden' ? 'hidden'
+                    : 'cohort';
+          const radio = qs(`input[name="pub-visibility"][value="${vis}"]`);
+          if (radio) radio.checked = true;
+          qs('#pub-assign-section').hidden = (vis !== 'cohort');
+        }
+      } catch(e) {}
+    } else {
+      // Default to public for new publishes
+      const publicRadio = qs('input[name="pub-visibility"][value="public"]');
+      if (publicRadio) publicRadio.checked = true;
+      qs('#pub-assign-section').hidden = true;
+    }
+
     // Auto-fill author name from profile if available
     try {
       const { data } = await window.SB.client.from('profiles').select('name').eq('id', (await getSession()).user.id).single();
@@ -457,16 +771,23 @@
         qs('#pub-author-label').value = 'Dr. ' + data.name.split(' ').pop();
       }
     } catch(e) {}
-    
+
     // Load cohorts for the dropdown
     try {
       const { data } = await window.SB.client.from('cohorts').select('id, name').order('name');
       const sel = qs('#pub-cohort-select');
       if (data && sel) {
-        sel.innerHTML = '<option value="">— Select a cohort —</option>' + 
+        sel.innerHTML = '<option value="">— Select a cohort —</option>' +
           data.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
       }
     } catch(e) {}
+
+    // Show/hide cohort picker based on radio selection
+    qs('#publish-case-form').querySelectorAll('input[name="pub-visibility"]').forEach(r => {
+      r.addEventListener('change', () => {
+        qs('#pub-assign-section').hidden = (r.value !== 'cohort');
+      });
+    });
 
     modal.showModal();
   }
@@ -493,12 +814,14 @@
     if (!select) return;
     const { data } = await window.SB.client
       .from('scenario_motifs')
-      .select('id, title')
+      .select('id, title, badge, badge_color')
       .eq('is_active', true)
       .order('title');
     if (!data) return;
     select.innerHTML = data.map(m =>
-      `<option value="${m.id}">${escHtml(m.title)}</option>`
+      `<option value="${m.id}" data-badge="${escHtml(m.badge||'')}" data-badge-color="${escHtml(m.badge_color||'')}">
+         ${escHtml(m.title)}${m.badge ? ' [' + escHtml(m.badge) + ']' : ''}
+       </option>`
     ).join('');
   }
 
@@ -546,18 +869,32 @@
     saveBtn.textContent = 'Saving…';
 
     const caseId = qs('#pub-case-id').value;
-    const visibility = qs('input[name="pub-visibility"]:checked').value;
+    const rawVis = qs('input[name="pub-visibility"]:checked').value; // 'public' | 'cohort' | 'hidden'
+    const visibility = rawVis === 'cohort' ? 'private' : rawVis; // DB stores 'private' for cohort-assigned
     const authorLabel = qs('#pub-author-label').value.trim();
-    const cohortId = qs('#pub-cohort-select').value;
+    const cohortId = rawVis === 'cohort' ? qs('#pub-cohort-select').value : '';
 
-    if (visibility === 'private' && !cohortId) {
-      alert("Please select a cohort to assign the private case to.");
+    if (rawVis === 'cohort' && !cohortId) {
+      alert("Please select a cohort to assign the case to.");
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Publish Case';
+      saveBtn.textContent = 'Save';
       return;
     }
 
     try {
+      // 0. Fetch the case's motif to inherit badge / badge_color into scenario_json
+      const { data: caseData } = await window.SB.client
+        .from('generated_scenarios')
+        .select('scenario_json, motif_id, scenario_motifs(badge, badge_color)')
+        .eq('id', caseId)
+        .single();
+
+      let scenarioJson = caseData?.scenario_json ?? {};
+      const motifBadge      = caseData?.scenario_motifs?.badge      || scenarioJson.badge      || 'CASE';
+      const motifBadgeColor = caseData?.scenario_motifs?.badge_color || scenarioJson.badgeColor || '#64748b';
+      // Stamp the motif's badge onto the scenario JSON so the simulator displays the right badge
+      scenarioJson = { ...scenarioJson, badge: motifBadge, badgeColor: motifBadgeColor };
+
       // 1. Update the case record
       const { error: updErr } = await window.SB.client
         .from('generated_scenarios')
@@ -565,7 +902,8 @@
           status: 'approved',
           visibility: visibility,
           author_label: authorLabel,
-          published_at: new Date().toISOString()
+          published_at: new Date().toISOString(),
+          scenario_json: scenarioJson   // write back with corrected badge
         })
         .eq('id', caseId);
 
@@ -621,86 +959,14 @@
   }
 
   function init() {
-    // Tab activation triggers data load
-    document.addEventListener('click', e => {
-      const tab = e.target.closest('[data-tab]');
-      if (tab?.dataset.tab === 'motifs') {
-        loadMotifs();
-      } else if (tab?.dataset.tab === 'generated') {
+    window.addEventListener('instructor-tab', (ev) => {
+      const tab = ev.detail?.tab;
+      if (tab === 'motifs') loadMotifs();
+      else if (tab === 'generated') {
         loadGeneratedCases();
         populateMotifSelect();
-      } else if (tab?.dataset.tab === 'assignments') {
-        loadAssignments();
-      }
+      } else if (tab === 'assignments') loadAssignments();
     });
-
-  // ── ASSIGNMENTS TAB ──────────────────────────────────────────────────────
-
-  async function loadAssignments() {
-    const listEl = qs('#assignments-list');
-    if (!listEl) return;
-
-    // Fetch assignments joined with user info and scenario info
-    const { data, error } = await window.SB.client
-      .from('case_assignments')
-      .select(`
-        id, 
-        created_at, 
-        status, 
-        notified_at,
-        started_at,
-        completed_at,
-        generated_scenarios (
-          id,
-          patient_summary,
-          scenario_motifs ( title )
-        ),
-        profiles:assigned_to ( name, affiliation )
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error || !data) {
-      listEl.innerHTML = `<p class="inst-hint" style="color:#ef4444">Failed to load assignments: ${error?.message}</p>`;
-      return;
-    }
-    if (data.length === 0) {
-      listEl.innerHTML = '<p class="inst-hint">No assignments yet. Use the "Publish / Assign" button on a generated case to assign it.</p>';
-      return;
-    }
-
-    listEl.innerHTML = `
-      <div class="inst-table-wrap">
-        <table class="inst-table">
-          <thead><tr>
-            <th>Student</th><th>Case</th><th>Status</th><th>Assigned</th><th>Activity</th>
-          </tr></thead>
-          <tbody>
-            ${data.map(a => {
-              const studentName = a.profiles?.name || 'Unknown Student';
-              const caseTitle = a.generated_scenarios?.scenario_motifs?.title || 'Unknown Case';
-              
-              let statusBadge = '';
-              if (a.status === 'completed') statusBadge = '<span class="motif-status motif-status--active">Completed</span>';
-              else if (a.status === 'started') statusBadge = '<span class="motif-status motif-status--pending">In Progress</span>';
-              else statusBadge = '<span class="motif-status motif-status--archived">Assigned</span>';
-
-              const dates = [];
-              if (a.started_at) dates.push(`Started: ${new Date(a.started_at).toLocaleDateString()}`);
-              if (a.completed_at) dates.push(`Done: ${new Date(a.completed_at).toLocaleDateString()}`);
-              
-              return `
-              <tr>
-                <td style="font-weight:600">${escHtml(studentName)}</td>
-                <td>${escHtml(caseTitle)}</td>
-                <td>${statusBadge}</td>
-                <td style="white-space:nowrap">${new Date(a.created_at).toLocaleDateString()}</td>
-                <td style="font-size:0.8rem; color:#6b7280">${dates.length ? dates.join('<br>') : '—'}</td>
-              </tr>
-            `}).join('')}
-          </tbody>
-        </table>
-      </div>`;
-  }
 
     // Motif editor (Wizard)
     qs('#btn-add-motif')?.addEventListener('click', () => openMotifEditor(null));
@@ -739,18 +1005,22 @@
     });
     qs('#btn-run-generator')?.addEventListener('click', runGenerator);
 
-    // Publish / Assign modal
+    // Publish / Visibility modal
     qs('#publish-modal-close')?.addEventListener('click', () => qs('#publish-case-modal').close());
-    qs('#btn-cancel-publish')?.addEventListener('click', () => qs('#publish-case-modal').close());
+    qs('#btn-cancel-publish')?.addEventListener('click',  () => qs('#publish-case-modal').close());
     qs('#publish-case-form')?.addEventListener('submit', handlePublishSubmit);
-    
-    // Toggle cohort dropdown based on visibility radio
+
+    // Toggle cohort dropdown based on visibility radio (initial wiring)
     document.querySelectorAll('input[name="pub-visibility"]').forEach(radio => {
       radio.addEventListener('change', (e) => {
-        qs('#pub-assign-section').hidden = e.target.value !== 'private';
-        qs('#pub-cohort-select').required = e.target.value === 'private';
+        qs('#pub-assign-section').hidden = e.target.value !== 'cohort';
       });
     });
+
+    // Edit Case modal
+    qs('#edit-case-close')?.addEventListener('click',  () => qs('#edit-case-modal').close());
+    qs('#btn-cancel-edit')?.addEventListener('click',  () => qs('#edit-case-modal').close());
+    qs('#edit-case-form')?.addEventListener('submit', saveEditedCase);
   }
 
   if (document.readyState === 'loading') {

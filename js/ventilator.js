@@ -1641,6 +1641,8 @@
     stepStartTime : 0,   // simTime when step began (used by passive deterioration)
   };
 
+  let scenSelectFetchGen = 0;
+
   function saveBaseline() {
     savedPatient = Object.assign({}, patientState);
     savedVitals  = Object.assign({}, vitals, { nibp: Object.assign({}, vitals.nibp) });
@@ -1727,12 +1729,12 @@
     scenState.stepHistory   = [];   // [{question, choice_text, is_correct, domain}]
 
     // Track start in DB if this is a DB-generated scenario
-    if (scenario._dbId && window.supabase) {
+    if (scenario._dbId && window.SB && window.SB.client) {
       try {
-        const { data: { session } } = await window.supabase.auth.getSession();
+        const { data: { session } } = await window.SB.client.auth.getSession();
         if (session) {
           // Fire and forget update to case_assignments
-          window.supabase.from('case_assignments')
+          window.SB.client.from('case_assignments')
             .update({ status: 'started', started_at: new Date().toISOString() })
             .eq('scenario_id', scenario._dbId)
             .eq('assigned_to', session.user.id)
@@ -1797,7 +1799,7 @@
      SCENARIO UI RENDERING
      ───────────────────────────────────────────────────────────────────────── */
 
-  function renderScenSelectView() {
+  async function renderScenSelectView() {
     const sel    = $('scen-select');
     const active = $('scen-active');
     const resol  = $('scen-resolution');
@@ -1809,40 +1811,9 @@
     const filterRow  = $('scen-filter-row');
     if (!container) return;
 
-    // Fetch DB scenarios and merge with hardcoded ones
-    // We only fetch if supabase is available, otherwise fallback to hardcoded
+    const fetchGen = ++scenSelectFetchGen;
     let mergedScenarios = [...SCENARIOS];
-    
-    // We fetch scenarios where status='approved' AND visibility='public'
-    // (If the student was logged in, we'd also fetch their assigned private cases here)
-    if (window.supabase) {
-      try {
-        const { data, error } = await window.supabase
-          .from('generated_scenarios')
-          .select('id, scenario_json, author_label, visibility')
-          .eq('status', 'approved')
-          .eq('visibility', 'public')
-          .order('published_at', { ascending: false });
-          
-        if (!error && data) {
-          data.forEach(dbScen => {
-            const parsed = dbScen.scenario_json;
-            if (parsed) {
-              parsed._dbId = dbScen.id; // Tag it so we know it came from DB
-              parsed._author = dbScen.author_label || 'Instructor';
-              parsed._visibility = dbScen.visibility;
-              mergedScenarios.push(parsed);
-            }
-          });
-        } else if (error) {
-          console.error("Error fetching scenarios:", error);
-        }
-      } catch (err) {
-        console.error("Failed to load DB scenarios:", err);
-      }
-    }
 
-    // ── Category filter chips ──────────────────────────────────────────────
     const CATEGORY_ICONS = {
       'Emergency'   : '🚨',
       'Hemodynamics': '🫀',
@@ -1850,49 +1821,91 @@
       'Respiratory' : '🌬',
     };
 
-    if (filterRow) {
-      const categories = ['All', ...new Set(mergedScenarios.map(s => s.badge).filter(Boolean))];
-      filterRow.innerHTML = categories.map(cat => {
-        const icon = cat === 'All' ? '⭐' : (CATEGORY_ICONS[cat] || '📋');
-        return `<button class="scen-filter-chip${cat === 'All' ? ' scen-filter-chip--active' : ''}"
-                        data-filter="${cat === 'All' ? 'all' : cat}" type="button">
-                  <span class="scen-filter-chip__icon">${icon}</span>${cat}
-                </button>`;
+    function paintScenarioCards() {
+      if (fetchGen !== scenSelectFetchGen) return;
+      if (filterRow) {
+        const categories = ['All', ...new Set(mergedScenarios.map(s => s.badge).filter(Boolean))];
+        filterRow.innerHTML = categories.map(cat => {
+          const icon = cat === 'All' ? '⭐' : (CATEGORY_ICONS[cat] || '📋');
+          return `<button class="scen-filter-chip${cat === 'All' ? ' scen-filter-chip--active' : ''}"
+                          data-filter="${cat === 'All' ? 'all' : cat}" type="button">
+                    <span class="scen-filter-chip__icon">${icon}</span>${cat}
+                  </button>`;
+        }).join('');
+
+        filterRow.querySelectorAll('.scen-filter-chip').forEach(chip => {
+          chip.addEventListener('click', () => {
+            filterRow.querySelectorAll('.scen-filter-chip').forEach(c => c.classList.remove('scen-filter-chip--active'));
+            chip.classList.add('scen-filter-chip--active');
+            const filter = chip.dataset.filter;
+            container.querySelectorAll('.scen-card').forEach(card => {
+              const show = filter === 'all' || card.dataset.category === filter;
+              card.style.display = show ? '' : 'none';
+            });
+          });
+        });
+      }
+
+      container.innerHTML = mergedScenarios.map((s, i) => {
+        const authorHtml = s._dbId ? `<div class="scen-card__author">By ${s._author || 'Instructor'}</div>` : '';
+        return `<button class="scen-card" type="button" data-scen-idx="${i}" data-scen-id="${s.id || ''}" data-category="${s.badge}">
+           <span class="scen-card__badge" style="background:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).bg};color:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).fg};border:1px solid ${(BADGE_COLORS[s.badge]||_defaultBadgeColor).border}">
+             ${CATEGORY_ICONS[s.badge] || ''} ${s.badge}
+           </span>
+           <div class="scen-card__title">${s.title}</div>
+           ${authorHtml}
+           <div class="scen-card__summary">${s.summary}</div>
+           <div class="scen-card__cta">▶ Start scenario →</div>
+         </button>`;
       }).join('');
 
-      filterRow.querySelectorAll('.scen-filter-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          filterRow.querySelectorAll('.scen-filter-chip').forEach(c => c.classList.remove('scen-filter-chip--active'));
-          chip.classList.add('scen-filter-chip--active');
-          const filter = chip.dataset.filter;
-          container.querySelectorAll('.scen-card').forEach(card => {
-            const show = filter === 'all' || card.dataset.category === filter;
-            card.style.display = show ? '' : 'none';
-          });
+      container.querySelectorAll('.scen-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.scenIdx, 10);
+          startScenario(mergedScenarios[idx]);
         });
       });
     }
 
-    // ── Scenario cards ─────────────────────────────────────────────────────
-    container.innerHTML = mergedScenarios.map((s, i) => {
-      const authorHtml = s._dbId ? `<div class="scen-card__author">By ${s._author || 'Instructor'}</div>` : '';
-      return `<button class="scen-card" type="button" data-scen-idx="${i}" data-scen-id="${s.id || ''}" data-category="${s.badge}">
-         <span class="scen-card__badge" style="background:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).bg};color:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).fg};border:1px solid ${(BADGE_COLORS[s.badge]||_defaultBadgeColor).border}">
-           ${CATEGORY_ICONS[s.badge] || ''} ${s.badge}
-         </span>
-         <div class="scen-card__title">${s.title}</div>
-         ${authorHtml}
-         <div class="scen-card__summary">${s.summary}</div>
-         <div class="scen-card__cta">▶ Start scenario →</div>
-       </button>`;
-    }).join('');
+    paintScenarioCards();
 
-    container.querySelectorAll('.scen-card').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.scenIdx, 10);
-        startScenario(mergedScenarios[idx]);
-      });
-    });
+    if (window.SB && window.SB.client) {
+      try {
+        const { data, error } = await window.SB.client
+          .from('generated_scenarios')
+          .select('id, scenario_json, author_label, visibility')
+          .eq('status', 'approved')
+          .eq('visibility', 'public')
+          .order('published_at', { ascending: false });
+
+        if (fetchGen !== scenSelectFetchGen) return;
+
+        if (!error && data) {
+          mergedScenarios = [...SCENARIOS];
+          data.forEach(dbScen => {
+            let parsed = dbScen.scenario_json;
+            if (typeof parsed === 'string') {
+              try {
+                parsed = JSON.parse(parsed);
+              } catch (e) {
+                parsed = null;
+              }
+            }
+            if (parsed && typeof parsed === 'object') {
+              parsed._dbId = dbScen.id;
+              parsed._author = dbScen.author_label || 'Instructor';
+              parsed._visibility = dbScen.visibility;
+              mergedScenarios.push(parsed);
+            }
+          });
+          paintScenarioCards();
+        } else if (error) {
+          console.error('Error fetching scenarios:', error);
+        }
+      } catch (err) {
+        console.error('Failed to load DB scenarios:', err);
+      }
+    }
   }
 
   function renderScenActiveView() {
@@ -2113,12 +2126,12 @@
     const s = scenState.scenario;
     
     // Track completion in DB if this is a DB-generated scenario
-    if (s._dbId && window.supabase) {
+    if (s._dbId && window.SB && window.SB.client) {
       try {
-        const { data: { session } } = await window.supabase.auth.getSession();
+        const { data: { session } } = await window.SB.client.auth.getSession();
         if (session) {
           // Fire and forget update to case_assignments
-          window.supabase.from('case_assignments')
+          window.SB.client.from('case_assignments')
             .update({ status: 'completed', completed_at: new Date().toISOString() })
             .eq('scenario_id', s._dbId)
             .eq('assigned_to', session.user.id)
@@ -2195,7 +2208,7 @@
       if (!panel) return;
       panel.hidden = false;
       if (!scenState.active) renderScenSelectView();
-      openBtn.textContent = '▼ Hide Scenarios';
+      if (openBtn) openBtn.textContent = '▼ Hide Scenarios';
       document.body.classList.add('scenario-panel-open');
     };
     const _closeScenPanel = () => {

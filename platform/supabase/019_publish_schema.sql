@@ -9,7 +9,7 @@ ADD COLUMN IF NOT EXISTS published_at timestamptz;
 
 -- Set existing approved cases to public so they show up for everyone initially
 UPDATE public.generated_scenarios
-SET visibility = 'public', published_at = updated_at
+SET visibility = 'public', published_at = created_at
 WHERE status = 'approved';
 
 -- Drop the old policy that let anyone see all approved cases

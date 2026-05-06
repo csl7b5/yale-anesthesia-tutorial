@@ -76,6 +76,98 @@
       color: #9ca3af;
       margin: 0 0 0.35rem;
     }
+
+    /* Educator request link */
+    .auth-card__educator-link {
+      margin-top: 1.1rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+    .auth-card__text-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      font-size: inherit;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .auth-card__text-btn:hover { color: var(--accent-hover); }
+
+    /* Educator request dialog */
+    .edu-dialog {
+      border: none;
+      border-radius: 16px;
+      padding: 0;
+      width: min(520px, 95vw);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .edu-dialog::backdrop { background: rgba(0,0,0,0.45); }
+    .edu-dialog__inner { padding: 2rem; }
+    .edu-dialog__close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: none; border: none;
+      font-size: 1.4rem; cursor: pointer;
+      color: #9ca3af; line-height: 1;
+    }
+    .edu-dialog__close:hover { color: #374151; }
+    .edu-dialog__title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1c2738;
+      margin: 0 0 0.3rem;
+    }
+    .edu-dialog__sub {
+      font-size: 0.82rem;
+      color: #6b7280;
+      margin: 0 0 1.2rem;
+    }
+    .edu-dialog__field {
+      margin-bottom: 0.75rem;
+    }
+    .edu-dialog__field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .edu-dialog__field label span { color: var(--accent); }
+    .edu-dialog__field input,
+    .edu-dialog__field textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.5rem 0.7rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      font: inherit;
+      font-size: 0.875rem;
+      color: #1c2738;
+      background: #f9fafb;
+      transition: border-color 0.15s;
+      resize: vertical;
+    }
+    .edu-dialog__field input:focus,
+    .edu-dialog__field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+    }
+    .edu-dialog__status {
+      font-size: 0.8rem;
+      margin: 0.5rem 0;
+      min-height: 1.2em;
+    }
+    .edu-dialog__status--ok    { color: #16a34a; }
+    .edu-dialog__status--error { color: #dc2626; }
   </style>
 </head>
 <body class="auth-ready">
@@ -190,8 +282,64 @@
       <a href="../" class="auth-card__skip">
         ← Continue without an account
       </a>
+
+      <!-- Educator request link -->
+      <p class="auth-card__educator-link">
+        Are you an educator?
+        <button type="button" id="open-edu-request" class="auth-card__text-btn">
+          Request an instructor account
+        </button>
+      </p>
     </div>
   </div>
+
+  <!-- ── Educator request modal ────────────────────────────────────────── -->
+  <dialog id="edu-request-dialog" class="edu-dialog">
+    <div class="edu-dialog__inner">
+      <button type="button" id="close-edu-request" class="edu-dialog__close" aria-label="Close">×</button>
+      <h2 class="edu-dialog__title">Request an Instructor Account</h2>
+      <p class="edu-dialog__sub">
+        We'll review your request and reach out. When approved, you'll receive an email and can sign in as an instructor.
+        Optionally choose a password now (min 8 characters) so it's ready on approval.
+      </p>
+      <form id="edu-request-form" novalidate>
+        <div class="edu-dialog__field">
+          <label for="edu-name">Full name <span aria-hidden="true">*</span></label>
+          <input id="edu-name" type="text" placeholder="Dr. Jane Smith" required maxlength="120" />
+        </div>
+        <div class="edu-dialog__field">
+          <label for="edu-email">Email <span aria-hidden="true">*</span></label>
+          <input id="edu-email" type="email" placeholder="you@institution.edu" required />
+        </div>
+        <div class="edu-dialog__field">
+          <label for="edu-institution">Institution <span aria-hidden="true">*</span></label>
+          <input id="edu-institution" type="text" placeholder="Yale School of Medicine" required maxlength="160" />
+        </div>
+        <div class="edu-dialog__field">
+          <label for="edu-role">Role / title</label>
+          <input id="edu-role" type="text" placeholder="e.g. Attending, Clerkship Director, Resident" maxlength="100" />
+        </div>
+        <div class="edu-dialog__field">
+          <label for="edu-password">Password for your account (optional)</label>
+          <input id="edu-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Min 8 characters if you set one" />
+        </div>
+        <div class="edu-dialog__field">
+          <label for="edu-password2">Confirm password</label>
+          <input id="edu-password2" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Repeat if you chose a password" />
+        </div>
+        <div class="edu-dialog__field">
+          <label for="edu-use">How do you plan to use Anesthesia Playground?</label>
+          <textarea id="edu-use" rows="2" placeholder="e.g. Pre-rotation prep for MS3 students on my service"></textarea>
+        </div>
+        <div class="edu-dialog__field">
+          <label for="edu-message">Anything else? (optional)</label>
+          <textarea id="edu-message" rows="2" placeholder="Any questions, context, or requests"></textarea>
+        </div>
+        <p id="edu-status" class="edu-dialog__status"></p>
+        <button type="submit" id="edu-submit" class="auth-card__submit">Submit Request</button>
+      </form>
+    </div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
@@ -320,6 +468,93 @@
           (role === 'instructor' || role === 'admin') ? 'instructor.html' : 'student.html'
         );
       }
+
+      /* ── Educator request modal ────────────────────────────── */
+      const eduDialog  = document.getElementById('edu-request-dialog');
+      const eduForm    = document.getElementById('edu-request-form');
+      const eduStatus  = document.getElementById('edu-status');
+      const eduSubmit  = document.getElementById('edu-submit');
+
+      document.getElementById('open-edu-request').addEventListener('click', () => {
+        eduStatus.textContent = '';
+        eduStatus.className = 'edu-dialog__status';
+        eduForm.reset();
+        eduDialog.showModal();
+      });
+      document.getElementById('close-edu-request').addEventListener('click', () => eduDialog.close());
+      eduDialog.addEventListener('click', e => { if (e.target === eduDialog) eduDialog.close(); });
+
+      eduForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const name        = document.getElementById('edu-name').value.trim();
+        const email       = document.getElementById('edu-email').value.trim();
+        const institution = document.getElementById('edu-institution').value.trim();
+        const role_title  = document.getElementById('edu-role').value.trim() || null;
+        const use_case    = document.getElementById('edu-use').value.trim()  || null;
+        const message     = document.getElementById('edu-message').value.trim() || null;
+        const pwField     = document.getElementById('edu-password');
+        const pw2Field    = document.getElementById('edu-password2');
+        const rawPw       = (pwField?.value ?? '').trim();
+        const rawPw2      = (pw2Field?.value ?? '').trim();
+
+        if (!name || !email || !institution) {
+          eduStatus.textContent = 'Please fill in name, email, and institution.';
+          eduStatus.className = 'edu-dialog__status edu-dialog__status--error';
+          return;
+        }
+
+        if (rawPw || rawPw2) {
+          if (rawPw.length < 8) {
+            eduStatus.textContent = 'Password must be at least 8 characters.';
+            eduStatus.className = 'edu-dialog__status edu-dialog__status--error';
+            return;
+          }
+          if (rawPw !== rawPw2) {
+            eduStatus.textContent = 'Passwords do not match.';
+            eduStatus.className = 'edu-dialog__status edu-dialog__status--error';
+            return;
+          }
+        }
+
+        eduSubmit.disabled = true;
+        eduStatus.textContent = 'Submitting…';
+        eduStatus.className = 'edu-dialog__status';
+
+        const { error } = await window.SB.client.rpc('submit_educator_request', {
+          p_name: name,
+          p_email: email,
+          p_institution: institution,
+          p_role_title: role_title,
+          p_use_case: use_case,
+          p_message: message,
+          p_initial_password: rawPw || null,
+        });
+
+        if (error) {
+          let msg = [
+            error.message,
+            error.details,
+            error.hint,
+          ].filter(Boolean).join(' — ') || 'Submission failed.';
+          if (/permission denied|new row violates row-level security|42501/i.test(msg)) {
+            msg +=
+              ' Often this means migration 026 ran (direct inserts are disabled) but the page is cached: hard-refresh (Cmd+Shift+R) or try a private window.';
+          }
+          if (/function public\.submit_educator_request|does not exist|404/i.test(msg)) {
+            msg =
+              'The secure request form is not in the database yet. In Supabase SQL, run platform/supabase/026_educator_auto_provision.sql, then refresh this page.';
+          }
+          eduStatus.textContent = msg;
+          eduStatus.className = 'edu-dialog__status edu-dialog__status--error';
+          eduSubmit.disabled = false;
+        } else {
+          eduStatus.textContent = '✓ Request submitted! We\'ll be in touch soon.';
+          eduStatus.className = 'edu-dialog__status edu-dialog__status--ok';
+          eduForm.reset();
+          eduSubmit.disabled = false;
+          setTimeout(() => eduDialog.close(), 2800);
+        }
+      });
     })();
   </script>
 
