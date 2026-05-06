@@ -44,12 +44,13 @@ body.home-body {
 
 .home-hero {
   position: relative;
-  padding: clamp(40px, 5vw, 72px) clamp(20px, 5vw, 80px);
-  /* Fill the viewport (minus the sticky nav) so the first "screen" stays
-     self-contained, then transitions cleanly into the features section. */
-  min-height: calc(100svh - 64px);
+  padding: clamp(32px, 5vw, 60px) clamp(20px, 5vw, 80px) clamp(24px, 4vw, 48px);
+  /* Fill exactly one viewport height so the hero + pill is the first screen */
+  height: calc(100svh - 64px);
+  min-height: 600px;
+  max-height: 980px;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   overflow: hidden;
   isolation: isolate;
 }
@@ -73,8 +74,11 @@ body.home-body {
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: clamp(24px, 4vw, 64px);
+  /* Credit pill (grid-column: 1/-1) auto-row sits at the bottom */
+  grid-template-rows: 1fr auto;
+  gap: clamp(20px, 3vw, 48px) clamp(24px, 4vw, 64px);
   align-items: center;
+  align-content: center;
 }
 
 .home-hero__copy {
@@ -285,7 +289,8 @@ body.home-body {
   grid-column: 1 / -1;          /* span both copy + carousel columns */
   display: flex;
   justify-content: center;      /* center the pill horizontally */
-  margin-top: 32px;             /* breathing room below the carousel */
+  align-self: end;              /* pin to bottom of the grid */
+  padding-bottom: 4px;
 }
 
 /* The actual visible pill */
@@ -300,6 +305,7 @@ body.home-body {
   box-shadow: var(--home-shadow-sm);
   backdrop-filter: blur(8px);
   max-width: 100%;
+  overflow: hidden;
 }
 
 /* Left section: founder link (transparent — pill provides the bg) */
@@ -1672,14 +1678,45 @@ body.home-body {
   .home-feature--vent { order: -1; }
 }
 
+/* ── Intermediate desktop/tablet: clip carousel overflow before
+   the layout collapses to single column at 960px ─────────────── */
+@media (max-width: 1024px) {
+  .home-carousel {
+    /* Prevent 3D-transformed side cards from bleeding past the column edge */
+    overflow: hidden;
+    border-radius: 8px;
+  }
+}
+
 @media (max-width: 960px) {
+  .home-hero {
+    height: auto;
+    min-height: calc(100svh - 64px);
+    max-height: none;
+    align-items: flex-start;
+  }
   .home-hero__inner {
     grid-template-columns: 1fr;
-    gap: 40px;
+    /* 3 rows: copy, carousel, credit pill */
+    grid-template-rows: auto auto auto;
+    gap: 24px;
+    align-content: flex-start;
+    padding-top: 8px;
+  }
+  /* Reset grid-row so credit pill flows after carousel naturally */
+  .home-hero__credit {
+    grid-row: auto;
+    align-self: auto;
+    padding-bottom: 0;
   }
   .home-carousel__stage {
     max-width: 460px;
     margin: 0 auto;
+  }
+  /* Carousel clipping for tablet single-column view */
+  .home-carousel {
+    overflow: hidden;
+    border-radius: 8px;
   }
   .home-about__pillars {
     grid-template-columns: 1fr;
@@ -1690,30 +1727,128 @@ body.home-body {
 }
 
 @media (max-width: 540px) {
+  /* ── Hero section ── */
   .home-hero {
-    padding-left: 18px;
-    padding-right: 18px;
+    padding: 20px 16px 16px;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    align-items: flex-start;
   }
-  .home-cta { width: 100%; justify-content: center; }
-  .home-hero__ctas { width: 100%; }
-  /* Clip the carousel so side-card "wings" don't bleed off screen.
-     border-radius forces iOS to composite the layer within its bounds,
-     preventing the 3D-transform "ghost box" artifact. */
-  .home-carousel {
-    overflow: hidden;
+
+  /* Slightly tighter title on very narrow viewports */
+  .home-hero__title {
+    font-size: clamp(2rem, 8vw, 2.8rem);
+    margin-top: 14px;
+    margin-bottom: 12px;
+  }
+
+  /* Eyebrow pill: allow wrap so it never clips */
+  .home-hero__eyebrow {
+    white-space: normal;
+    font-size: 0.72rem;
+  }
+
+  /* Lead text: full width on mobile */
+  .home-hero__lead {
+    max-width: 100%;
+    font-size: 0.96rem;
+    margin-bottom: 20px;
+  }
+
+  /* CTA buttons: full-width stacked */
+  .home-hero__ctas {
     width: 100%;
-    border-radius: 4px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .home-cta-menu {
+    width: 100%;
+  }
+  .home-cta {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 18px;
+    font-size: 0.95rem;
+  }
+
+  /* Meta line: wrap freely */
+  .home-hero__meta {
+    font-size: 0.82rem;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Credit pill: compact horizontal layout on mobile ── */
+  .home-hero__credit {
+    padding: 0 2px;
+    margin-top: 20px;
+  }
+  .home-hero__credit-pill {
+    /* Stay horizontal but compact — shrink non-essential text */
+    padding: 5px 12px 5px 5px;
+    gap: 0;
+    max-width: 100%;
+  }
+  /* Shrink avatar */
+  .home-hero__credit-avatar {
+    width: 28px;
+    height: 28px;
+  }
+  /* Hide the "Built by" micro-label to save space */
+  .home-hero__credit-label {
+    display: none;
+  }
+  /* Compact name */
+  .home-hero__credit-name {
+    font-size: 0.80rem;
+  }
+  /* Hide MS4 role text — too much for mobile */
+  .home-hero__credit-role {
+    display: none;
+  }
+  /* Shrink LI icon */
+  .home-hero__credit-li {
+    width: 20px;
+    height: 20px;
+  }
+  /* Thin divider: tighter margins */
+  .home-hero__credit-divider {
+    margin: 0 8px;
+    height: 28px;
+  }
+  /* Attendings: hide the label text, keep faces */
+  .home-hero__attendings-label {
+    display: none;
+  }
+  .home-hero__attendings {
+    gap: 6px;
+  }
+  .home-hero__attending-face {
+    width: 26px;
+    height: 26px;
+  }
+
+  /* ── Carousel ── */
+  /* Clip side-card wings without creating a visible box border.
+     Use clip-path so no border-radius box artifact appears. */
+  .home-carousel {
+    overflow: visible; /* reset the tablet rule */
+    border-radius: 0;  /* remove any border-radius box */
+    width: 100%;
   }
   .home-carousel__stage {
-    aspect-ratio: 4 / 3.2;
+    /* Clip only the stage, not the whole wrapper */
+    aspect-ratio: 4 / 3.4;
+    width: min(100%, 400px);
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: 0;  /* no box border */
   }
   /* Drop the floor-shadow pseudo-element on mobile — it extends below
      the card bounds and shows as a visible box edge when clipped */
   .home-card.is-active::after { display: none; }
   /* Reduce side card translation so they stay within the clipped bounds */
-  .home-card.is-side-left  {
+  .home-card.is-side-left {
     transform: translateX(-36%) translateZ(-180px) rotateY(32deg) scale(0.82);
     opacity: 0.55;
   }
@@ -1721,14 +1856,27 @@ body.home-body {
     transform: translateX(36%) translateZ(-180px) rotateY(-32deg) scale(0.82);
     opacity: 0.55;
   }
+  /* Cards: reduce padding on mobile */
+  .home-card {
+    padding: 14px;
+  }
+  .home-card__caption {
+    font-size: 0.85rem;
+    margin-top: 10px;
+  }
+
+  /* Mini Pyxis: tighter padding */
   .mini-pyxis { padding: 10px; gap: 6px; }
-  .mini-vent  { padding: 10px; gap: 8px; grid-template-columns: 1fr 1.4fr 0.7fr; }
+  /* Mini Ventilator: tighter, slightly rebalanced columns */
+  .mini-vent  { padding: 10px; gap: 6px; grid-template-columns: 0.9fr 1.5fr 0.7fr; }
   /* Vitals numbers: smaller on mobile only */
-  .mini-vent__vital-val { font-size: 1.0rem; }
-  .mini-vent__num-val   { font-size: 0.78rem; }
+  .mini-vent__vital-val { font-size: 0.95rem; }
+  .mini-vent__num-val   { font-size: 0.75rem; }
+  .mini-vent__panel { padding: 6px 8px; }
   /* Mastery donut: smaller on mobile only */
   .mini-dash__donut-ring { width: 50%; }
   .mini-dash__donut-num  { font-size: 0.72rem; }
+
   .home-feature::after { top: 12px; right: 12px; }
 }
 
