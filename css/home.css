@@ -293,6 +293,75 @@ body.home-body {
   padding-bottom: 4px;
 }
 
+/* Scroll affordance — chevrons flanking the credit pill */
+.home-hero__credit-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 2.8vw, 24px);
+  max-width: 100%;
+}
+
+.home-hero__scroll-arrow {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* ≥44px touch target (WCAG / mobile HIG) */
+  min-width: 44px;
+  min-height: 44px;
+  color: #0f766e;
+  opacity: 0.92;
+  text-decoration: none;
+  padding: 6px;
+  margin: 0;
+  border-radius: 12px;
+  -webkit-tap-highlight-color: rgba(13, 148, 136, 0.15);
+  touch-action: manipulation;
+  transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+.home-hero__scroll-arrow:hover {
+  opacity: 1;
+  color: #0d9488;
+}
+
+.home-hero__scroll-arrow:active {
+  transform: scale(0.94);
+  opacity: 1;
+}
+
+.home-hero__scroll-arrow:focus-visible {
+  outline: 2px solid var(--accent, #0d9488);
+  outline-offset: 3px;
+}
+
+.home-hero__scroll-arrow-svg {
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(13, 148, 136, 0.2));
+}
+
+.home-hero__scroll-arrow-glyph {
+  display: inline-flex;
+  animation: home-hero-scroll-nudge 1.45s ease-in-out infinite;
+}
+
+.home-hero__scroll-arrow-glyph--delay {
+  animation-delay: 0.2s;
+}
+
+@keyframes home-hero-scroll-nudge {
+  0%, 100% { transform: translateY(0); opacity: 0.82; }
+  50%      { transform: translateY(7px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero__scroll-arrow-glyph,
+  .home-hero__scroll-arrow-glyph--delay {
+    animation: none;
+  }
+}
+
 /* The actual visible pill */
 .home-hero__credit-pill {
   display: inline-flex;
@@ -1230,6 +1299,8 @@ body.home-body {
    FEATURES
    ============================================================ */
 .home-features {
+  /* Native #anchor: match JS intent ≈ nav (56–80px) + same seam nudge as home.js SEAM_NUDGE_PX */
+  scroll-margin-top: clamp(72px, 4vw + 56px, 104px);
   padding: clamp(56px, 8vw, 96px) clamp(20px, 5vw, 80px);
   max-width: 1240px;
   margin: 0 auto;
@@ -1779,13 +1850,67 @@ body.home-body {
 
   /* ── Credit pill: compact horizontal, retains "Built by" ── */
   .home-hero__credit {
-    padding: 0 2px;
+    padding-left: max(2px, env(safe-area-inset-left));
+    padding-right: max(2px, env(safe-area-inset-right));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
     margin-top: 20px;
   }
+
+  .home-hero__credit-row {
+    gap: 8px;
+    /* Stacked layout: pill full width on row 1; row 2 = arrow | hint | arrow */
+    display: grid;
+    grid-template-columns: minmax(44px, auto) 1fr minmax(44px, auto);
+    grid-template-rows: auto auto;
+    row-gap: 10px;
+    column-gap: 6px;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+  }
+
   .home-hero__credit-pill {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-self: center;
+    width: max-content;
+    max-width: 100%;
     padding: 5px 10px 5px 5px;
     gap: 0;
-    max-width: 100%;
+  }
+
+  .home-hero__scroll-arrow:not(.home-hero__scroll-arrow--tail) {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+  }
+
+  .home-hero__scroll-arrow--tail {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: center;
+  }
+
+  .home-hero__credit-row::after {
+    content: "Scroll for more";
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: center;
+    align-self: center;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--home-mute, #64748b);
+    text-align: center;
+    line-height: 1.25;
+    max-width: 7.75rem;
+    pointer-events: none;
+  }
+
+  .home-hero__scroll-arrow-svg {
+    width: 22px;
+    height: 30px;
   }
   .home-hero__credit-link {
     gap: 7px;

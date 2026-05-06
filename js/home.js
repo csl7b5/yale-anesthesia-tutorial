@@ -229,4 +229,65 @@
   } else {
     document.addEventListener("DOMContentLoaded", function () { trySyncAuth(0); });
   }
+
+  // ── #home-features scroll: y = (section top in document) − navHeight + SEAM_NUDGE_PX ──
+  //     navHeight = live .site-nav height (fallback 64). Tunable: SEAM_NUDGE_PX only.
+  (function initHomeFeaturesScroll() {
+    if (!document.body.classList.contains("home-body")) return;
+
+    /** Extra document pixels to scroll down after aligning the seam under the nav.
+     *  0 = DOM seam touches bottom of nav (can look “short” vs the hero fade).
+     *  Raise a few px if the pill still peeks; lower if the headline jumps too far. */
+    var SEAM_NUDGE_PX = 54;
+
+    function targetEl() {
+      return document.getElementById("home-features");
+    }
+
+    function navOffset() {
+      var nav = document.querySelector(".site-nav");
+      return nav ? Math.round(nav.getBoundingClientRect().height) : 64;
+    }
+
+    function scrollToFeatures(opts) {
+      var el = targetEl();
+      if (!el) return;
+      var instant = prefersReduced || (opts && opts.instant);
+      var navH = navOffset();
+      var y = el.getBoundingClientRect().top + window.scrollY - navH + SEAM_NUDGE_PX;
+      if (y < 0) y = 0;
+      window.scrollTo({ top: y, behavior: instant ? "auto" : "smooth" });
+      if (opts && opts.updateHash) {
+        try {
+          history.replaceState(null, "", "#home-features");
+        } catch (_) {}
+      }
+    }
+
+    document.addEventListener("click", function (e) {
+      var link = e.target.closest && e.target.closest('a[href="#home-features"]');
+      if (!link) return;
+      if (!targetEl()) return;
+      e.preventDefault();
+      scrollToFeatures({ updateHash: true });
+    });
+
+    if (window.location.hash !== "#home-features") return;
+
+    function run() {
+      scrollToFeatures({ instant: prefersReduced });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(run);
+        });
+      });
+    } else {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(run);
+      });
+    }
+  })();
 })();
