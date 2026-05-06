@@ -1682,9 +1682,8 @@ body.home-body {
    the layout collapses to single column at 960px ─────────────── */
 @media (max-width: 1024px) {
   .home-carousel {
-    /* Prevent 3D-transformed side cards from bleeding past the column edge */
+    /* Clip 3D side-card bleed — no border-radius so no visible box */
     overflow: hidden;
-    border-radius: 8px;
   }
 }
 
@@ -1712,12 +1711,11 @@ body.home-body {
   .home-carousel__stage {
     max-width: 460px;
     margin: 0 auto;
-  }
-  /* Carousel clipping for tablet single-column view */
-  .home-carousel {
+    /* Clip only at stage level — no box around the full carousel */
     overflow: hidden;
-    border-radius: 8px;
   }
+  /* Do NOT add overflow/border-radius to .home-carousel wrapper —
+     that creates a visible box against the background */
   .home-about__pillars {
     grid-template-columns: 1fr;
   }
@@ -1779,70 +1777,70 @@ body.home-body {
     flex-wrap: wrap;
   }
 
-  /* ── Credit pill: compact horizontal layout on mobile ── */
+  /* ── Credit pill: compact horizontal, retains "Built by" ── */
   .home-hero__credit {
     padding: 0 2px;
     margin-top: 20px;
   }
   .home-hero__credit-pill {
-    /* Stay horizontal but compact — shrink non-essential text */
-    padding: 5px 12px 5px 5px;
+    padding: 5px 10px 5px 5px;
     gap: 0;
     max-width: 100%;
+  }
+  .home-hero__credit-link {
+    gap: 7px;
+    padding: 2px 10px 2px 2px;
   }
   /* Shrink avatar */
   .home-hero__credit-avatar {
     width: 28px;
     height: 28px;
   }
-  /* Hide the "Built by" micro-label to save space */
+  /* Keep "Built by" label — just tiny */
   .home-hero__credit-label {
-    display: none;
+    font-size: 0.56rem;
   }
   /* Compact name */
   .home-hero__credit-name {
-    font-size: 0.80rem;
+    font-size: 0.78rem;
   }
-  /* Hide MS4 role text — too much for mobile */
+  /* Keep MS4 role but smaller */
   .home-hero__credit-role {
-    display: none;
+    font-size: 0.66rem;
   }
   /* Shrink LI icon */
   .home-hero__credit-li {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
   /* Thin divider: tighter margins */
   .home-hero__credit-divider {
     margin: 0 8px;
     height: 28px;
   }
-  /* Attendings: hide the label text, keep faces */
+  /* Attendings: hide verbose label, keep faces only */
   .home-hero__attendings-label {
     display: none;
   }
   .home-hero__attendings {
-    gap: 6px;
+    gap: 4px;
   }
   .home-hero__attending-face {
     width: 26px;
     height: 26px;
   }
 
-  /* ── Carousel ── */
-  /* Clip side-card wings without creating a visible box border.
-     Use clip-path so no border-radius box artifact appears. */
+  /* ── Carousel: clip only at stage level, no box wrapper ── */
   .home-carousel {
-    overflow: visible; /* reset the tablet rule */
-    border-radius: 0;  /* remove any border-radius box */
+    overflow: visible;
+    border-radius: 0;
     width: 100%;
   }
   .home-carousel__stage {
-    /* Clip only the stage, not the whole wrapper */
     aspect-ratio: 4 / 3.4;
     width: min(100%, 400px);
     overflow: hidden;
-    border-radius: 0;  /* no box border */
+    border-radius: 0;
   }
   /* Drop the floor-shadow pseudo-element on mobile — it extends below
      the card bounds and shows as a visible box edge when clipped */
@@ -1856,24 +1854,56 @@ body.home-body {
     transform: translateX(36%) translateZ(-180px) rotateY(-32deg) scale(0.82);
     opacity: 0.55;
   }
-  /* Cards: reduce padding on mobile */
+  /* On mobile, strip the card's white frame so the art fills edge-to-edge
+     without a visible box. The card's border-radius still softens the corners,
+     but there's no contrast between frame and page background. */
   .home-card {
-    padding: 14px;
+    padding: 6px;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .home-card.is-active {
+    background: transparent;
+    box-shadow: 0 6px 24px rgba(18, 30, 45, 0.14);
+  }
+  /* Art area: let border-radius carry through to the inner art */
+  .home-card__art {
+    border-radius: 16px;
+  }
+  /* Chip: add subtle shadow so it reads against both light and dark art */
+  .home-card__chip {
+    box-shadow: 0 2px 8px rgba(18, 30, 45, 0.12);
   }
   .home-card__caption {
     font-size: 0.85rem;
-    margin-top: 10px;
+    margin-top: 8px;
+    color: var(--home-ink-2);
   }
 
   /* Mini Pyxis: tighter padding */
   .mini-pyxis { padding: 10px; gap: 6px; }
   /* Mini Ventilator: tighter, slightly rebalanced columns */
   .mini-vent  { padding: 10px; gap: 6px; grid-template-columns: 0.9fr 1.5fr 0.7fr; }
-  /* Vitals numbers: smaller on mobile only */
   .mini-vent__vital-val { font-size: 0.95rem; }
   .mini-vent__num-val   { font-size: 0.75rem; }
   .mini-vent__panel { padding: 6px 8px; }
-  /* Mastery donut: smaller on mobile only */
+
+  /* ── Mini Dashboard: prevent overflow at small card sizes ── */
+  .mini-dash { padding: 10px; gap: 6px; }
+  /* Header: tighter tab pills and hide the LIVE badge */
+  .mini-dash__tab { padding: 3px 7px; font-size: 0.56rem; }
+  .mini-dash__live { display: none; }
+  /* KPI row: smaller values so nothing overflows */
+  .mini-dash__kpi { padding: 6px 8px; min-height: 0; }
+  .mini-dash__kpi-label { font-size: 0.50rem; letter-spacing: 0.04em; }
+  .mini-dash__kpi-val { font-size: 1.0rem; }
+  .mini-dash__kpi-unit { font-size: 0.6rem; }
+  /* Bottom panels: reduce padding + donut */
+  .mini-dash__chart,
+  .mini-dash__donut { padding: 6px 8px; }
+  .mini-dash__panel-title { font-size: 0.52rem; margin-bottom: 4px; }
+  .mini-dash__bars { gap: 3px; }
   .mini-dash__donut-ring { width: 50%; }
   .mini-dash__donut-num  { font-size: 0.72rem; }
 
