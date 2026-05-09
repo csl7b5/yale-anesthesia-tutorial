@@ -93,6 +93,11 @@ html { scrollbar-gutter: stable; }
   box-shadow: var(--shadow-soft);
   overflow: hidden;
 }
+
+/* Vitals column: teaser SVG scales outside its layout box — shell cannot clip it */
+.mon-shell.mon-shell--vitals {
+  overflow: visible;
+}
 .mon-bezel {
   padding: 8px;
   background: #eef0f4;
@@ -131,13 +136,14 @@ html { scrollbar-gutter: stable; }
   display: flex;
   flex-direction: column;
   padding-top: 4px;
-  overflow: hidden;
+  /* Default hidden clips SVG/CSS scale animations in the ventilator-modes teaser */
+  overflow: visible;
   border-radius: var(--radius-md);
 }
-/* Wave rows stay fixed height; vitals-bar grows to fill any remaining space */
+/* Vitals bar compact; flex growth goes to vent-modes-teaser below */
 .mon-shell--vitals .vitals-bar {
-  flex: 1;
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  flex: 0 0 auto;
+  border-radius: 0;
 }
 
 /* Waveform row */
@@ -217,11 +223,372 @@ html { scrollbar-gutter: stable; }
 }
 
 /* Space between EtCO₂ strip and NIBP / temp / gas bar (black “breathing room”) */
-.mon-shell--vitals .mon-screen > .wave-row:nth-last-child(2) {
+.mon-shell--vitals .mon-screen > .wave-row:last-of-type {
   margin-bottom: 10px;
 }
 
-/* Vitals bottom bar — fills remaining monitor height; cells stretch equally */
+/* ── Ventilator modes teaser (fills monitor strip below NIBP · Temp · Gas) ── */
+.vent-modes-teaser {
+  /* Slowed to 5.5 s to match the VCV breath-cycle feel from the physics skeleton */
+  --vent-teaser-cycle: 5.5s;
+  --vent-teaser-ease: cubic-bezier(0.42, 0, 0.22, 1);
+  --vent-teaser-ease-lung: cubic-bezier(0.45, 0, 0.25, 1);
+  --vent-teaser-ease-flow: cubic-bezier(0.37, 0.02, 0.21, 1);
+  --vent-teaser-ease-mechanical: cubic-bezier(0.38, 0, 0.58, 1);
+  /* Match canvas scene fill (#020617) — no banding at preview edge */
+  --vent-teaser-bg: #020617;
+  flex: 1 1 120px;
+  min-height: 120px;
+  display: flex;
+  align-items: stretch;
+  padding: 6px 8px 8px;
+  background: var(--vent-teaser-bg);
+  border-top: 1px solid rgba(13, 148, 136, 0.28);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.vent-modes-teaser__viz {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px 6px;
+  border-radius: 10px;
+  background: var(--vent-teaser-bg, #020617);
+  border: 1px solid rgba(45, 212, 191, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.5);
+  overflow: hidden;
+}
+
+/* Canvas teaser — tall enough to read motion (uniform scale in JS prevents stretch) */
+.vma-teaser-scene-canvas {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 790 / 370;
+  max-height: none;
+  min-height: 104px;
+  display: block;
+}
+
+.vent-modes-teaser__svg {
+  width: 100%;
+  height: 60px;
+  max-height: 72px;
+  display: block;
+  overflow: visible;
+}
+
+/* ── Bellows: anchor at mid-height outlet port (top + bottom plates converge toward it) ── */
+.vent-modes-teaser__svg svg.vent-teaser-bellows-core,
+.vent-modes-dialog__preview-svg svg.vent-teaser-bellows-core {
+  transform-origin: 50% 53%;  /* 53% ≈ outlet nozzle y-center in a 64px-tall bellows */
+  transform-box: fill-box;
+  animation: vent-teaser-bellows-drive var(--vent-teaser-cycle) var(--vent-teaser-ease-mechanical) infinite;
+}
+
+/* ── Lungs: scale from centroid — no sliding off the carina (lags flow slightly; smoother easing) ── */
+.vent-modes-teaser__svg svg.vent-teaser-lung-right,
+.vent-modes-teaser__svg svg.vent-teaser-lung-left,
+.vent-modes-dialog__preview-svg svg.vent-teaser-lung-right,
+.vent-modes-dialog__preview-svg svg.vent-teaser-lung-left {
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+  animation: vent-teaser-lung-inflate var(--vent-teaser-cycle) var(--vent-teaser-ease-lung) infinite;
+}
+
+/* ── Pressure annotation (teaching hook for P / flow markings) ── */
+.vent-teaser-p-label {
+  animation: vent-teaser-p-show var(--vent-teaser-cycle) var(--vent-teaser-ease) infinite;
+}
+
+/* ── Aeration glow overlay (shared) ── */
+.vent-teaser-lung-glow-r,
+.vent-teaser-lung-glow-l {
+  animation: vent-teaser-glow-pulse var(--vent-teaser-cycle) var(--vent-teaser-ease-lung) infinite;
+}
+
+/* ── Hose inspiratory / expiratory jets ── */
+.vent-teaser-hose-flow--insp {
+  stroke-dasharray: 6 10;
+  animation: vent-teaser-hose-jet var(--vent-teaser-cycle) var(--vent-teaser-ease-flow) infinite;
+}
+
+.vent-teaser-hose-flow--exp {
+  stroke-dasharray: 4 11;
+  animation: vent-teaser-hose-exp var(--vent-teaser-cycle) var(--vent-teaser-ease-flow) infinite;
+}
+
+/* ── Directional arrows ── */
+.vent-teaser-flow-arrows {
+  animation: vent-teaser-arrows-show var(--vent-teaser-cycle) var(--vent-teaser-ease) infinite;
+}
+
+/* ── Tiny gas “spark” highlights along the hose (inspiration only) ── */
+.vent-teaser-flow-spark {
+  animation: vent-teaser-flow-spark var(--vent-teaser-cycle) var(--vent-teaser-ease-flow) infinite;
+  pointer-events: none;
+}
+
+.vent-teaser-flow-spark--b {
+  animation-delay: calc(var(--vent-teaser-cycle) * 0.055);
+}
+
+/* ── Breath cycle keyframes — updated to match VCV physics (0–34% insp, 34–50% hold, 50–84% exhale)
+   With --vent-teaser-cycle: 5.5 s: ~1.9 s insp, 0.9 s hold, 1.9 s exhale, 0.8 s PEEP ── */
+
+@keyframes vent-teaser-bellows-drive {
+  0%, 5%    { transform: scaleY(1);    }
+  38%, 52%  { transform: scaleY(0.61); }
+  74%       { transform: scaleY(0.92); }
+  90%       { transform: scaleY(0.99); }
+  96%, 100% { transform: scaleY(1);    }
+}
+
+@keyframes vent-teaser-lung-inflate {
+  0%, 7%    { transform: scale(1);     }
+  34%       { transform: scale(1.030); }
+  50%       { transform: scale(1.055); }
+  58%       { transform: scale(1.050); }
+  78%       { transform: scale(1.016); }
+  94%, 100% { transform: scale(1);     }
+}
+
+@keyframes vent-teaser-p-show {
+  0%, 8%    { opacity: 0; }
+  28%       { opacity: 1; }
+  50%       { opacity: 1; }
+  62%, 100% { opacity: 0; }
+}
+
+@keyframes vent-teaser-glow-pulse {
+  0%, 6%    { opacity: 0.08; }
+  16%       { opacity: 0.03; }
+  46%       { opacity: 0.84; }
+  56%       { opacity: 0.60; }
+  74%       { opacity: 0.20; }
+  92%, 100% { opacity: 0.09; }
+}
+
+@keyframes vent-teaser-hose-jet {
+  0%, 6%    { stroke-dashoffset: 0;    opacity: 0.12; }
+  12%       { opacity: 0.50; }
+  40%       { stroke-dashoffset: -78;  opacity: 1;    }
+  52%       { stroke-dashoffset: -104; opacity: 0.38; }
+  56%, 100% { stroke-dashoffset: -114; opacity: 0;    }
+}
+
+@keyframes vent-teaser-hose-exp {
+  0%, 56%   { stroke-dashoffset: 0;   opacity: 0;    }
+  66%       { opacity: 0.28; stroke-dashoffset: -24; }
+  80%       { opacity: 0.14; stroke-dashoffset: -50; }
+  94%, 100% { opacity: 0;    stroke-dashoffset: 0;   }
+}
+
+@keyframes vent-teaser-arrows-show {
+  0%, 10%   { opacity: 0;    }
+  20%       { opacity: 1;    }
+  46%       { opacity: 0.92; }
+  54%, 100% { opacity: 0;    }
+}
+
+@keyframes vent-teaser-flow-spark {
+  0%, 9%, 54%, 100% { opacity: 0;    }
+  22%               { opacity: 0.95; }
+  38%               { opacity: 0.38; }
+  46%               { opacity: 0;    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vent-modes-teaser__svg svg.vent-teaser-bellows-core,
+  .vent-modes-teaser__svg svg.vent-teaser-lung-right,
+  .vent-modes-teaser__svg svg.vent-teaser-lung-left,
+  .vent-modes-dialog__preview-svg svg.vent-teaser-bellows-core,
+  .vent-modes-dialog__preview-svg svg.vent-teaser-lung-right,
+  .vent-modes-dialog__preview-svg svg.vent-teaser-lung-left,
+  .vent-teaser-lung-glow-r,
+  .vent-teaser-lung-glow-l,
+  .vent-teaser-hose-flow--insp,
+  .vent-teaser-hose-flow--exp,
+  .vent-teaser-flow-arrows,
+  .vent-teaser-p-label,
+  .vent-teaser-flow-spark {
+    animation: none !important;
+  }
+  .vent-teaser-hose-flow--insp,
+  .vent-teaser-hose-flow--exp {
+    stroke-dasharray: none;
+    opacity: 0.75;
+  }
+  .vent-teaser-flow-arrows { opacity: 0.85; }
+  .vent-teaser-flow-spark { opacity: 0; }
+  .vent-teaser-lung-glow-r,
+  .vent-teaser-lung-glow-l { opacity: 0.45; }
+  .vent-teaser-p-label { animation: none !important; opacity: 0; }
+  .vent-modes-teaser__chip-dot {
+    animation: none !important;
+  }
+}
+
+/* Compact overlay — animation stays the hero */
+.vent-modes-teaser__chip {
+  position: absolute;
+  bottom: 5px;
+  right: 7px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(94, 234, 212, 0.42);
+  background:
+    linear-gradient(135deg, rgba(13, 148, 136, 0.42), rgba(15, 118, 110, 0.28));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 6px 16px rgba(0, 0, 0, 0.35);
+  color: #ecfdf5;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.15s;
+}
+.vent-modes-teaser__chip:hover {
+  background:
+    linear-gradient(135deg, rgba(13, 148, 136, 0.58), rgba(15, 118, 110, 0.4));
+  border-color: rgba(94, 234, 212, 0.65);
+}
+.vent-modes-teaser__chip:active {
+  transform: scale(0.97);
+}
+.vent-modes-teaser__chip:focus-visible {
+  outline: 2px solid #5eead4;
+  outline-offset: 2px;
+}
+.vent-modes-teaser__chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35);
+  animation: vent-teaser-chip-pulse 2.4s ease-in-out infinite;
+}
+@keyframes vent-teaser-chip-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.65; transform: scale(0.92); }
+}
+.vent-modes-teaser__chip-label {
+  color: #ecfdf5;
+}
+
+@media (max-width: 520px) {
+  .vent-modes-teaser {
+    padding: 5px 6px 7px;
+    min-height: 96px;
+  }
+  .vent-modes-teaser__viz {
+    min-height: 88px;
+  }
+  .vma-teaser-scene-canvas {
+    min-height: 80px;
+  }
+  .vent-modes-teaser__svg {
+    height: 56px;
+  }
+  .vent-modes-teaser__chip {
+    bottom: 4px;
+    right: 5px;
+    padding: 3px 9px 3px 7px;
+    font-size: 9px;
+  }
+}
+
+/* Ventilator modes tutorial dialog */
+.vent-modes-dialog.mon-tut .mon-tut__inner {
+  overflow: hidden;
+}
+
+.vent-modes-dialog.mon-tut .mon-tut__head {
+  padding: 16px 22px 14px;
+}
+
+.vent-modes-dialog.mon-tut .mon-tut__foot {
+  padding: 14px 22px 18px;
+}
+
+.vent-modes-dialog .vent-modes-dialog__wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: min(72vh, 560px);
+  overflow-y: auto;
+  padding: 22px 26px 26px;
+  background: #fafbfc;
+}
+
+.vent-modes-dialog__preview {
+  --vent-teaser-cycle: 5.5s;
+  --vent-teaser-ease: cubic-bezier(0.42, 0, 0.22, 1);
+  --vent-teaser-ease-lung: cubic-bezier(0.45, 0, 0.25, 1);
+  --vent-teaser-ease-flow: cubic-bezier(0.37, 0.02, 0.21, 1);
+  --vent-teaser-ease-mechanical: cubic-bezier(0.38, 0, 0.58, 1);
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(99, 102, 241, 0.06));
+  border: 1px solid var(--border-subtle);
+}
+
+.vent-modes-dialog__preview-svg {
+  width: 100%;
+  height: auto;
+  max-height: 88px;
+  display: block;
+  overflow: visible;
+}
+
+.vent-modes-dialog__lead {
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0 0 1.1rem;
+}
+
+.vent-modes-dialog__modes {
+  margin: 0;
+  padding: 0 0 0 1.25rem;
+  font-size: 0.89rem;
+  line-height: 1.58;
+  color: var(--text-primary);
+}
+
+.vent-modes-dialog__modes li {
+  margin-bottom: 0.65rem;
+  padding-left: 0.15rem;
+}
+
+.vent-modes-dialog__modes li:last-child {
+  margin-bottom: 0;
+}
+
+.vent-modes-dialog__note {
+  margin-top: 1.15rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  background: rgba(13, 148, 136, 0.09);
+  border: 1px solid rgba(13, 148, 136, 0.28);
+  border-radius: 10px;
+  color: var(--text-muted);
+}
+
+/* Vitals bottom bar — compact strip; remaining monitor height goes to vent-modes-teaser */
 .vitals-bar {
   display: flex;
   gap: 5px;
@@ -3038,4 +3405,919 @@ html { scrollbar-gutter: stable; }
     max-width: 100%;
     box-sizing: border-box;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VENTILATOR MODES ANIMATOR — .vma-* components
+   Full interactive canvas tutorial modal for 6 ventilator modes.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Dialog shell ── */
+.vma-dialog.mon-tut {
+  border: 1px solid var(--border-subtle, rgba(203, 213, 225, 0.85));
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+}
+
+.vma-dialog.mon-tut .mon-tut__inner {
+  display: flex;
+  flex-direction: column;
+  max-height: min(96vh, 940px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.vma-inner.mon-tut__inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.vma-head.mon-tut__head {
+  flex-shrink: 0;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.vma-title-single.mon-tut__title {
+  margin: 0;
+  font-size: 1.12rem;
+}
+
+/* ── Top band: mode tabs only (one row, horizontal scroll) ── */
+.vma-top-band {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 10px 22px 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(248, 250, 252, 0.75);
+}
+
+.vma-top-band .vma-mode-rail {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+  align-content: center;
+  padding: 2px 0 4px;
+  margin: 0 -4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  border: none;
+  background: transparent;
+}
+
+.vma-top-band .vma-mode-rail::-webkit-scrollbar {
+  height: 5px;
+}
+.vma-top-band .vma-mode-rail::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+}
+
+/* Hidden on desktop; shown ≤720px instead of mode rail */
+.vma-mode-select-wrap {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+.vma-mode-select-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+}
+.vma-mode-select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 10px 32px 10px 12px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  background: var(--bg-elevated, #fff);
+  color: var(--text-primary, #0f172a);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  touch-action: manipulation;
+}
+
+/* Right column: mode copy + phase (alongside animation) */
+.vma-aside--side {
+  flex: 0 0 min(252px, 34vw);
+  max-width: 288px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin-top: 0;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  align-self: stretch;
+  min-height: 0;
+}
+
+.vma-aside--side .vma-phase-card {
+  flex: 0 0 auto;
+}
+
+.vma-info-card--compact {
+  padding: 8px 10px;
+}
+
+.vma-info-card--compact .vma-mode-name {
+  font-size: 0.82rem;
+  margin-bottom: 3px;
+}
+
+.vma-info-card--compact .vma-mode-subtitle {
+  font-size: 0.69rem;
+  line-height: 1.45;
+}
+
+.vma-info-row--inline {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin-bottom: 5px;
+}
+
+.vma-info-row--inline .vma-info-k {
+  flex: 0 0 auto;
+  margin-right: 4px;
+}
+
+.vma-info-row--inline .vma-info-v {
+  flex: 1 1 120px;
+  font-size: 0.72rem;
+  min-width: 0;
+}
+
+/* Controlled / Varies / Trigger — dense grid rows */
+.vma-info-card--tight-rows .vma-info-row--inline {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 1px 0;
+  flex-wrap: nowrap;
+}
+.vma-info-card--tight-rows .vma-info-k {
+  flex: unset;
+  margin: 0;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.vma-info-card--tight-rows .vma-info-v {
+  flex: unset;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.28;
+}
+
+.vma-phase-card--compact {
+  padding: 8px 10px;
+  flex: 0 0 auto;
+}
+
+.vma-phase-card--compact .vma-phase-title {
+  font-size: 0.8rem;
+}
+
+.vma-phase-card--compact .vma-phase-detail {
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.vma-mode-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  padding: 6px 10px 7px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border-subtle, rgba(203,213,225,0.75));
+  background: var(--bg-page, #f1f5f9);
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+  min-width: 76px;
+  text-align: left;
+}
+
+.vma-mode-btn__abbr {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.vma-mode-btn__full {
+  font-size: 0.61rem;
+  font-weight: 500;
+  line-height: 1.2;
+  opacity: 0.75;
+}
+
+.vma-mode-btn:hover {
+  border-color: var(--accent, #0d9488);
+  background: rgba(13,148,136,0.07);
+  color: var(--text-primary, #0f172a);
+}
+
+.vma-mode-btn--active {
+  border-color: rgba(13,148,136,0.65);
+  background: rgba(13,148,136,0.11);
+  color: var(--text-primary, #0f172a);
+  box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
+}
+
+.vma-mode-btn--active .vma-mode-btn__abbr {
+  color: var(--accent, #0d9488);
+}
+
+.vma-dialog .vma-mode-btn {
+  flex: 0 0 auto;
+  padding: 5px 9px 6px;
+  min-width: 68px;
+}
+
+/* ── Two columns: animation left, sidebar right ── */
+.vma-layout {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+  padding: 12px 22px 16px;
+  overflow: hidden;
+}
+
+.vma-main {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* ── Scene canvas ── */
+.vma-scene-canvas {
+  width: 100%;
+  aspect-ratio: 790 / 370;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #020617;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Pills left, playback right — single row, scroll on overflow */
+.vma-toolbar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  flex-shrink: 0;
+  padding: 2px 0 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.vma-pills--inline {
+  margin: 0;
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.vma-playback--inline {
+  margin-left: auto;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.vma-dialog .vma-ctrl-btn {
+  padding: 3px 8px;
+  font-size: 0.62rem;
+}
+
+.vma-dialog .vma-speed-row {
+  gap: 3px;
+}
+
+.vma-dialog .vma-speed-label {
+  font-size: 0.62rem;
+}
+
+.vma-dialog .vma-speed-input {
+  width: 52px;
+}
+
+.vma-dialog .vma-speed-val {
+  font-size: 0.62rem;
+  min-width: 2.8em;
+}
+
+.vma-dialog .vma-pill {
+  font-size: 0.6rem;
+  padding: 2px 7px;
+}
+
+/* ── Waveform strip — light chrome; each canvas draws its own dark field ── */
+.vma-waves {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex-shrink: 0;
+  padding-top: 4px;
+  border-top: 1px solid rgba(226, 232, 240, 0.85);
+}
+
+.vma-wave-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  min-height: 90px;
+  height: auto;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.96);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+}
+
+.vma-wave-lbl {
+  flex: 0 0 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: right;
+  line-height: 1.3;
+}
+
+.vma-wave-lbl small {
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.vma-wave-lbl--paw { color: #b45309; }
+.vma-wave-lbl--paw small { color: #92400e; opacity: 0.88; }
+
+.vma-wave-lbl--flow { color: #0f766e; }
+.vma-wave-lbl--flow small { color: #0d9488; opacity: 0.88; }
+
+.vma-wave-lbl--vol { color: #15803d; }
+.vma-wave-lbl--vol small { color: #16a34a; opacity: 0.88; }
+
+.vma-wave-canvas {
+  flex: 1;
+  display: block;
+  min-width: 0;
+  min-height: 72px;
+  height: 72px;
+  border-radius: 8px;
+  background: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vma-wave-canvas--on-dark {
+  background: #020617;
+}
+
+.vma-aside--side .vma-mode-intro {
+  flex: 0 0 auto;
+  min-height: 132px;
+  max-height: 132px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vma-aside--side .vma-mode-intro__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px 8px;
+  margin-bottom: 5px;
+  flex-shrink: 0;
+}
+
+.vma-aside--side .vma-mode-intro .vma-mode-tag {
+  flex: 0 1 auto;
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: 0;
+  padding: 2px 8px;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+.vma-aside--side .vma-mode-intro .vma-mode-name {
+  flex: 1 1 100px;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+
+.vma-aside--side .vma-mode-intro .vma-mode-subtitle {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.vma-dialog .vent-tut__quiz.vma-quiz {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.vma-aside--side .vma-phase-card--compact:not(.vma-cvk-panel) {
+  flex: 0 0 auto;
+  min-height: 152px;
+  max-height: 152px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vma-aside--side .vma-phase-card--compact:not(.vma-cvk-panel) .vma-phase-title {
+  flex-shrink: 0;
+}
+
+.vma-aside--side .vma-phase-card--compact:not(.vma-cvk-panel) .vma-phase-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Controlled / Varies / Trigger — same panel chrome as Current phase, fixed height */
+.vma-aside--side .vma-cvk-panel.vma-phase-card {
+  flex: 0 0 auto;
+}
+
+.vma-aside--side .vma-cvk-panel {
+  flex: 0 0 auto;
+  min-height: 118px;
+  max-height: 118px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+  padding: 6px 9px;
+}
+
+.vma-aside--side .vma-cvk-panel.vma-info-card--tight-rows .vma-info-row--inline {
+  align-items: start;
+}
+
+.vma-aside--side .vma-cvk-panel .vma-info-k {
+  padding-top: 0.15em;
+}
+
+.vma-aside--side .vma-cvk-panel .vma-info-v {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: break-word;
+  line-clamp: 2;
+}
+
+.vma-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.vma-pill {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.3);
+  background: var(--bg-page, #f1f5f9);
+  color: var(--text-muted, #64748b);
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+  white-space: nowrap;
+}
+
+.vma-pill.vma-pill--on {
+  border-color: rgba(13,148,136,0.6);
+  background: rgba(13,148,136,0.12);
+  color: #0f766e;
+}
+
+.vma-pill--amber.vma-pill--on {
+  border-color: rgba(217,119,6,0.55);
+  background: rgba(245,158,11,0.11);
+  color: #92400e;
+}
+
+.vma-pill--rose.vma-pill--on {
+  border-color: rgba(220,38,38,0.45);
+  background: rgba(239,68,68,0.09);
+  color: #991b1b;
+}
+
+/* Playback row */
+.vma-playback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vma-ctrl-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 6px 13px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border-subtle, rgba(203,213,225,0.75));
+  background: var(--bg-elevated, #fff);
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.vma-ctrl-btn:hover {
+  border-color: var(--accent, #0d9488);
+  color: var(--text-primary, #0f172a);
+  background: rgba(13,148,136,0.07);
+}
+
+.vma-ctrl-btn--primary {
+  background: linear-gradient(180deg, #f0fdf9, #ccfbf1);
+  border-color: rgba(13,148,136,0.38);
+  color: #134e4a;
+}
+
+.vma-ctrl-btn--primary:hover {
+  background: linear-gradient(180deg, #e6faf7, #b2ebe3);
+  border-color: var(--accent, #0d9488);
+}
+
+.vma-ctrl-btn--amber {
+  border-color: rgba(217,119,6,0.5);
+  background: rgba(245,158,11,0.10);
+  color: #92400e;
+}
+
+.vma-speed-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vma-speed-label {
+  font-size: 0.69rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
+}
+
+.vma-speed-input {
+  width: 70px;
+  accent-color: var(--accent, #0d9488);
+  cursor: pointer;
+}
+
+.vma-speed-val {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  min-width: 3.2em;
+  text-align: right;
+}
+
+/* ── Legacy aside hook (unused) ── */
+.vma-aside:not(.vma-aside--side) {
+  flex: 0 0 232px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.vma-info-card {
+  padding: 11px 12px;
+  border-radius: var(--radius-md, 10px);
+  background: linear-gradient(135deg, rgba(13,148,136,0.06), rgba(99,102,241,0.03));
+  border: 1px solid rgba(203, 213, 225, 0.65);
+}
+
+.vma-info-card--detail {
+  background: var(--bg-page, #f1f5f9);
+}
+
+.vma-mode-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  margin-bottom: 7px;
+  color: var(--accent, #0d9488);
+}
+
+.vma-mode-name {
+  margin: 0 0 5px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.3;
+}
+
+.vma-mode-subtitle {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.52;
+  color: var(--text-muted, #64748b);
+}
+
+.vma-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 9px;
+}
+
+.vma-info-row:last-child { margin-bottom: 0; }
+
+.vma-info-k {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted, #64748b);
+}
+
+.vma-info-v {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.42;
+}
+
+.vma-info-v--accent { color: var(--accent, #0d9488); }
+
+/* Phase card */
+.vma-phase-card {
+  padding: 11px 12px;
+  border-radius: var(--radius-md, 10px);
+  background: var(--bg-elevated, #fff);
+  border: 1px solid rgba(203, 213, 225, 0.65);
+  border-left: 3px solid var(--accent, #0d9488);
+  flex: 1 1 auto;
+}
+
+.vma-phase-card__label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted, #64748b);
+  margin-bottom: 5px;
+}
+
+.vma-phase-title {
+  margin: 0 0 5px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.3;
+}
+
+.vma-phase-detail {
+  margin: 0;
+  font-size: 0.77rem;
+  line-height: 1.58;
+  color: var(--text-muted, #64748b);
+}
+
+.vma-dialog .mon-tut__foot {
+  padding: 12px 22px 16px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 900px) {
+  .vma-layout {
+    flex-direction: column;
+    flex: 0 1 auto;
+    flex-grow: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
+    align-items: stretch;
+    min-height: unset;
+  }
+  .vma-aside--side {
+    flex: 0 0 auto;
+    max-width: none;
+    width: 100%;
+    max-height: none;
+    overflow-y: visible;
+    padding-bottom: 4px;
+  }
+  .vma-main {
+    flex: 0 0 auto;
+    min-height: unset;
+    overflow: visible;
+  }
+  /* Stacked layout: scene → waveforms → playback */
+  .vma-main .vma-scene-canvas {
+    order: 1;
+  }
+  .vma-main .vma-waves {
+    order: 2;
+  }
+  .vma-main .vma-toolbar {
+    order: 3;
+  }
+}
+
+/* ── Responsive: stack to single column on narrow viewports ── */
+@media (max-width: 720px) {
+  .vma-top-band .vma-mode-rail {
+    display: none;
+  }
+  .vma-mode-select-wrap {
+    display: flex;
+  }
+  .vma-layout {
+    flex-direction: column;
+    flex: 0 1 auto;
+    flex-grow: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding-bottom: 16px;
+    align-items: stretch;
+    gap: 14px;
+    min-height: unset;
+  }
+  .vma-aside--side {
+    max-height: none;
+    flex: 0 0 auto;
+    max-width: none;
+    width: 100%;
+    overflow-y: visible;
+    justify-content: flex-start;
+    gap: 12px;
+    order: 2;
+  }
+  .vma-main {
+    flex: 0 0 auto;
+    min-height: unset;
+    overflow: visible;
+    order: 1;
+    gap: 10px;
+  }
+
+  .vma-toolbar {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vma-playback--inline {
+    flex: 0 0 auto;
+  }
+
+  /* Touch-friendly targets (modes tutorial modal only) */
+  .vma-dialog .mon-tut__close {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .vma-dialog .vma-mode-btn {
+    min-height: 44px;
+    padding: 8px 11px 9px;
+  }
+  .vma-dialog .vma-ctrl-btn {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 0.66rem;
+  }
+  .vma-dialog .vent-tut__quiz-choice {
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+}
+
+/* Phones: full-bleed dialog when open only — plain .vma-dialog.mon-tut { display:flex }
+   overrides UA dialog:not(:open){display:none} and makes the closed modal visible fullscreen */
+@media (max-width: 640px) {
+  .vma-dialog.mon-tut:open {
+    box-sizing: border-box;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    min-height: 100dvh;
+    min-height: 100svh;
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .vma-dialog.mon-tut:open .mon-tut__inner {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  .vma-dialog.mon-tut:open .mon-tut__head {
+    padding: max(12px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) 12px
+      max(14px, env(safe-area-inset-left, 0px));
+  }
+  .vma-dialog.mon-tut:open .vma-top-band {
+    padding: 8px max(12px, env(safe-area-inset-right, 0px)) 10px
+      max(12px, env(safe-area-inset-left, 0px));
+  }
+  .vma-dialog.mon-tut:open .vma-layout {
+    padding: 10px max(12px, env(safe-area-inset-right, 0px)) 14px
+      max(12px, env(safe-area-inset-left, 0px));
+  }
+  .vma-dialog.mon-tut:open .mon-tut__foot {
+    padding: 12px max(14px, env(safe-area-inset-right, 0px))
+      max(16px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
+  }
+}
+
+@media (max-width: 480px) {
+  .vma-scene-canvas { aspect-ratio: 790 / 460; }
 }

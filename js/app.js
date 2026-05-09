@@ -35,6 +35,48 @@
       .replace(/"/g, "&quot;");
   }
 
+  const medCheckins = window.PYXIS_MED_CHECKINS || {};
+
+  function buildMedicationCheckinAside(medId) {
+    const entry = medCheckins[medId];
+    if (!entry || !entry.review || !entry.clinical) return "";
+
+    function renderBlock(kind, label, q) {
+      const choices = q.choices
+        .map(
+          (text, i) =>
+            `<button type="button" class="pyxis-checkin__choice" data-choice-index="${i}">${escapeHtml(text)}</button>`
+        )
+        .join("");
+      return `
+      <div class="pyxis-checkin pyxis-checkin--${kind}" data-checkin-kind="${kind}">
+        <div class="pyxis-checkin__kind">${escapeHtml(label)}</div>
+        <p class="pyxis-checkin__question">${escapeHtml(q.question)}</p>
+        <div class="pyxis-checkin__choices" role="group" aria-label="${escapeHtml(label)}">${choices}</div>
+        <p class="pyxis-checkin__feedback" hidden></p>
+      </div>`;
+    }
+
+    return `
+    <div class="pyxis-checkin-dock" aria-label="Understanding check-ins">
+      <div class="pyxis-checkin-window">
+        <div class="pyxis-checkin-window__head">
+          <span class="pyxis-checkin-window__title">Check Your Understanding</span>
+          <button type="button" class="pyxis-checkin-window__close" aria-label="Close quiz panel">×</button>
+        </div>
+        <div class="pyxis-checkin-window__body">
+          <div class="pyxis-checkin-step pyxis-checkin-step--active" data-step-index="0">
+            ${renderBlock("review", "Content review", entry.review)}
+            <button type="button" class="pyxis-checkin__advance" hidden>Next question</button>
+          </div>
+          <div class="pyxis-checkin-step" data-step-index="1" hidden>
+            ${renderBlock("clinical", "Clinical application", entry.clinical)}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
   function getMedBadge(medClass) {
     const c = (medClass || "").toLowerCase();
     if (/general anesthetic|imidazole hypnotic|dissociative anesthetic/.test(c))
@@ -77,10 +119,37 @@
     modalContents.showModal();
   }
 
-  function openDetailModal(title, bodyHtml, fromDrawer = false) {
-    detailTitle.textContent  = title;
-    detailBody.innerHTML     = bodyHtml;
-    detailFooter.hidden      = !fromDrawer;
+  function openDetailModal(title, bodyHtml, fromDrawer = false, checkinOptions = null) {
+    detailTitle.textContent = title;
+    detailBody.innerHTML = bodyHtml;
+    detailFooter.hidden = !fromDrawer;
+    const checkinEl = document.getElementById("modal-detail-checkin");
+    const checkinPanel = document.getElementById("modal-detail-checkin-panel");
+    const checkinTabBtn = document.getElementById("modal-detail-checkin-tab");
+    const quizColumn = document.getElementById("modal-detail-quiz-column");
+    if (checkinEl && checkinPanel) {
+      if (checkinOptions && checkinOptions.html) {
+        checkinEl.hidden = false;
+        checkinPanel.innerHTML = checkinOptions.html;
+        checkinEl.dataset.detailMedId = checkinOptions.medId || "";
+        quizColumn?.classList.remove("modal-detail__quiz-column--expanded", "modal-detail__quiz-column--revealed");
+        if (quizColumn) quizColumn.hidden = false;
+        if (checkinTabBtn) {
+          checkinTabBtn.hidden = false;
+          checkinTabBtn.setAttribute("aria-expanded", "false");
+        }
+      } else {
+        checkinEl.hidden = true;
+        checkinPanel.innerHTML = "";
+        delete checkinEl.dataset.detailMedId;
+        quizColumn?.classList.remove("modal-detail__quiz-column--expanded", "modal-detail__quiz-column--revealed");
+        if (quizColumn) quizColumn.hidden = true;
+        if (checkinTabBtn) {
+          checkinTabBtn.hidden = true;
+          checkinTabBtn.setAttribute("aria-expanded", "false");
+        }
+      }
+    }
     modalDetail.showModal();
   }
 
@@ -98,7 +167,7 @@
       </div>`;
 
     const badge = getMedBadge(med.class);
-    const html = `
+    const mainInner = `
       ${imgHtml}
       <div class="detail-meta">
         <span class="med-badge med-badge--${badge.cls}">${badge.label}</span>
@@ -124,7 +193,13 @@
       </dl>
       ${med.pearl ? `<div class="detail-pearl"><span class="detail-pearl__label">Attending Pearl</span>${escapeHtml(med.pearl)}</div>` : ""}`;
 
-    openDetailModal(med.name, html, fromDrawer);
+    const dockHtml = buildMedicationCheckinAside(medId);
+    openDetailModal(
+      med.name,
+      mainInner,
+      fromDrawer,
+      dockHtml ? { html: dockHtml, medId } : null
+    );
   }
 
   function renderEquipmentDetail(item, fromDrawer = false) {
@@ -340,6 +415,148 @@
     gasCaniBtn.addEventListener("click",   e => { e.currentTarget.blur(); openGasCanister(); });
     gasCaniBtn.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openGasCanister(); } });
   }
+
+  modalDetail?.addEventListener("click", (e) => {
+    const closeQuiz = e.target.closest(".pyxis-checkin-window__close");
+    if (closeQuiz) {
+      e.preventDefault();
+      setCheckinPanelOpen(false);
+      return;
+    }
+
+    const advanceBtn = e.target.closest(".pyxis-checkin__advance");
+    if (advanceBtn && !advanceBtn.hidden) {
+      e.preventDefault();
+      const dock = advanceBtn.closest(".pyxis-checkin-dock");
+      const s0 = dock?.querySelector('.pyxis-checkin-step[data-step-index="0"]');
+      const s1 = dock?.querySelector('.pyxis-checkin-step[data-step-index="1"]');
+      if (s0 && s1) {
+        s0.hidden = true;
+        s0.classList.remove("pyxis-checkin-step--active");
+        s1.hidden = false;
+        s1.classList.add("pyxis-checkin-step--active");
+      }
+      return;
+    }
+
+    const btn = e.target.closest(".pyxis-checkin__choice");
+    if (!btn || btn.disabled) return;
+    const checkin = btn.closest(".pyxis-checkin");
+    const dock = btn.closest("#modal-detail-checkin");
+    const medKey = dock?.dataset?.detailMedId;
+    if (!checkin || !medKey) return;
+    const kind = checkin.dataset.checkinKind;
+    const bank = medCheckins[medKey];
+    const q = bank && bank[kind];
+    if (!q) return;
+    const idx = Number(btn.dataset.choiceIndex);
+    const correct = q.correctIndex === idx;
+    checkin.querySelectorAll(".pyxis-checkin__choice").forEach((b, i) => {
+      b.disabled = true;
+      b.classList.remove("pyxis-checkin__choice--correct", "pyxis-checkin__choice--wrong");
+      if (i === q.correctIndex) b.classList.add("pyxis-checkin__choice--correct");
+      else if (i === idx && !correct) b.classList.add("pyxis-checkin__choice--wrong");
+    });
+    const fb = checkin.querySelector(".pyxis-checkin__feedback");
+    if (fb) {
+      fb.hidden = false;
+      fb.textContent = q.explanation;
+    }
+    if (kind === "review") {
+      const advance = checkin.closest(".pyxis-checkin-step")?.querySelector(".pyxis-checkin__advance");
+      if (advance) advance.hidden = false;
+    }
+    document.dispatchEvent(
+      new CustomEvent("pyxis_checkin_answer", {
+        bubbles: true,
+        detail: {
+          medication_id: medKey,
+          checkin_kind: kind,
+          selected_index: idx,
+          correct_index: q.correctIndex,
+          is_correct: correct,
+        },
+      })
+    );
+  });
+
+  const detailCheckinTab = document.getElementById("modal-detail-checkin-tab");
+  const detailQuizColumn = document.getElementById("modal-detail-quiz-column");
+  let checkinPanelCloseTimer = 0;
+
+  function setCheckinPanelOpen(open) {
+    if (!detailQuizColumn || detailQuizColumn.hidden) return;
+    const track = detailQuizColumn.querySelector(".modal-detail__checkin-track");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (open) {
+      if (checkinPanelCloseTimer) {
+        clearTimeout(checkinPanelCloseTimer);
+        checkinPanelCloseTimer = 0;
+      }
+      detailQuizColumn.classList.add("modal-detail__quiz-column--expanded");
+      requestAnimationFrame(() => {
+        detailQuizColumn.classList.add("modal-detail__quiz-column--revealed");
+      });
+      detailCheckinTab?.setAttribute("aria-expanded", "true");
+      return;
+    }
+
+    detailCheckinTab?.setAttribute("aria-expanded", "false");
+
+    if (reduceMotion || !track) {
+      detailQuizColumn.classList.remove("modal-detail__quiz-column--revealed", "modal-detail__quiz-column--expanded");
+      return;
+    }
+
+    if (!detailQuizColumn.classList.contains("modal-detail__quiz-column--revealed")) {
+      detailQuizColumn.classList.remove("modal-detail__quiz-column--expanded");
+      return;
+    }
+
+    const collapseWidth = () => {
+      detailQuizColumn.classList.remove("modal-detail__quiz-column--expanded");
+      checkinPanelCloseTimer = 0;
+    };
+
+    const onEnd = (ev) => {
+      if (ev.propertyName !== "transform") return;
+      track.removeEventListener("transitionend", onEnd);
+      if (checkinPanelCloseTimer) {
+        clearTimeout(checkinPanelCloseTimer);
+        checkinPanelCloseTimer = 0;
+      }
+      collapseWidth();
+    };
+
+    track.addEventListener("transitionend", onEnd);
+    detailQuizColumn.classList.remove("modal-detail__quiz-column--revealed");
+
+    checkinPanelCloseTimer = window.setTimeout(() => {
+      track.removeEventListener("transitionend", onEnd);
+      checkinPanelCloseTimer = 0;
+      collapseWidth();
+    }, 450);
+  }
+
+  detailCheckinTab?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!detailQuizColumn || detailQuizColumn.hidden || detailCheckinTab.hidden) return;
+    setCheckinPanelOpen(!detailQuizColumn.classList.contains("modal-detail__quiz-column--revealed"));
+  });
+
+  modalDetail?.addEventListener("close", () => setCheckinPanelOpen(false));
+
+  modalDetail?.addEventListener("cancel", (e) => {
+    if (
+      detailQuizColumn &&
+      !detailQuizColumn.hidden &&
+      detailQuizColumn.classList.contains("modal-detail__quiz-column--revealed")
+    ) {
+      e.preventDefault();
+      setCheckinPanelOpen(false);
+    }
+  });
 
   // ── Wire up controls ───────────────────────────────────────────────────
   contentsClose?.addEventListener("click", () => modalContents?.close());

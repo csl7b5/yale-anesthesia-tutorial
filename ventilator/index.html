@@ -210,6 +210,18 @@
               </div>
             </div>
 
+            <!-- Ventilator modes teaser: preview fills strip; open control is a small overlay (not a second column) -->
+            <div class="vent-modes-teaser">
+              <div class="vent-modes-teaser__viz">
+                <canvas id="vma-teaser-scene" class="vma-teaser-scene-canvas" role="img" aria-label="Ventilator circuit preview"></canvas>
+                <button type="button" class="vent-modes-teaser__chip" id="vent-modes-tutorial-open"
+                  aria-label="Open ventilator modes tutorial" title="Open ventilator modes tutorial">
+                  <span class="vent-modes-teaser__chip-dot" aria-hidden="true"></span>
+                  <span class="vent-modes-teaser__chip-label">Modes</span>
+                </button>
+              </div>
+            </div>
+
           </div><!-- /mon-screen -->
         </div><!-- /mon-bezel -->
       </section>
@@ -981,6 +993,154 @@
   </div>
 </dialog>
 
+<!-- Ventilator modes interactive tutorial -->
+<dialog class="mon-tut mon-tut--wide vma-dialog" id="vent-modes-tutorial">
+  <div class="mon-tut__inner vma-inner">
+    <header class="mon-tut__head vma-head">
+      <div>
+        <h2 class="mon-tut__title vma-title-single">Ventilator Modes</h2>
+      </div>
+      <button type="button" class="mon-tut__close" data-vma-close aria-label="Close">×</button>
+    </header>
+
+    <!-- Mode tabs (desktop); dropdown replaces rail on narrow viewports via CSS -->
+    <div class="vma-top-band">
+      <div class="vma-mode-select-wrap">
+        <label class="vma-mode-select-label" for="vma-mode-select">Ventilator mode</label>
+        <select id="vma-mode-select" class="vma-mode-select" aria-label="Select ventilator mode">
+          <option value="VCV">VCV — Volume Control</option>
+          <option value="PCV">PCV — Pressure Control</option>
+          <option value="AC">A/C — Assist-Control</option>
+          <option value="IMV">SIMV / IMV</option>
+          <option value="APRV">APRV — Airway Pressure Release</option>
+          <option value="PSV">PSV — Pressure Support</option>
+        </select>
+      </div>
+      <div class="vma-mode-rail" role="tablist" aria-label="Select ventilator mode">
+        <button type="button" class="vma-mode-btn vma-mode-btn--active" data-vma-mode="VCV" role="tab" aria-selected="true">
+          <span class="vma-mode-btn__abbr">VCV</span>
+          <span class="vma-mode-btn__full">Volume Control</span>
+        </button>
+        <button type="button" class="vma-mode-btn" data-vma-mode="PCV" role="tab" aria-selected="false">
+          <span class="vma-mode-btn__abbr">PCV</span>
+          <span class="vma-mode-btn__full">Pressure Control</span>
+        </button>
+        <button type="button" class="vma-mode-btn" data-vma-mode="AC" role="tab" aria-selected="false">
+          <span class="vma-mode-btn__abbr">A/C</span>
+          <span class="vma-mode-btn__full">Assist-Control</span>
+        </button>
+        <button type="button" class="vma-mode-btn" data-vma-mode="IMV" role="tab" aria-selected="false">
+          <span class="vma-mode-btn__abbr">SIMV</span>
+          <span class="vma-mode-btn__full">IMV / SIMV</span>
+        </button>
+        <button type="button" class="vma-mode-btn" data-vma-mode="APRV" role="tab" aria-selected="false">
+          <span class="vma-mode-btn__abbr">APRV</span>
+          <span class="vma-mode-btn__full">Airway Pressure Release</span>
+        </button>
+        <button type="button" class="vma-mode-btn" data-vma-mode="PSV" role="tab" aria-selected="false">
+          <span class="vma-mode-btn__abbr">PSV</span>
+          <span class="vma-mode-btn__full">Pressure Support</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Left: animation + controls + waves · Right: mode info -->
+    <div class="vma-layout">
+
+      <div class="vma-main">
+
+        <!-- Scene canvas -->
+        <canvas class="vma-scene-canvas" id="vma-scene"
+          role="img" aria-label="Ventilator mode animation: bellows, circuit, lungs"></canvas>
+
+        <!-- Status pills + playback (one row) -->
+        <div class="vma-toolbar" aria-live="polite">
+          <div class="vma-pills vma-pills--inline">
+            <span class="vma-pill" id="vma-pill-machine">Machine breath</span>
+            <span class="vma-pill vma-pill--amber" id="vma-pill-spont">Spontaneous</span>
+            <span class="vma-pill vma-pill--rose" id="vma-pill-release">Release valve</span>
+          </div>
+          <div class="vma-playback vma-playback--inline">
+            <button type="button" class="vma-ctrl-btn vma-ctrl-btn--primary" id="vma-play">Play</button>
+            <button type="button" class="vma-ctrl-btn" id="vma-reset">Reset</button>
+            <button type="button" class="vma-ctrl-btn vma-ctrl-btn--amber" id="vma-effort">Effort On</button>
+            <label class="vma-speed-row">
+              <span class="vma-speed-label">Speed</span>
+              <input type="range" class="vma-speed-input" id="vma-speed"
+                min="0.35" max="1.6" step="0.05" value="0.88"
+                aria-label="Animation speed" />
+              <span class="vma-speed-val" id="vma-speed-lbl">0.88×</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Waveform strip (individual traces keep dark canvases; no outer chrome box) -->
+        <div class="vma-waves">
+          <div class="vma-wave-row">
+            <span class="vma-wave-lbl vma-wave-lbl--paw">Paw<br><small>concept</small></span>
+            <canvas class="vma-wave-canvas vma-wave-canvas--on-dark" id="vma-wave-pressure"
+              role="img" aria-label="Airway pressure waveform"></canvas>
+          </div>
+          <div class="vma-wave-row">
+            <span class="vma-wave-lbl vma-wave-lbl--flow">Flow<br><small>insp ↑</small></span>
+            <canvas class="vma-wave-canvas vma-wave-canvas--on-dark" id="vma-wave-flow"
+              role="img" aria-label="Flow waveform"></canvas>
+          </div>
+          <div class="vma-wave-row">
+            <span class="vma-wave-lbl vma-wave-lbl--vol">Vol<br><small>rel</small></span>
+            <canvas class="vma-wave-canvas vma-wave-canvas--on-dark" id="vma-wave-volume"
+              role="img" aria-label="Volume waveform"></canvas>
+          </div>
+        </div>
+
+      </div><!-- /vma-main -->
+
+      <aside class="vma-aside vma-aside--side" aria-label="Mode details">
+        <div class="vma-info-card vma-info-card--compact vma-mode-intro">
+          <div class="vma-mode-intro__head">
+            <span class="vma-mode-tag" id="vma-mode-tag">VCV</span>
+            <h3 class="vma-mode-name" id="vma-mode-name">Volume Control Ventilation</h3>
+          </div>
+          <p class="vma-mode-subtitle" id="vma-mode-subtitle">Ventilator guarantees tidal volume; pressure varies with compliance and resistance.</p>
+        </div>
+
+        <div class="vma-phase-card vma-phase-card--compact">
+          <span class="vma-phase-card__label">Current phase</span>
+          <p class="vma-phase-title" id="vma-phase-title">Baseline / PEEP</p>
+          <p class="vma-phase-detail" id="vma-phase-detail">End-expiratory pressure maintains resting lung volume before the next breath.</p>
+        </div>
+
+        <div class="vma-phase-card vma-phase-card--compact vma-cvk-panel vma-info-card--tight-rows">
+          <div class="vma-info-row vma-info-row--inline">
+            <span class="vma-info-k">Controlled</span>
+            <span class="vma-info-v vma-info-v--accent" id="vma-mode-control">Tidal volume + inspiratory flow rate</span>
+          </div>
+          <div class="vma-info-row vma-info-row--inline">
+            <span class="vma-info-k">Varies</span>
+            <span class="vma-info-v" id="vma-mode-varies">Airway pressure</span>
+          </div>
+          <div class="vma-info-row vma-info-row--inline">
+            <span class="vma-info-k">Trigger</span>
+            <span class="vma-info-v" id="vma-mode-trigger">Machine-triggered</span>
+          </div>
+        </div>
+
+        <section class="vent-tut__quiz vma-quiz" id="vma-quiz" aria-labelledby="vma-quiz-title">
+          <h3 class="vent-tut__quiz-title" id="vma-quiz-title">Quick check</h3>
+          <p class="vent-tut__quiz-question" id="vma-quiz-q"></p>
+          <div class="vent-tut__quiz-choices" id="vma-quiz-choices" role="group" aria-label="Answer choices"></div>
+          <p class="vent-tut__quiz-feedback" id="vma-quiz-fb" hidden role="status" aria-live="polite"></p>
+        </section>
+      </aside>
+
+    </div><!-- /vma-layout -->
+
+    <footer class="mon-tut__foot">
+      <button type="button" class="mon-tut__foot-btn mon-tut__foot-btn--primary" data-vma-close>Close</button>
+    </footer>
+  </div>
+</dialog>
+
 <!-- Capnography Tutorial (wide, tabbed) -->
 <dialog class="mon-tut mon-tut--wide" id="tut-etco2">
   <div class="mon-tut__inner">
@@ -1255,6 +1415,7 @@
 <script src="../platform/js/ai-chat.js"></script>
 <script src="../platform/js/scenario-coach.js"></script>
 <script src="../js/ventilator.js"></script>
+<script src="../js/vent-modes-animator.js"></script>
 <script src="../js/monitor-tutorial.js"></script>
 <script src="../js/ventilator-wave-tutorial.js"></script>
 <script src="../js/analytics.js"></script>

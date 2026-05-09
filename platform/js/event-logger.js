@@ -259,6 +259,16 @@
       });
     });
 
+    document.addEventListener('vma_quiz_answer', (e) => {
+      const d = e.detail || {};
+      logTutorial('vma_modes', 'quiz_answer', {
+        mode: d.mode || null,
+        selected_index: d.selected_index ?? null,
+        correct_index: d.correct_index ?? null,
+        is_correct: !!d.is_correct,
+      });
+    });
+
     // TOF tutorial
     document.getElementById('tof-card')?.addEventListener('click', () => {
       logTutorial('tof', 'opened');
@@ -505,6 +515,22 @@
         }
       });
     }
+
+    document.addEventListener('pyxis_checkin_answer', (e) => {
+      if (!userId) return;
+      const d = e.detail || {};
+      logPyxis({
+        event_type: 'pyxis_checkin_answer',
+        item_type: 'medication',
+        item_id: d.medication_id || null,
+        extra: {
+          checkin_kind: d.checkin_kind,
+          selected_index: d.selected_index,
+          correct_index: d.correct_index,
+          is_correct: d.is_correct,
+        },
+      });
+    });
 
     window.addEventListener('pagehide', () => {
       if (!userId) return;

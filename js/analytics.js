@@ -138,6 +138,17 @@
       }
     });
 
+    document.addEventListener('pyxis_checkin_answer', (e) => {
+      const d = e.detail || {};
+      track('pyxis_checkin_answer', {
+        medication_id:  d.medication_id,
+        checkin_kind:   d.checkin_kind,
+        selected_index: d.selected_index,
+        correct_index:  d.correct_index,
+        is_correct:     d.is_correct,
+      });
+    });
+
     // ── "Back to Drawer" button ──────────────────────────────────────────────
     document.getElementById('modal-detail-back')?.addEventListener('click', () => {
       track('back_to_drawer_used', { item_id: detailItemId || 'unknown' });
@@ -329,6 +340,16 @@
       const d = e.detail || {};
       track('ventwaves_quiz_answer', {
         preset: d.preset || null,
+        selected_index: d.selected_index ?? null,
+        correct_index: d.correct_index ?? null,
+        is_correct: !!d.is_correct,
+      });
+    });
+
+    document.addEventListener('vma_quiz_answer', (e) => {
+      const d = e.detail || {};
+      track('vma_modes_quiz_answer', {
+        mode: d.mode || null,
         selected_index: d.selected_index ?? null,
         correct_index: d.correct_index ?? null,
         is_correct: !!d.is_correct,

@@ -318,20 +318,34 @@
 
       <!-- ── Modal: Learning detail ─────────────────────────────────────── -->
       <dialog class="modal modal--detail" id="modal-detail" aria-labelledby="modal-detail-title">
-        <div class="modal__inner">
-          <header class="modal__head">
-            <div class="modal__head-text">
-              <p class="modal__eyebrow">Learning detail</p>
-              <h2 class="modal__title" id="modal-detail-title">Details</h2>
+        <div class="modal-detail__shell">
+          <div class="modal-detail__main">
+            <div class="modal__inner modal-detail__card">
+              <header class="modal__head">
+                <div class="modal__head-text">
+                  <p class="modal__eyebrow">Learning detail</p>
+                  <h2 class="modal__title" id="modal-detail-title">Details</h2>
+                </div>
+                <button type="button" class="modal__close" id="modal-detail-close" aria-label="Close">×</button>
+              </header>
+              <div class="modal__body modal__body--detail" id="modal-detail-body">
+                <p class="empty-hint">Choose an item in the drawer to see clinical orientation and pearls.</p>
+              </div>
+              <footer class="modal__footer" id="modal-detail-footer" hidden>
+                <button type="button" class="modal__back-btn" id="modal-detail-back" aria-label="Back to drawer">← Back to drawer</button>
+              </footer>
             </div>
-            <button type="button" class="modal__close" id="modal-detail-close" aria-label="Close">×</button>
-          </header>
-          <div class="modal__body modal__body--detail" id="modal-detail-body">
-            <p class="empty-hint">Choose an item in the drawer to see clinical orientation and pearls.</p>
           </div>
-          <footer class="modal__footer" id="modal-detail-footer" hidden>
-            <button type="button" class="modal__back-btn" id="modal-detail-back" aria-label="Back to drawer">← Back to drawer</button>
-          </footer>
+          <div id="modal-detail-quiz-column" class="modal-detail__quiz-column" hidden>
+            <aside id="modal-detail-checkin" class="modal-detail__checkin" hidden aria-label="Check your understanding">
+              <div class="modal-detail__checkin-track">
+                <div id="modal-detail-checkin-panel" class="modal-detail__checkin-panel"></div>
+                <button type="button" id="modal-detail-checkin-tab" class="modal-detail__checkin-tab" hidden aria-expanded="false" aria-controls="modal-detail-checkin-panel" aria-label="Check Your Understanding">
+                  <span class="modal-detail__checkin-tab-label">Check Your Understanding</span>
+                </button>
+              </div>
+            </aside>
+          </div>
         </div>
       </dialog>
 
@@ -439,6 +453,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/pyxis-med-checkins.js"></script>
     <script src="js/site-nav-mobile.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="platform/js/supabase-client.js"></script>

@@ -1,6 +1,6 @@
 # Plan: Ventilator Modes Tutorial Modal (Interactive Ventilator)
 
-This document outlines how to implement an **educational modal** on the ventilator page that explains **breath types / modes**, **waveforms**, **lung mechanics variables**, and **why different modes behave as they do**, with **animated visuals** consistent with the existing simulator.
+This document outlines how to implement **education on ventilator modes**, **waveforms**, **lung mechanics**, and **clinical reasoning**, with **animated visuals** consistent with the simulator UI.
 
 ---
 
@@ -8,188 +8,147 @@ This document outlines how to implement an **educational modal** on the ventilat
 
 ### Primary goals
 
-- Teach **VC vs PC** (what is controlled each breath vs what is guaranteed).
-- Explain **common variables**: \(V_T\), RR, \(T_I\), \(T_E\), I:E, PEEP, FiO₂, compliance, resistance, peak vs plateau pressure (conceptually aligned with your UI labels).
-- Show **pressure / flow / volume** traces over one or more breath cycles with **motion that reinforces causality** (e.g., inspiration flow vs volume integral).
-- Clarify **clinical “why”**: lung protection trade-offs, airway pressure limits in PC, guaranteed minute ventilation in VC, etc.
+- Teach **mandatory vs spontaneous breaths**, **triggering**, and **controlled vs assisted vs spontaneous** mixing.
+- Explain **variables**: \(V_T\), RR, \(T_I\), \(T_E\), I:E, PEEP, FiO₂, compliance, resistance, airway pressures (aligned with your sliders where applicable).
+- Show **pressure / flow / volume** traces with motion that reinforces causality.
+- Include **modes beyond VC/PC**: assist-control, intermittent mandatory ventilation (SIMV/IMV), APRV (basic), plus brief mentions of **CPAP/PSV**, **dual-target**, etc., with clear labeling when **not simulated** on this page.
 
-### Out of scope (initial release)
+### Simulated vs conceptual (mandatory labeling)
 
-- Full catalog of every ICU mode brand name (unless you later add a glossary chip).
-- Exact numerical matching to every edge case in `ventilator.js` physics (the modal can use a **schematic** timebase unless you explicitly bind to `tick()`).
+| Layer | On this page (`ventilator.js`) | In the tutorial modal |
+|-------|-------------------------------|-------------------------|
+| **VC / PC** | ✅ Implemented | Deep schematic + tie-in to live controls |
+| **Assist-control, SIMV, APRV, …** | ❌ Not modeled numerically | ✅ **Concept-only** sections; badge copy such as **“Concept overview — not simulated here”** |
 
-### Alignment with the current product
-
-- The live simulator supports **VC** and **PC** (`ventSettings.mode` in `js/ventilator.js`). The modal should **not promise modes you do not simulate** (e.g., APRV, HFOV) unless you add copy marked **“Not simulated here”** or a separate “Overview of other modes” appendix tab.
-
----
-
-## 2. UX pattern (match existing ventilator UI)
-
-### Modal container
-
-- Use **`<dialog>`** like other ventilator surfaces (`#tut-ventwaves`, `#tut-ecg`, debrief dialog in `ventilator/index.html`).
-- Reuse patterns: **backdrop click to close**, **Escape**, **`showModal()` / `close()`**, focus trap consistent with other `mon-tut` dialogs.
-
-### Entry points
-
-- Add a **persistent control** near the waveform cluster or mode toggles, e.g. **“Ventilator modes”** or **“How this ventilator works”** (icon + text on desktop; icon-only with `aria-label` on narrow layouts).
-
-### Information architecture (recommended)
-
-Use **tabs or a left rail** inside the modal:
-
-| Section | Purpose |
-|--------|---------|
-| **Basics** | One breath timeline: inspiration vs expiration, PEEP baseline |
-| **Variables** | Glossary with sliders that drive the schematic (optional interactive row) |
-| **VC / VCV** | Controlled volume: fixed \(V_T\), pressure varies with mechanics |
-| **PC / PCV** | Controlled pressure: fixed inspiratory pressure target, \(V_T\) varies |
-| **Waveforms** | P/F/V phase relationship + “what to watch for” |
-| **Clinical pearls** | Short bullets: lung protection, leaks, asynchrony (high level) |
-
-Avoid one endless scroll unless mobile forces it—use **sticky section nav** or **horizontal swipe sections** on small screens.
+Never imply the knob switches APRV unless you add physics for it.
 
 ---
 
-## 3. Animated graphic strategy
+## 2. Content: modes to cover (draft pedagogy)
 
-### Option A — **Schematic canvas/SVG animation** (recommended for v1)
+Each subsection should follow a template: **definition → idealized P/F/V shape → one clinical pearl → simulation disclaimer** where applicable.
 
-- Build a **small dedicated animator** (single `<canvas>` or SVG) that draws **idealized** P, Flow, Volume for VC and PC.
-- **Pros:** Full control of pedagogy (slow motion, pause, highlight segments); no coupling to the full simulation loop.
-- **Cons:** Must stay visually **consistent** with the real waveforms (same sign conventions, colors).
+### 2.1 Continuous mandatory breaths (every breath is delivered)
 
-### Option B — **Live mirror** of the main simulator waveforms
+- **Assist-Control volume AC (VC-AC / VCV + trigger)**  
+  Time-triggered **or** patient-triggered mandatory breaths; each mandatory breath delivers **set \(V_T\)** (pressure varies with mechanics). Minute ventilation is predictable if patient triggers every breath.
 
-- Sample from existing waveform buffers / generators in `ventilator.js`.
-- **Pros:** Perfect fidelity.
-- **Cons:** Harder to stage pedagogy (patient noise, scenario overlays); risk of confusing learners when scenarios change lung mechanics.
+- **Assist-Control pressure AC (PC-AC / PCV + trigger)**  
+  Mandatory breaths deliver **set inspiratory pressure** over inspiratory time; **\(V_T\) varies** with compliance/resistance and effort.
 
-**Recommendation:** **Option A** for the modal; optionally add a **“Compare to live trace”** toggle in v2 that overlays a faint ghost of the current monitor.
+### 2.2 Mixed mandatory + spontaneous (different flavors)
 
-### Animation language
+- **Intermittent Mandatory Ventilation (IMV)** *(historical)*  
+  Mandatory breaths **without synchronization** to spontaneous effort → caused asynchrony; mainly of historical interest; motivates modern SIMV.
 
-- **One breath** loop by default; **Play / Pause**; **Slow** speed (0.25×–0.5×).
-- Phase highlights: **inspiratory flow**, **expiratory flow**, **pressure peak**, **PEEP**.
-- Use **`prefers-reduced-motion`**: static frame + text, or cross-fade instead of continuous scrub.
+- **Synchronized IMV (SIMV)**  
+  Mandatory breaths at set rate **plus** allowed spontaneous breaths (often with **PS** between mandatory breaths). Key teaching point: **stacking** mandatory + spontaneous vs pure AC.
 
-### Lung graphic
+### 2.3 Pressure-target open lung / release concepts
 
-- Simple **compliance spring** metaphor: lung volume ∝ integrated flow; PC shows **pressure ceiling** as a horizontal bar during inspiration.
-- Keep file weight low: vector shapes + CSS transforms, or lightweight canvas.
+- **APRV (basic explanation)**  
+  Very high CPAP with **brief intermittent releases** — prolonged inspiratory “holding open” short releases for CO₂ clearance; interpret **pressure/time** rather than classic VC I:E. Clarify this simulator **does not** run APRV numerically.
+
+### 2.4 Other modes (short glossary)
+
+Include **one paragraph each**, schematic optional:
+
+- **CPAP** (continuous positive airway pressure; spontaneous breathing at elevated baseline).
+- **PS / PSV** (pressure support augments each spontaneous breath — inspiratory flow cycling varies by machine).
+- **Bi-level / BiPAP-style** (two CPAP levels; spontaneous at each; not the same as ICU APRV without additional rules).
+- **Volume-targeted pressure modes** (e.g. PRVC / “autoflow” class) — target volume with **pressure servos**; high level only.
+
+### 2.5 Map to the product
+
+- The **main page** only toggles **VC / PC** — the modal explains **AC** as “mandatory breath + trigger philosophy,” explicitly tying **AC volume** to what VC delivers here and **AC pressure** to PC.
 
 ---
 
-## 4. Content outline (draft hierarchy)
+## 3. UX pattern
 
-### Variables (tie labels to UI)
+### 3.1 Pre-tutorial teaser strip (implemented placement)
 
-- **Tidal volume (\(V_T\))** — set directly in VC; emergent in PC.
-- **Respiratory rate (RR)** and **cycle time**.
-- **Inspiratory time (\(T_I\))** / **I:E ratio**.
-- **PEEP** — baseline pressure; effect on FRC (conceptual).
-- **FiO₂** — oxygenation (brief; not a mechanics lesson).
-- **Compliance / resistance** — from your sliders (`patientState.compliance`, `patientState.resistance`); how they change peak pressure (VC) vs delivered volume (PC).
+- **Location:** On the **vitals monitor**, in the **rectangle below** the **NIBP · TEMP · GAS / AGENT** strip (`<div class="vitals-bar">`), occupying flex space so waveforms stay fixed and the **gray vitals bar stays compact**.
+- **Purpose:** Lightweight **looping schematic animation** (P / flow / volume hint) + **CTA** (“Ventilator modes”) → opens the full `<dialog>` tutorial.
+- **Behavior:** Pause animation when `prefers-reduced-motion`; optional IntersectionObserver pause when off-screen (performance).
 
-### Modes
+### 3.2 Modal container
 
-- **Volume control (VC / VCV):** “Set volume, variable pressure.”
-- **Pressure control (PC / PCV):** “Set inspiratory pressure, variable volume.”
+- Use **`<dialog id="vent-modes-tutorial">`** consistent with `#tut-ventwaves` / debrief patterns.
+- **Tabs / sections:** Basics → Variables → **VC & AC** → **PC & AC** → **SIMV / IMV** → **APRV** → **Other modes** → Waveforms → Pearls.
 
-Each mode page should have:
+### 3.3 Entry points
 
-1. **2–3 sentence intuition**
-2. **Animated schematic** (P/F/V)
-3. **“What moves when compliance drops?”** micro-callout
-4. **One safety pearl** (e.g., high pressures in stiff lungs in VC)
+- **Primary:** Teaser strip button on vitals monitor.
+- **Secondary (optional):** Small link near ventilator mode toggles.
+
+---
+
+## 4. Animated graphic strategy
+
+- **Modal:** Schematic canvas/SVG (recommended), not tied to `tick()` for v1.
+- **Teaser strip:** Tiny canvas loop — stylized **three-line P/F/V** or single **pressure + volume** silhouette — enough to invite click without duplicating full lesson.
 
 ---
 
 ## 5. Technical implementation plan
 
-### 5.1 Files to touch
+### 5.1 Files
 
 | Area | File(s) |
 |------|---------|
-| Markup | `ventilator/index.html` — new `<dialog id="vent-modes-tutorial">…</dialog>` + trigger button |
-| Styles | `css/ventilator.css` — modal layout, tabs, canvas wrapper, responsive rules |
-| Logic | Prefer **`js/vent-modes-tutorial.js`** (new IIFE) loaded after `ventilator.js`, **or** a clearly namespaced block at the end of `ventilator.js` if you want zero extra HTTP requests |
-| Assets | Optional `images/` or inline SVG only |
+| Teaser + stub dialog | `ventilator/index.html` |
+| Teaser + dialog styles | `css/ventilator.css` |
+| Teaser animation + dialog open/close | `js/vent-modes-teaser.js` (load after `ventilator.js`) |
+| Full tutorial (later) | `js/vent-modes-tutorial.js` or section in `ventilator.js` |
 
-### 5.2 Wiring the trigger
+### 5.2 Vitals layout CSS intent
 
-- On DOM ready: `querySelector('#vent-modes-tutorial-open')` → `dialog.showModal()`.
-- Mirror close patterns from existing tutorial dialogs (click backdrop, Escape).
+- `#vitals-screen` remains a column flex.
+- `.vitals-bar` — **does not** consume all remaining height (`flex: 0 0 auto`; keep `min-height`).
+- `.vent-modes-teaser` — **`flex: 1 1 auto`** with `min-height` so it absorbs **extra vertical space** under the gray bar as a **dark “slice”** matching the monitor chrome.
 
-### 5.3 Animator module API (suggested)
+### 5.3 Animator API (full modal, future)
 
 ```text
-VentModesTutorial.init({
-  canvasPressure,
-  canvasFlow,
-  canvasVolume,
-  reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-});
-VentModesTutorial.setMode('VC' | 'PC');
-VentModesTutorial.setMechanics({ compliance, resistance }); // optional v2
+VentModesTutorial.init({ canvases, reducedMotion });
+VentModesTutorial.setTopic('VC_AC' | 'PC_AC' | 'SIMV' | 'APRV' | ...);
 ```
-
-Keep **pure functions** for generating arrays of samples over normalized time \(t \in [0,1]\) per breath phase.
-
-### 5.4 Styling consistency
-
-- Reuse **teal accent**, typography, and spacing from `.mon-tut` / `.vent-tut-dialog` where sensible.
-- Ensure **z-index** stacks above the workstation but below any global alert if applicable.
 
 ---
 
 ## 6. Accessibility
 
-- **Keyboard:** Tab order through tabs → play/pause → mode toggle → close.
-- **Screen readers:** `aria-labelledby` on dialog; tabs as **`role="tablist"`** / **`role="tab"`** / **`role="tabpanel"`** with `aria-selected` / `aria-controls`.
-- **Motion:** respect **`prefers-reduced-motion`** (static diagrams + text).
-- **Contrast:** waveform lines ≥ 3:1 against background; label text meets WCAG AA.
+- Teaser **button** has visible label + `aria-label` if icon-only on narrow layouts.
+- Dialog: focus trap / Escape / backdrop (native `<dialog>`).
+- **`prefers-reduced-motion`:** static teaser frame; modal uses still diagrams.
 
 ---
 
 ## 7. Phased delivery
 
-### Phase 1 — MVP (ship-worthy)
-
-- Dialog shell + tabs: **Basics**, **Variables**, **VC**, **PC**, **Waveforms**
-- One schematic animator (VC + PC presets), **Play/Pause**, **mode switch**
-- Copy reviewed for alignment with **only simulated modes**
-
-### Phase 2 — Depth
-
-- Interactive sliders that morph the schematic (compliance/resistance)
-- Optional **“Compare to live simulation”** ghost trace
-- Printable / copy-friendly **glossary** panel
-
-### Phase 3 — Polish
-
-- Micro-interactions (phase scrubber), subtle sound-off UI hints
-- Localization hooks if you ever translate strings
+| Phase | Deliverable |
+|-------|-------------|
+| **Done / stub** | Teaser strip + placeholder dialog + `vent-modes-teaser.js` |
+| **1** | Full modal shell + tabs + VC/PC + AC framing + SIMV/APRV **concept** copy |
+| **2** | Interactive schematic sliders (compliance/resistance) |
+| **3** | Optional live ghost trace vs simulator |
 
 ---
 
 ## 8. QA checklist
 
-- [ ] Open/close on mobile Safari + Chrome; no scroll bleed on `body` when modal open (use standard `<dialog>` backdrop behavior).
-- [ ] No regression to `ventilator.js` init or `requestAnimationFrame(tick)`.
-- [ ] Performance: animator runs on its own rAF; paused when dialog closed.
-- [ ] Content accuracy review by anesthesia educator (especially clinical pearls).
+- [ ] Teaser does not shrink waveform rows; vitals bar readable on mobile breakpoints.
+- [ ] No extra CPU when tab hidden (pause rAF).
+- [ ] Clinical review for APRV/SIMV wording.
 
 ---
 
-## 9. Open decisions (resolve before build)
+## 9. Open decisions
 
-1. **Exact list of modes** named in copy vs simulated (VC/PC only vs broader glossary).
-2. **Schematic vs live** trace for v1 (recommend schematic).
-3. **New JS file vs inline** in `ventilator.js` (bundle/cache tradeoff).
-4. **Where the trigger lives** in the layout (toolbar vs monitor chrome vs both).
+1. Depth of **brand-specific** mode names vs generic anesthesia-friendly naming.
+2. Whether teaser opens **same dialog** as future full tutorial (yes, recommended — swap inner content by phase).
 
 ---
 
-*This plan is intentionally implementation-ready but leaves medical copy and final visual design to you and your clinical reviewers.*
+*Medical copy must be reviewed by anesthesia educators before wide release.*
