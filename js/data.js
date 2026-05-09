@@ -725,53 +725,43 @@ window.ABOUT_STUDENTS = [
 window.ABOUT_RESIDENTS = [
   {
     id: "resident-1",
-    name: "Dr. Justin Anzalone",
-    initials: "JA",
+    name: "Dr. Kevin Rooney",
+    initials: "KR",
     color: "#207a5e",
     title: "CA-2 Resident (PGY-3)",
-    photo: "images/justinanzalone.jpg",
-    bio: "Originally from Louisiana, Dr. Anzalone completed his undergraduate degree at the University of Louisiana at Lafayette. He continued on the complete a masters of physician assistant studies at New York Institute of Technology, where he practiced for 8 years prior to returning to complete his medical school training at Ross University School of Medicine. Dr. Anzalone and his wife, Yvette, have three beautiful daughters: Alexandra, Caroline, and Annalise. Dr. Anzalone enjoys spending time with family, hiking, gravel cycling, roasting coffee, and traveling.",
-    email: "justin.anzalone@yale.edu"
+    photo: "images/kevinrooney.jpeg",
+    bio: "Kevin Rooney, MD is a Yale Anesthesiology Resident interested in medical education.",
+    email: "kevin.rooney@yale.edu"
   },
   {
     id: "resident-2",
-    name: "Dr. Shriya Tanti",
-    initials: "ST",
+    name: "Dr. Landon Crippes",
+    initials: "LC",
     color: "#1a7a8a",
     title: "CA-2 Resident (PGY-3)",
-    photo: "images/shriyatanti.jpg",
-    bio: "Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
-    email: "shriya.tanti@yale.edu"
+    photo: "images/landoncrippes.jpeg",
+    bio: "Landon Crippes, MD is a Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
+    email: "landon.crippes@yale.edu"
   },
   {
     id: "resident-3",
-    name: "Dr. Kenneth Hanton",
-    initials: "KH",
+    name: "Dr. Manuel Cintron",
+    initials: "MC",
     color: "#8a5a1a",
     title: "CA-2 Resident (PGY-3)",
-    photo: "images/kennethhanton.jpg",
-    bio: "Hometown: Napa, CA. Interests: traveling around the east coast, cocktail mixology, going to the zoo, pet cat, Mexican food enthusiast",
-    email: "kenneth.hanton@yale.edu"
+    photo: "images/manuelcintron.jpeg",
+    bio: "Manuel Cintron, MD is a Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
+    email: "manuel.cintron@yale.edu"
   },
   {
     id: "resident-4",
-    name: "Dr. Adriana Perez",
-    initials: "AP",
+    name: "Dr. Thomas Stovall",
+    initials: "TS",
     color: "#4a6b1a",
     title: "CA-2 Resident (PGY-3)",
-    photo: "images/adrianaperez.jpg",
-    bio: "Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
-    email: "adriana.perez@yale.edu"
-  },
-  {
-    id: "resident-5",
-    name: "Dr. Kendra Brown",
-    initials: "KB",
-    color: "#730000",
-    title: "CA-2 Resident (PGY-3)",
-    photo: "images/kendrabrown.jpg",
-    bio: "Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
-    email: "kendra.brown@yale.edu"
+    photo: "images/thomasstovall.jpeg",
+    bio: "Thomas Stovall, MD is a Anesthesiology Resident at Yale New Haven Hospital interested in medical education.",
+    email: "thomas.stovall@yale.edu"
   },
 ];
 
