@@ -1824,9 +1824,11 @@
     function paintScenarioCards() {
       if (fetchGen !== scenSelectFetchGen) return;
       if (filterRow) {
+        const hasAssigned = mergedScenarios.some(s => s._assigned);
         const categories = ['All', ...new Set(mergedScenarios.map(s => s.badge).filter(Boolean))];
+        if (hasAssigned) categories.splice(1, 0, 'Assigned');
         filterRow.innerHTML = categories.map(cat => {
-          const icon = cat === 'All' ? '⭐' : (CATEGORY_ICONS[cat] || '📋');
+          const icon = cat === 'All' ? '⭐' : cat === 'Assigned' ? '📌' : (CATEGORY_ICONS[cat] || '📋');
           return `<button class="scen-filter-chip${cat === 'All' ? ' scen-filter-chip--active' : ''}"
                           data-filter="${cat === 'All' ? 'all' : cat}" type="button">
                     <span class="scen-filter-chip__icon">${icon}</span>${cat}
@@ -1839,7 +1841,9 @@
             chip.classList.add('scen-filter-chip--active');
             const filter = chip.dataset.filter;
             container.querySelectorAll('.scen-card').forEach(card => {
-              const show = filter === 'all' || card.dataset.category === filter;
+              const show = filter === 'all'
+                || (filter === 'Assigned' && card.dataset.assigned === '1')
+                || card.dataset.category === filter;
               card.style.display = show ? '' : 'none';
             });
           });
@@ -1848,10 +1852,12 @@
 
       container.innerHTML = mergedScenarios.map((s, i) => {
         const authorHtml = s._dbId ? `<div class="scen-card__author">By ${s._author || 'Instructor'}</div>` : '';
-        return `<button class="scen-card" type="button" data-scen-idx="${i}" data-scen-id="${s.id || ''}" data-category="${s.badge}">
+        const assignedHtml = s._assigned ? '<span class="scen-card__assigned">Assigned to you</span>' : '';
+        return `<button class="scen-card${s._assigned ? ' scen-card--assigned' : ''}" type="button" data-scen-idx="${i}" data-scen-id="${s.id || ''}" data-category="${s.badge}" data-assigned="${s._assigned ? '1' : '0'}">
            <span class="scen-card__badge" style="background:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).bg};color:${(BADGE_COLORS[s.badge]||_defaultBadgeColor).fg};border:1px solid ${(BADGE_COLORS[s.badge]||_defaultBadgeColor).border}">
              ${CATEGORY_ICONS[s.badge] || ''} ${s.badge}
            </span>
+           ${assignedHtml}
            <div class="scen-card__title">${s.title}</div>
            ${authorHtml}
            <div class="scen-card__summary">${s.summary}</div>
@@ -1871,11 +1877,24 @@
 
     if (window.SB && window.SB.client) {
       try {
+        const assignedIds = new Set();
+        try {
+          const { data: { session } } = await window.SB.client.auth.getSession();
+          if (session?.user?.id) {
+            const { data: assigns } = await window.SB.client
+              .from('case_assignments')
+              .select('scenario_id, status')
+              .eq('assigned_to', session.user.id);
+            (assigns || []).forEach((a) => {
+              if (a.scenario_id) assignedIds.add(a.scenario_id);
+            });
+          }
+        } catch (e) { /* anonymous or no assignments */ }
+
         const { data, error } = await window.SB.client
           .from('generated_scenarios')
-          .select('id, scenario_json, author_label, visibility')
+          .select('id, scenario_json, author_label, visibility, institution_id')
           .eq('status', 'approved')
-          .eq('visibility', 'public')
           .order('published_at', { ascending: false });
 
         if (fetchGen !== scenSelectFetchGen) return;
@@ -1883,6 +1902,7 @@
         if (!error && data) {
           mergedScenarios = [...SCENARIOS];
           data.forEach(dbScen => {
+            if (dbScen.visibility === 'hidden' && !assignedIds.has(dbScen.id)) return;
             let parsed = dbScen.scenario_json;
             if (typeof parsed === 'string') {
               try {
@@ -1895,6 +1915,7 @@
               parsed._dbId = dbScen.id;
               parsed._author = dbScen.author_label || 'Instructor';
               parsed._visibility = dbScen.visibility;
+              parsed._assigned = assignedIds.has(dbScen.id);
               mergedScenarios.push(parsed);
             }
           });

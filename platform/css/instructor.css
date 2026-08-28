@@ -487,6 +487,143 @@ dialog.cohort-dialog {
   padding-top: 4px;
 }
 
+.school-scope-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 10px;
+  border: 1px solid rgba(13, 148, 136, 0.22);
+  background: rgba(13, 148, 136, 0.07);
+  color: #134e4a;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+.school-scope-banner--warn {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(251, 191, 36, 0.12);
+  color: #92400e;
+}
+.school-scope-banner strong { font-weight: 700; }
+
+.school-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(13, 148, 136, 0.12);
+  color: #0f766e;
+  border: 1px solid rgba(13, 148, 136, 0.22);
+}
+.school-pill--shared {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+
+.gen-panel {
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.gen-panel__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1.1rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4f46e5;
+  counter-reset: gen-step;
+}
+.gen-panel__steps li {
+  counter-increment: gen-step;
+}
+.gen-panel__steps li::before {
+  content: counter(gen-step) ". ";
+}
+.gen-panel__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.gen-progress {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid rgba(99, 102, 241, 0.16);
+}
+.gen-progress p {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+.gen-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid #e0e7ff;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: gen-spin 0.7s linear infinite;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+@keyframes gen-spin { to { transform: rotate(360deg); } }
+.gen-status {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: #6b7280;
+  min-height: 1.1em;
+}
+
+.preview-case__inner {
+  max-width: min(720px, 96vw);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.preview-case__body { margin-top: 0.75rem; }
+.preview-case__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #e5e7eb;
+}
+.preview-step {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.7rem;
+  background: #f9fafb;
+}
+.preview-step h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+.preview-choice {
+  font-size: 0.82rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid #eef2f7;
+}
+.preview-choice--correct { color: #047857; font-weight: 600; }
+
 /* ══════════════════════════════════════════════════════════════════════════
    MOBILE RESPONSIVE — INSTRUCTOR DASHBOARD
    ══════════════════════════════════════════════════════════════════════════ */

@@ -21,7 +21,7 @@
   </script>
   <link rel="icon" href="../favicon.png" type="image/png" />
   <link rel="stylesheet" href="css/dashboard.css" />
-  <link rel="stylesheet" href="css/instructor.css?v=2" />
+  <link rel="stylesheet" href="css/instructor.css?v=20260827-schools" />
   <link rel="stylesheet" href="css/motif-wizard.css" />
 </head>
 <body data-required-role="instructor">
@@ -44,6 +44,7 @@
     <div class="dash-welcome">
       <h1 class="dash-welcome__name" id="welcome-name">Instructor Dashboard</h1>
       <p class="dash-welcome__meta" id="welcome-meta" hidden></p>
+      <p class="inst-scope-banner" id="welcome-scope" hidden></p>
       <div class="inst-filters">
         <div class="inst-filter-group">
           <label class="inst-filter-label">Cohort</label>
@@ -234,7 +235,7 @@
     <div class="inst-panel" id="panel-assignments" hidden>
       <div class="dash-section">
         <h2 class="dash-section__title">Case Assignments</h2>
-        <p class="inst-hint">Track private case assignments assigned to cohorts or individual students.</p>
+        <p class="inst-hint">Cases assigned to students at your school. Assigned students can open these from the simulator even when the case is not in the public school library.</p>
         <div id="assignments-list">
           <p class="inst-hint">Loading assignments…</p>
         </div>
@@ -262,7 +263,8 @@
           <h2 class="dash-section__title" style="margin:0">Scenario Motif Templates</h2>
           <button class="inst-btn inst-btn--primary" id="btn-add-motif" type="button">+ Add Motif</button>
         </div>
-        <p class="inst-hint">Motifs define the clinical archetype for AI-generated scenarios. Add, edit, or archive templates here. The simulation physics (effect profiles) are fixed by developers for safety.</p>
+        <p class="inst-hint">Motifs are templates the AI uses to write new patient cases. Shared catalog templates are available to every school; motifs you create stay at your school only.</p>
+        <div class="school-scope-banner" id="motifs-school-banner" hidden></div>
         <div id="motif-list">
           <p class="inst-hint">Loading motifs…</p>
         </div>
@@ -276,17 +278,21 @@
           <h2 class="dash-section__title" style="margin:0">AI-Generated Scenario Cases</h2>
           <button class="inst-btn inst-btn--primary" id="btn-generate-case" type="button">Generate New Case</button>
         </div>
-        <p class="inst-hint">Cases generated from motif templates. Review and approve before they appear in the student scenario selector.</p>
-        <!-- Generator form -->
-        <div id="generate-form-wrap" class="dash-section" hidden style="background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:16px 20px;margin-bottom:20px;">
-          <h3 style="margin:0 0 12px;font-size:0.9rem">Generate from Motif</h3>
+        <p class="inst-hint">Write a new patient case from a template, review it, then share it with students at your school — or assign it to a cohort.</p>
+        <div class="school-scope-banner" id="generated-school-banner" hidden></div>
+        <div id="generate-form-wrap" class="gen-panel" hidden>
+          <ol class="gen-panel__steps">
+            <li>Pick a template</li>
+            <li>Optional patient hints</li>
+            <li>Generate, then review before students see it</li>
+          </ol>
           <div class="motif-form__row">
-            <label class="motif-form__label">Motif
+            <label class="motif-form__label">Template
               <select id="gen-motif-select" class="motif-form__input">
                 <option value="">Loading…</option>
               </select>
             </label>
-            <label class="motif-form__label">Age range (optional)
+            <label class="motif-form__label">Age range <span class="inst-hint" style="font-weight:500">(optional)</span>
               <select id="gen-age" class="motif-form__input">
                 <option value="">Any age</option>
                 <option value="18-35">Young adult (18–35)</option>
@@ -295,7 +301,7 @@
                 <option value="76+">Elderly (76+)</option>
               </select>
             </label>
-            <label class="motif-form__label">Sex (optional)
+            <label class="motif-form__label">Sex <span class="inst-hint" style="font-weight:500">(optional)</span>
               <select id="gen-sex" class="motif-form__input">
                 <option value="">Any</option>
                 <option value="Male">Male</option>
@@ -303,11 +309,19 @@
               </select>
             </label>
           </div>
-          <div style="display:flex;gap:10px;margin-top:12px">
-            <button class="inst-btn inst-btn--primary" id="btn-run-generator" type="button">Generate</button>
+          <p class="inst-hint" id="gen-school-note" style="margin-top:10px">The finished case stays at your school. Students at other schools will not see it.</p>
+          <div class="gen-panel__actions">
+            <button class="inst-btn inst-btn--primary" id="btn-run-generator" type="button">Generate case</button>
             <button class="inst-btn" id="btn-cancel-generator" type="button">Cancel</button>
           </div>
-          <div id="gen-status" style="margin-top:10px;font-size:11px;color:var(--text-muted)"></div>
+          <div id="gen-progress" class="gen-progress" hidden>
+            <div class="gen-spinner" aria-hidden="true"></div>
+            <div>
+              <strong>Writing a new patient case…</strong>
+              <p>Usually 10–20 seconds. We’ll open a review when it’s ready.</p>
+            </div>
+          </div>
+          <div id="gen-status" class="gen-status"></div>
         </div>
         <!-- Cases list -->
         <div id="generated-cases-list">
@@ -381,14 +395,11 @@
       <form id="inst-profile-form">
         <label class="inst-account-label" for="inst-profile-name">Preferred name</label>
         <input id="inst-profile-name" type="text" maxlength="120" class="inst-input" placeholder="Your name" autocomplete="name" />
-        <label class="inst-account-label" for="inst-profile-affiliation">Affiliation / institution</label>
-        <input id="inst-profile-affiliation" type="text" maxlength="160" class="inst-input" placeholder="e.g. Yale School of Medicine" list="inst-profile-school-list" autocomplete="organization" />
-        <datalist id="inst-profile-school-list">
-          <option value="Yale School of Medicine"></option>
-          <option value="Yale Physician Associate Program"></option>
-          <option value="Yale School of Nursing"></option>
-          <option value="Visiting / other institution"></option>
-        </datalist>
+        <label class="inst-account-label" for="inst-profile-affiliation-search">School / program</label>
+        <div id="inst-profile-school-picker"></div>
+        <p class="inst-hint inst-hint--tight" id="inst-profile-school-lock" hidden>
+          Your teaching affiliation was set when this account was approved.
+        </p>
         <div class="inst-profile-form__actions">
           <button type="submit" class="inst-btn">Save profile</button>
           <span id="inst-profile-save-status" class="inst-profile-save-status"></span>
@@ -423,15 +434,15 @@
             <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
               <input type="radio" name="pub-visibility" value="public" checked />
               <div style="display:flex;flex-direction:column">
-                <span style="font-weight:600">🌎 Public</span>
-                <span class="inst-hint" style="margin:0">Visible to all students in the simulator directory.</span>
+                <span style="font-weight:600">School library</span>
+                <span class="inst-hint" id="pub-vis-public-hint" style="margin:0">Visible to all students at your school in the simulator.</span>
               </div>
             </label>
             <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
               <input type="radio" name="pub-visibility" value="cohort" />
               <div style="display:flex;flex-direction:column">
-                <span style="font-weight:600">👥 Assign to Cohort</span>
-                <span class="inst-hint" style="margin:0">Only visible to members of a specific cohort.</span>
+                <span style="font-weight:600">Assign to a cohort</span>
+                <span class="inst-hint" id="pub-vis-cohort-hint" style="margin:0">Only students in that cohort at your school can open it.</span>
               </div>
             </label>
             <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
@@ -506,6 +517,27 @@
           <button type="submit" class="inst-btn inst-btn--primary" id="btn-save-edit">Save Changes</button>
         </div>
       </form>
+    </div>
+  </dialog>
+
+  <!-- ── Review generated case ──────────────────────────────────────────── -->
+  <dialog id="preview-case-modal" class="debrief-dialog">
+    <div class="debrief-dialog__inner preview-case__inner">
+      <div class="cohort-dialog__header">
+        <h2 class="cohort-dialog__title debrief-dialog__title" id="preview-modal-title">Review case</h2>
+        <button type="button" class="cohort-dialog__close" id="preview-case-close" aria-label="Close review">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <p class="inst-hint" id="preview-school-note"></p>
+      <div id="preview-case-body" class="preview-case__body">
+        <p class="inst-hint">Loading…</p>
+      </div>
+      <div class="preview-case__actions">
+        <button type="button" class="inst-btn inst-btn--danger" id="btn-preview-reject">Reject</button>
+        <button type="button" class="inst-btn" id="btn-preview-edit">Edit text</button>
+        <button type="button" class="inst-btn inst-btn--primary" id="btn-preview-publish">Approve &amp; publish</button>
+      </div>
     </div>
   </dialog>
 
@@ -657,7 +689,7 @@
               </div>
               
               <div style="padding-top:1rem; border-top:1px solid #e5e7eb">
-                <p class="inst-hint" style="margin:0">Once saved, this motif will be available to generate new AI cases.</p>
+                <p class="inst-hint" style="margin:0">Once saved, this motif stays at your school and can be used to generate new cases.</p>
               </div>
             </div>
           </div>
@@ -686,10 +718,11 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-client.js"></script>
+  <script src="js/supabase-client.js?v=20260827-institution-scope"></script>
+  <script src="js/institution-picker.js"></script>
   <script src="js/auth-guard.js"></script>
-  <script src="js/instructor-dashboard.js?v=20260506-requests-tab-conditional"></script>
-  <script src="js/scenario-generator.js"></script>
+  <script src="js/instructor-dashboard.js?v=20260827-institution-scope"></script>
+  <script src="js/scenario-generator.js?v=20260827-institution-scope"></script>
 
 </body>
 </html>

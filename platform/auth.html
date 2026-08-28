@@ -219,22 +219,8 @@
               maxlength="120"
               autocomplete="name"
             />
-            <label for="signup-school">School / program</label>
-            <input
-              id="signup-school"
-              class="auth-card__input"
-              type="text"
-              placeholder="e.g. Yale School of Medicine"
-              maxlength="160"
-              list="school-suggestions"
-              autocomplete="organization"
-            />
-            <datalist id="school-suggestions">
-              <option value="Yale School of Medicine"></option>
-              <option value="Yale Physician Associate Program"></option>
-              <option value="Yale School of Nursing"></option>
-              <option value="Visiting / other institution"></option>
-            </datalist>
+            <label for="signup-school-search">School / program</label>
+            <div id="signup-school-picker"></div>
             <label for="signup-training">Year / training</label>
             <select id="signup-training" class="auth-card__input" aria-label="Year or training level">
               <option value="">Optional — select if you’d like</option>
@@ -312,8 +298,8 @@
           <input id="edu-email" type="email" placeholder="you@institution.edu" required />
         </div>
         <div class="edu-dialog__field">
-          <label for="edu-institution">Institution <span aria-hidden="true">*</span></label>
-          <input id="edu-institution" type="text" placeholder="Yale School of Medicine" required maxlength="160" />
+          <label for="edu-institution-search">Institution <span aria-hidden="true">*</span></label>
+          <div id="edu-institution-picker"></div>
         </div>
         <div class="edu-dialog__field">
           <label for="edu-role">Role / title</label>
@@ -343,6 +329,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
+  <script src="js/institution-picker.js"></script>
   <script>
     (function () {
       // If already logged in, redirect
@@ -377,8 +364,20 @@
 
       const signupExtras = document.getElementById('signup-extras');
       const signupName = document.getElementById('signup-name');
-      const signupSchool = document.getElementById('signup-school');
       const signupTraining = document.getElementById('signup-training');
+      const signupSchoolPicker = window.InstitutionPicker
+        ? window.InstitutionPicker.mount(document.getElementById('signup-school-picker'), {
+            inputId: 'signup-school-search',
+            placeholder: 'Search medical schools…',
+          })
+        : null;
+      const eduSchoolPicker = window.InstitutionPicker
+        ? window.InstitutionPicker.mount(document.getElementById('edu-institution-picker'), {
+            required: true,
+            inputId: 'edu-institution-search',
+            placeholder: 'Search medical schools…',
+          })
+        : null;
 
       pwToggle.addEventListener('click', () => {
         isSignUp = !isSignUp;
@@ -392,8 +391,8 @@
         signupExtras.hidden = !isSignUp;
         if (!isSignUp) {
           signupName.value = '';
-          signupSchool.value = '';
           signupTraining.value = '';
+          signupSchoolPicker && signupSchoolPicker.reset();
         }
       });
 
@@ -407,9 +406,12 @@
         const password = pwPass.value;
 
         if (isSignUp) {
+          const school = signupSchoolPicker ? signupSchoolPicker.getValue() : { display: '' };
           const { data, error } = await SB.signUpWithPassword(email, password, {
             fullName: signupName.value,
-            school: signupSchool.value,
+            school: school.display,
+            institutionId: school.institution_id,
+            institutionOther: school.institution_other,
             trainingLevel: signupTraining.value,
           });
           if (error) {
@@ -479,6 +481,7 @@
         eduStatus.textContent = '';
         eduStatus.className = 'edu-dialog__status';
         eduForm.reset();
+        eduSchoolPicker && eduSchoolPicker.reset();
         eduDialog.showModal();
       });
       document.getElementById('close-edu-request').addEventListener('click', () => eduDialog.close());
@@ -488,7 +491,8 @@
         e.preventDefault();
         const name        = document.getElementById('edu-name').value.trim();
         const email       = document.getElementById('edu-email').value.trim();
-        const institution = document.getElementById('edu-institution').value.trim();
+        const school      = eduSchoolPicker ? eduSchoolPicker.getValue() : { display: '' };
+        const institution = (school.display || '').trim();
         const role_title  = document.getElementById('edu-role').value.trim() || null;
         const use_case    = document.getElementById('edu-use').value.trim()  || null;
         const message     = document.getElementById('edu-message').value.trim() || null;
@@ -524,6 +528,7 @@
           p_name: name,
           p_email: email,
           p_institution: institution,
+          p_institution_id: school.institution_id || null,
           p_role_title: role_title,
           p_use_case: use_case,
           p_message: message,
@@ -551,6 +556,7 @@
           eduStatus.textContent = '✓ Request submitted! We\'ll be in touch soon.';
           eduStatus.className = 'edu-dialog__status edu-dialog__status--ok';
           eduForm.reset();
+          eduSchoolPicker && eduSchoolPicker.reset();
           eduSubmit.disabled = false;
           setTimeout(() => eduDialog.close(), 2800);
         }

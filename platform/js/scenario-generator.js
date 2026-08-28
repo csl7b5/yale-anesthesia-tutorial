@@ -26,6 +26,51 @@
     el.style.color = isErr ? '#ef4444' : 'var(--text-muted)';
   }
 
+  let instructorCtx = null;
+  let previewingCaseId = null;
+
+  async function getInstructorContext(force) {
+    if (instructorCtx && !force) return instructorCtx;
+    const session = await getSession();
+    if (!session) {
+      instructorCtx = { profile: null, school: null, isAdmin: false };
+      return instructorCtx;
+    }
+    const { data: profile } = await window.SB.client
+      .from('profiles')
+      .select('id, role, display_name, institution, institution_id, institutions(id, short_name, canonical_name)')
+      .eq('id', session.user.id)
+      .single();
+    instructorCtx = {
+      profile,
+      school: profile?.institutions || null,
+      isAdmin: profile?.role === 'admin',
+    };
+    return instructorCtx;
+  }
+
+  function schoolName(ctx) {
+    return ctx?.school?.short_name || ctx?.school?.canonical_name || '';
+  }
+
+  function paintSchoolBanner(el, ctx, kind) {
+    if (!el) return;
+    const name = schoolName(ctx);
+    if (!ctx?.profile?.institution_id) {
+      el.hidden = false;
+      el.classList.add('school-scope-banner--warn');
+      el.innerHTML = `<div>Set your <strong>school</strong> in Account Settings before creating cases. New cases stay at that school and can only be assigned to its students.</div>`;
+      return;
+    }
+    el.hidden = false;
+    el.classList.remove('school-scope-banner--warn');
+    if (kind === 'motifs') {
+      el.innerHTML = `<div>Creating as <strong>${escHtml(name)}</strong>. New templates stay at ${escHtml(name)}. Shared catalog templates stay available to every school.</div>`;
+    } else {
+      el.innerHTML = `<div>Creating as <strong>${escHtml(name)}</strong>. Generated cases stay at ${escHtml(name)} and can be shared with ${escHtml(name)} students only.</div>`;
+    }
+  }
+
   // ── MOTIF MANAGER ────────────────────────────────────────────────────────
 
   let editingMotifId = null;
@@ -35,9 +80,12 @@
     const listEl = qs('#motif-list');
     if (!listEl) return;
 
+    const ctx = await getInstructorContext();
+    paintSchoolBanner(qs('#motifs-school-banner'), ctx, 'motifs');
+
     const { data, error } = await window.SB.client
       .from('scenario_motifs')
-      .select('id, title, clinical_domain, badge, is_active, created_at, steps')
+      .select('id, title, clinical_domain, badge, is_active, created_at, steps, institution_id, institutions(short_name, canonical_name)')
       .order('created_at', { ascending: false });
 
     if (error || !data) {
@@ -52,24 +100,31 @@
     listEl.innerHTML = `
       <table class="inst-table">
         <thead><tr>
-          <th>Title</th><th>Domain</th><th>Steps</th><th>Status</th><th>Actions</th>
+          <th>Title</th><th>School</th><th>Domain</th><th>Steps</th><th>Status</th><th>Actions</th>
         </tr></thead>
         <tbody>
-          ${data.map(m => `
+          ${data.map(m => {
+            const shared = !m.institution_id;
+            const canEdit = ctx.isAdmin || !shared;
+            const schoolChip = shared
+              ? '<span class="school-pill school-pill--shared">Shared catalog</span>'
+              : `<span class="school-pill">${escHtml(m.institutions?.short_name || m.institutions?.canonical_name || 'School')}</span>`;
+            return `
             <tr>
               <td><strong>${escHtml(m.title)}</strong></td>
+              <td>${schoolChip}</td>
               <td>${escHtml(m.clinical_domain)}</td>
               <td>${Array.isArray(m.steps) ? m.steps.length : 0}</td>
               <td><span class="motif-status motif-status--${m.is_active ? 'active' : 'archived'}">${m.is_active ? 'Active' : 'Archived'}</span></td>
               <td>
-                <button class="inst-btn inst-btn--sm" data-motif-edit="${m.id}">Edit</button>
-                ${m.is_active
+                ${canEdit ? `<button class="inst-btn inst-btn--sm" data-motif-edit="${m.id}">Edit</button>` : '<span class="inst-hint" style="margin:0">Read-only</span>'}
+                ${canEdit ? (m.is_active
                   ? `<button class="inst-btn inst-btn--sm inst-btn--danger" data-motif-archive="${m.id}">Archive</button>`
                   : `<button class="inst-btn inst-btn--sm" data-motif-restore="${m.id}">Restore</button>`
-                }
+                ) : ''}
               </td>
-            </tr>
-          `).join('')}
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>`;
 
@@ -82,49 +137,6 @@
     listEl.querySelectorAll('[data-motif-restore]').forEach(btn =>
       btn.addEventListener('click', () => archiveMotif(btn.dataset.motifRestore, false))
     );
-  }
-
-  async function openMotifEditor(motifId) {
-    editingMotifId = motifId || null;
-    stepCount = 0;
-    const editorEl = qs('#motif-editor');
-    const titleEl  = qs('#motif-editor-title');
-    if (!editorEl) return;
-
-    // Reset form
-    qs('#motif-form').reset();
-    qs('#mf-steps-list').innerHTML = '';
-
-    if (motifId) {
-      titleEl.textContent = 'Edit Motif';
-      const { data, error } = await window.SB.client
-        .from('scenario_motifs')
-        .select('*')
-        .eq('id', motifId)
-        .single();
-      if (error || !data) return;
-
-      qs('#mf-title').value        = data.title;
-      qs('#mf-domain').value       = data.clinical_domain;
-      qs('#mf-summary').value      = data.summary;
-      qs('#mf-badge').value        = data.badge;
-      qs('#mf-badge-color').value  = data.badge_color;
-      qs('#mf-objectives').value   = (data.learning_objectives || []).join('\n');
-
-      const pc = data.physiology_constraints || {};
-      if (pc.cardiacOutput) { qs('#mf-co-min').value = pc.cardiacOutput[0];   qs('#mf-co-max').value = pc.cardiacOutput[1]; }
-      if (pc.compliance)    { qs('#mf-comp-min').value = pc.compliance[0];    qs('#mf-comp-max').value = pc.compliance[1]; }
-      if (pc.resistance)    { qs('#mf-res-min').value = pc.resistance[0];     qs('#mf-res-max').value = pc.resistance[1]; }
-
-      // Populate steps
-      (data.steps || []).forEach(step => addStepRow(step));
-    } else {
-      titleEl.textContent = 'New Motif';
-      addStepRow();  // start with one blank step
-    }
-
-    editorEl.hidden = false;
-    editorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   let currentWizStep = 1;
@@ -336,6 +348,16 @@
     saveBtn.textContent = 'Saving…';
 
     const payload = collectMotifFormData();
+    const ctx = await getInstructorContext();
+    if (!editingMotifId) {
+      if (!ctx.profile?.institution_id) {
+        alert('Set your school in Account Settings before creating a motif.');
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Motif';
+        return;
+      }
+      payload.institution_id = ctx.profile.institution_id;
+    }
     let error;
 
     if (editingMotifId) {
@@ -376,9 +398,16 @@
     const listEl = qs('#generated-cases-list');
     if (!listEl) return;
 
+    const ctx = await getInstructorContext();
+    paintSchoolBanner(qs('#generated-school-banner'), ctx, 'generated');
+    const genNote = qs('#gen-school-note');
+    if (genNote && schoolName(ctx)) {
+      genNote.textContent = `The finished case stays at ${schoolName(ctx)}. Students at other schools will not see it.`;
+    }
+
     const { data, error } = await window.SB.client
       .from('generated_scenarios')
-      .select('id, created_at, patient_summary, status, visibility, is_archived, reviewer_notes, motif_id, scenario_motifs(title, badge, badge_color)')
+      .select('id, created_at, patient_summary, status, visibility, is_archived, reviewer_notes, motif_id, institution_id, scenario_motifs(title, badge, badge_color), institutions(short_name, canonical_name)')
       .order('created_at', { ascending: false })
       .limit(100);
 
@@ -402,7 +431,7 @@
         background:${badgeColor}22;color:${badgeColor};border:1px solid ${badgeColor}55">${escHtml(badge)}</span>`;
 
       const visLabel = c.status === 'approved'
-        ? `<br><span style="font-size:0.72rem;opacity:0.75">${c.visibility === 'public' ? '🌎 Public' : c.visibility === 'hidden' ? '🔒 Private' : '👥 Cohort'}</span>`
+        ? `<br><span style="font-size:0.72rem;opacity:0.75">${c.visibility === 'public' ? 'School library' : c.visibility === 'hidden' ? 'Hidden' : 'Cohort'}</span>`
         : '';
       const statusChip = c.is_archived
         ? `<span class="motif-status motif-status--archived">Archived</span>`
@@ -412,7 +441,7 @@
         ? `<button class="inst-btn inst-btn--sm" data-unarchive="${c.id}">Unarchive</button>
            <button class="inst-btn inst-btn--sm inst-btn--danger" data-delete="${c.id}">Delete</button>`
         : `${c.status === 'pending' ? `
-             <button class="inst-btn inst-btn--sm inst-btn--primary" data-publish="${c.id}">Publish</button>
+             <button class="inst-btn inst-btn--sm inst-btn--primary" data-publish="${c.id}">Approve &amp; publish</button>
              <button class="inst-btn inst-btn--sm inst-btn--danger"  data-reject="${c.id}">Reject</button>
            ` : `
              <button class="inst-btn inst-btn--sm" data-visibility="${c.id}">👁 Visibility</button>
@@ -736,9 +765,16 @@
 
     // Set modal title based on context
     const titleEl = qs('#publish-modal-title');
-    if (titleEl) titleEl.textContent = isVisibilityEdit ? 'Manage Visibility' : 'Publish or Assign Case';
+    if (titleEl) titleEl.textContent = isVisibilityEdit ? 'Who can see this case?' : 'Approve & publish';
     const saveBtn = qs('#btn-save-publish');
-    if (saveBtn) saveBtn.textContent = isVisibilityEdit ? 'Save Visibility' : 'Publish Case';
+    if (saveBtn) saveBtn.textContent = isVisibilityEdit ? 'Save visibility' : 'Publish case';
+
+    const ctx = await getInstructorContext();
+    const name = schoolName(ctx) || 'your school';
+    const pubHint = qs('#pub-vis-public-hint');
+    const cohortHint = qs('#pub-vis-cohort-hint');
+    if (pubHint) pubHint.textContent = `Visible to all ${name} students in the simulator.`;
+    if (cohortHint) cohortHint.textContent = `Only ${name} students in that cohort can open it.`;
 
     // If editing existing visibility, pre-select current value
     if (isVisibilityEdit) {
@@ -766,9 +802,9 @@
 
     // Auto-fill author name from profile if available
     try {
-      const { data } = await window.SB.client.from('profiles').select('name').eq('id', (await getSession()).user.id).single();
-      if (data?.name && !qs('#pub-author-label').value) {
-        qs('#pub-author-label').value = 'Dr. ' + data.name.split(' ').pop();
+      const { data } = await window.SB.client.from('profiles').select('display_name').eq('id', (await getSession()).user.id).single();
+      if (data?.display_name && !qs('#pub-author-label').value) {
+        qs('#pub-author-label').value = data.display_name;
       }
     } catch(e) {}
 
@@ -793,20 +829,57 @@
   }
 
   async function previewCase(caseId) {
+    const modal = qs('#preview-case-modal');
+    const body = qs('#preview-case-body');
+    if (!modal || !body) return;
+    previewingCaseId = caseId;
+    body.innerHTML = '<p class="inst-hint">Loading…</p>';
+    const ctx = await getInstructorContext();
+    const note = qs('#preview-school-note');
+    if (note) {
+      note.textContent = schoolName(ctx)
+        ? `This case belongs to ${schoolName(ctx)}. Students at other schools cannot see it.`
+        : 'Set your school before publishing.';
+    }
+    modal.showModal();
+
     const { data, error } = await window.SB.client
       .from('generated_scenarios')
-      .select('scenario_json, patient_summary')
+      .select('scenario_json, patient_summary, status, visibility, scenario_motifs(title)')
       .eq('id', caseId)
       .single();
-    if (error || !data) return;
-    const s = data.scenario_json;
-    alert(
-      `PATIENT: ${data.patient_summary}\n\n` +
-      `TITLE: ${s.title}\n\n` +
-      `STEPS: ${s.steps?.length ?? 0}\n\n` +
-      `Step 1 clue: ${s.steps?.[0]?.clue ?? '—'}\n\n` +
-      `Step 1 question: ${s.steps?.[0]?.question ?? '—'}`
-    );
+    if (error || !data) {
+      body.innerHTML = `<p class="inst-hint" style="color:#ef4444">Failed to load case: ${escHtml(error?.message)}</p>`;
+      return;
+    }
+
+    const s = data.scenario_json || {};
+    const titleEl = qs('#preview-modal-title');
+    if (titleEl) titleEl.textContent = data.status === 'pending' ? 'Review generated case' : 'Case preview';
+    const publishBtn = qs('#btn-preview-publish');
+    const rejectBtn = qs('#btn-preview-reject');
+    if (publishBtn) publishBtn.style.display = data.status === 'pending' || data.status === 'approved' ? '' : 'none';
+    if (rejectBtn) rejectBtn.style.display = data.status === 'pending' ? '' : 'none';
+    if (publishBtn) publishBtn.textContent = data.status === 'pending' ? 'Approve & publish' : 'Change visibility';
+
+    const steps = Array.isArray(s.steps) ? s.steps : [];
+    body.innerHTML = `
+      <p style="margin:0 0 0.35rem;font-size:0.78rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em">${escHtml(data.scenario_motifs?.title || 'Generated case')}</p>
+      <h3 style="margin:0 0 0.4rem;font-size:1.15rem;color:#111827">${escHtml(s.title || 'Untitled case')}</h3>
+      <p style="margin:0 0 1rem;color:#374151;line-height:1.5">${escHtml(data.patient_summary || s.summary || '')}</p>
+      ${steps.map((step, i) => `
+        <div class="preview-step">
+          <h4>Step ${i + 1}${step.phase ? ' — ' + escHtml(step.phase) : ''}</h4>
+          <p style="margin:0 0 0.45rem;font-size:0.88rem;color:#1f2937">${escHtml(step.clue || '')}</p>
+          <p style="margin:0 0 0.55rem;font-size:0.88rem;font-weight:600">${escHtml(step.question || '')}</p>
+          ${(step.choices || []).map((ch) => `
+            <div class="preview-choice${ch.isCorrect ? ' preview-choice--correct' : ''}">
+              ${escHtml(ch.text || '')}${ch.isCorrect ? ' ✓' : ''}
+            </div>
+          `).join('')}
+        </div>
+      `).join('') || '<p class="inst-hint">No steps in this case yet.</p>'}
+    `;
   }
 
   async function populateMotifSelect() {
@@ -814,20 +887,29 @@
     if (!select) return;
     const { data } = await window.SB.client
       .from('scenario_motifs')
-      .select('id, title, badge, badge_color')
+      .select('id, title, badge, badge_color, institution_id, institutions(short_name, canonical_name)')
       .eq('is_active', true)
       .order('title');
     if (!data) return;
-    select.innerHTML = data.map(m =>
-      `<option value="${m.id}" data-badge="${escHtml(m.badge||'')}" data-badge-color="${escHtml(m.badge_color||'')}">
-         ${escHtml(m.title)}${m.badge ? ' [' + escHtml(m.badge) + ']' : ''}
-       </option>`
-    ).join('');
+    select.innerHTML = data.map(m => {
+      const scope = m.institution_id ? (m.institutions?.short_name || m.institutions?.canonical_name || 'School') : 'Shared';
+      return `<option value="${m.id}" data-badge="${escHtml(m.badge||'')}" data-badge-color="${escHtml(m.badge_color||'')}">
+         ${escHtml(m.title)}${m.badge ? ' [' + escHtml(m.badge) + ']' : ''} — ${escHtml(scope)}
+       </option>`;
+    }).join('');
   }
 
   async function runGenerator() {
     const motifId = qs('#gen-motif-select').value;
-    if (!motifId) return;
+    if (!motifId) {
+      showStatus(qs('#gen-status'), 'Choose a template first.', true);
+      return;
+    }
+    const ctx = await getInstructorContext();
+    if (!ctx.profile?.institution_id) {
+      showStatus(qs('#gen-status'), 'Set your school in Account Settings before generating.', true);
+      return;
+    }
     const seed = {};
     const age = qs('#gen-age').value;
     const sex = qs('#gen-sex').value;
@@ -836,11 +918,13 @@
 
     const statusEl = qs('#gen-status');
     const runBtn   = qs('#btn-run-generator');
+    const progress = qs('#gen-progress');
     runBtn.disabled = true;
-    showStatus(statusEl, 'Generating — this takes 10–20 seconds…');
+    if (progress) progress.hidden = false;
+    showStatus(statusEl, '');
 
     const session = await getSession();
-    if (!session) { showStatus(statusEl, 'Not signed in.', true); runBtn.disabled = false; return; }
+    if (!session) { showStatus(statusEl, 'Not signed in.', true); runBtn.disabled = false; if (progress) progress.hidden = true; return; }
 
     try {
       const { data, error } = await window.SB.client.functions.invoke('scenario-generator', {
@@ -850,14 +934,16 @@
       if (error || !data?.generated_scenario_id) {
         showStatus(statusEl, 'Generation failed: ' + (error?.message || data?.message || 'Unknown error'), true);
       } else {
-        showStatus(statusEl, `✓ Generated: ${data.patient_summary}. Switch to the Generated Cases tab to review.`);
+        showStatus(statusEl, `Ready for review: ${data.patient_summary || 'New case'}`);
         qs('#generate-form-wrap').hidden = true;
-        loadGeneratedCases();
+        await loadGeneratedCases();
+        previewCase(data.generated_scenario_id);
       }
     } catch (err) {
       showStatus(statusEl, 'Error: ' + err.message, true);
     }
     runBtn.disabled = false;
+    if (progress) progress.hidden = true;
   }
 
   // ── PUBLISH MODAL HANDLERS ───────────────────────────────────────────────
@@ -909,9 +995,8 @@
 
       if (updErr) throw updErr;
 
-      // 2. If assigning to a cohort, get cohort members and create assignments
+      // 2. If assigning to a cohort, get same-school members and create assignments
       if (cohortId) {
-        // Find users in this cohort
         const { data: members, error: memErr } = await window.SB.client
           .from('cohort_members')
           .select('user_id')
@@ -919,8 +1004,31 @@
         
         if (memErr) throw memErr;
 
-        if (members && members.length > 0) {
-          const assignments = members.map(m => ({
+        let assignable = members || [];
+        if (assignable.length > 0) {
+          const { data: caseRow } = await window.SB.client
+            .from('generated_scenarios')
+            .select('institution_id')
+            .eq('id', caseId)
+            .single();
+          if (caseRow?.institution_id) {
+            const ids = assignable.map(m => m.user_id);
+            const { data: sameSchool } = await window.SB.client
+              .from('profiles')
+              .select('id')
+              .in('id', ids)
+              .eq('institution_id', caseRow.institution_id);
+            const allowed = new Set((sameSchool || []).map(p => p.id));
+            const skipped = assignable.length - allowed.size;
+            assignable = assignable.filter(m => allowed.has(m.user_id));
+            if (skipped > 0) {
+              console.warn(`Skipped ${skipped} cohort member(s) from another school.`);
+            }
+          }
+        }
+
+        if (assignable.length > 0) {
+          const assignments = assignable.map(m => ({
             scenario_id: caseId,
             assigned_to: m.user_id,
             status: 'assigned'
@@ -943,12 +1051,14 @@
       }
 
       qs('#publish-case-modal').close();
+      qs('#preview-case-modal')?.close();
       loadGeneratedCases();
+      loadAssignments();
     } catch (err) {
       alert('Failed to publish: ' + err.message);
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Publish Case';
+      saveBtn.textContent = qs('#publish-modal-title')?.textContent === 'Who can see this case?' ? 'Save visibility' : 'Publish case';
     }
   }
 
@@ -969,7 +1079,14 @@
     });
 
     // Motif editor (Wizard)
-    qs('#btn-add-motif')?.addEventListener('click', () => openMotifEditor(null));
+    qs('#btn-add-motif')?.addEventListener('click', async () => {
+      const ctx = await getInstructorContext();
+      if (!ctx.profile?.institution_id) {
+        alert('Set your school in Account Settings before creating a motif.');
+        return;
+      }
+      openMotifEditor(null);
+    });
     qs('#btn-add-step')?.addEventListener('click', () => addStepRow());
     qs('#btn-close-wizard')?.addEventListener('click', closeMotifEditor);
     qs('#motif-wizard-form')?.addEventListener('submit', saveMotif);
@@ -995,7 +1112,12 @@
     });
 
     // Generator
-    qs('#btn-generate-case')?.addEventListener('click', () => {
+    qs('#btn-generate-case')?.addEventListener('click', async () => {
+      const ctx = await getInstructorContext();
+      if (!ctx.profile?.institution_id) {
+        alert('Set your school in Account Settings before generating cases.');
+        return;
+      }
       const wrap = qs('#generate-form-wrap');
       wrap.hidden = !wrap.hidden;
       if (!wrap.hidden) populateMotifSelect();
@@ -1021,6 +1143,23 @@
     qs('#edit-case-close')?.addEventListener('click',  () => qs('#edit-case-modal').close());
     qs('#btn-cancel-edit')?.addEventListener('click',  () => qs('#edit-case-modal').close());
     qs('#edit-case-form')?.addEventListener('submit', saveEditedCase);
+
+    qs('#preview-case-close')?.addEventListener('click', () => qs('#preview-case-modal')?.close());
+    qs('#btn-preview-edit')?.addEventListener('click', () => {
+      if (!previewingCaseId) return;
+      qs('#preview-case-modal')?.close();
+      openEditModal(previewingCaseId);
+    });
+    qs('#btn-preview-publish')?.addEventListener('click', () => {
+      if (!previewingCaseId) return;
+      qs('#preview-case-modal')?.close();
+      openPublishModal(previewingCaseId, false);
+    });
+    qs('#btn-preview-reject')?.addEventListener('click', () => {
+      if (!previewingCaseId) return;
+      qs('#preview-case-modal')?.close();
+      reviewCase(previewingCaseId, 'rejected');
+    });
   }
 
   if (document.readyState === 'loading') {

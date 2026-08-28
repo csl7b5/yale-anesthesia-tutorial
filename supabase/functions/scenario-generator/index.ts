@@ -85,18 +85,21 @@ Deno.serve(async (req: Request) => {
     const admin = createClient(supabaseUrl, serviceKey);
     const { data: profile } = await admin
       .from("profiles")
-      .select("role")
+      .select("role, institution_id")
       .eq("id", user.id)
       .single();
-    if (!profile || profile.role !== "instructor") {
+    if (!profile || (profile.role !== "instructor" && profile.role !== "admin")) {
       return jsonErr(403, "forbidden", "Instructor access required.");
+    }
+    if (!profile.institution_id) {
+      return jsonErr(400, "school_required", "Set your school in Account Settings before generating cases.");
     }
 
     const body = await req.json().catch(() => ({}));
     const { motif_id, seed = {} } = body;
     if (!motif_id) return jsonErr(400, "bad_request", "motif_id is required.");
 
-    // Fetch the motif template
+    // Fetch the motif template (shared catalog or this instructor's school)
     const { data: motif, error: motifErr } = await admin
       .from("scenario_motifs")
       .select("*")
@@ -105,6 +108,9 @@ Deno.serve(async (req: Request) => {
       .single();
     if (motifErr || !motif) {
       return jsonErr(404, "not_found", "Motif not found or inactive.");
+    }
+    if (motif.institution_id && motif.institution_id !== profile.institution_id && profile.role !== "admin") {
+      return jsonErr(403, "forbidden", "That template belongs to another school.");
     }
 
     // Build the generator prompt
@@ -170,6 +176,7 @@ Deno.serve(async (req: Request) => {
         scenario_json:   scenarioJson,
         patient_summary: patientSummary,
         created_by:      user.id,
+        institution_id:  profile.institution_id,
         status:          "pending",
       })
       .select("id")

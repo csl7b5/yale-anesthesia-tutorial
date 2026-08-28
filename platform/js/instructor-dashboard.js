@@ -21,6 +21,8 @@
   let debriefs     = [];
   let pyxisEvents  = [];
   let filteredUserIds = null; // null = all
+  let instProfilePicker = null;
+  let instructorLearnerScope = 'global';
 
   /** Cached filtered rows for learner tab (cohort + dates) */
   let __dashFiltered = { a: null, s: null, d: null, p: null };
@@ -283,17 +285,28 @@
   function applyWelcomeHeader(profile) {
     const h = $('welcome-name');
     const m = $('welcome-meta');
+    const scopeEl = $('welcome-scope');
     if (!h) return;
     const name = profile?.display_name?.trim();
     h.textContent = name ? `Welcome, ${name}` : 'Instructor Dashboard';
+    const aff = profile?.institution?.trim();
     if (m) {
-      const aff = profile?.institution?.trim();
       if (aff) {
         m.textContent = aff;
         m.removeAttribute('hidden');
       } else {
         m.textContent = '';
         m.setAttribute('hidden', '');
+      }
+    }
+    instructorLearnerScope = profile?.learner_scope === 'institution' ? 'institution' : 'global';
+    if (scopeEl) {
+      if (instructorLearnerScope === 'institution' && aff) {
+        scopeEl.hidden = false;
+        scopeEl.textContent = `Showing ${aff} learners only. Students must choose this school on their profile to appear here.`;
+      } else {
+        scopeEl.hidden = true;
+        scopeEl.textContent = '';
       }
     }
   }
@@ -355,7 +368,7 @@
       const query = SB.client
         .from('educator_requests')
         .select(
-          'id, name, email, institution, role_title, use_case, message, status, admin_notes, created_at, provisioned_at'
+          'id, name, email, institution, institution_id, role_title, use_case, message, status, admin_notes, created_at, provisioned_at, institutions(canonical_name, short_name)'
         )
         .order('created_at', { ascending: false });
 
@@ -389,7 +402,10 @@
           <div>
             <strong style="font-size:0.95rem">${escHtmlReq(r.name)}</strong>
             <span style="font-size:0.78rem;color:#6b7280;margin-left:8px">${escHtmlReq(r.email)}</span><br>
-            <span style="font-size:0.82rem;color:#374151">${escHtmlReq(r.institution)}${r.role_title ? ' · ' + escHtmlReq(r.role_title) : ''}</span>
+            <span style="font-size:0.82rem;color:#374151">${escHtmlReq((r.institutions && (r.institutions.short_name || r.institutions.canonical_name)) || r.institution)}${r.role_title ? ' · ' + escHtmlReq(r.role_title) : ''}</span>
+            ${r.institution_id
+              ? `<p style="margin:4px 0 0;font-size:0.72rem;color:#0f766e">Matched school: ${escHtmlReq(r.institutions?.canonical_name || r.institution)}</p>`
+              : `<p style="margin:4px 0 0;font-size:0.72rem;color:#b45309">Unmatched affiliation — will provision as Other</p>`}
             ${r.use_case    ? `<p style="margin:6px 0 2px;font-size:0.8rem;color:#374151"><strong>Use case:</strong> ${escHtmlReq(r.use_case)}</p>` : ''}
             ${r.message     ? `<p style="margin:4px 0 2px;font-size:0.8rem;color:#374151"><strong>Message:</strong> ${escHtmlReq(r.message)}</p>` : ''}
             ${r.status === 'approved' && r.provisioned_at
@@ -561,9 +577,25 @@
       const p = await SB.getProfile();
       if (p) {
         const n = $('inst-profile-name');
-        const a = $('inst-profile-affiliation');
         if (n) n.value = p.display_name || '';
-        if (a) a.value = p.institution || '';
+        const locked = p.learner_scope === 'institution' && !sessionCanManageEducatorRequests;
+        const lockNote = $('inst-profile-school-lock');
+        if (lockNote) lockNote.hidden = !locked;
+        const host = $('inst-profile-school-picker');
+        if (host && window.InstitutionPicker) {
+          host.innerHTML = '';
+          instProfilePicker = window.InstitutionPicker.mount(host, {
+            inputId: 'inst-profile-affiliation-search',
+            disabled: locked,
+            disabledReason: 'Your teaching affiliation was set when this account was approved.',
+            placeholder: 'Search medical schools…',
+          });
+          await instProfilePicker.setValue({
+            institution_id: p.institution_id,
+            institution_other: p.institution_other,
+            display: p.institution,
+          });
+        }
         const st = $('inst-profile-save-status');
         if (st) st.textContent = '';
       }
@@ -604,7 +636,9 @@
     $('inst-profile-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = $('inst-profile-name')?.value.trim() ?? '';
-      const aff = $('inst-profile-affiliation')?.value.trim() ?? '';
+      const school = instProfilePicker
+        ? instProfilePicker.getValue()
+        : { institution_id: null, institution_other: null, display: '' };
       const st = $('inst-profile-save-status');
       if (st) {
         st.textContent = 'Saving…';
@@ -612,7 +646,9 @@
       }
       const { data, error } = await SB.updateProfile({
         display_name: name || null,
-        institution: aff || 'Yale',
+        institution_id: school.institution_id,
+        institution_other: school.institution_other,
+        institution: school.display || '',
       });
       if (error) {
         if (st) {
@@ -1262,12 +1298,14 @@
     const name = $('cohort-name').value.trim();
     if (!name) return alert('Cohort name is required.');
     const user = await SB.getUser();
+    const profile = await SB.getProfile();
     const { data, error } = await sb.from('cohorts').insert({
       name,
       description: $('cohort-desc').value.trim() || null,
       start_date: $('cohort-start').value || null,
       end_date: $('cohort-end').value || null,
-      created_by: user.id
+      created_by: user.id,
+      institution_id: profile?.institution_id || null
     }).select().single();
 
     if (error) return alert('Error creating cohort: ' + error.message);
@@ -1363,7 +1401,12 @@
     const userId = $('cohort-add-user').value;
     if (!cohortId || !userId) return;
     const { error } = await sb.from('cohort_members').insert({ cohort_id: cohortId, user_id: userId });
-    if (error) return alert('Error adding member: ' + error.message);
+    if (error) {
+      const msg = /own school/i.test(error.message)
+        ? 'That learner belongs to a different school. Add them only to a cohort at their school.'
+        : error.message;
+      return alert('Error adding member: ' + msg);
+    }
     allMembers.push({ cohort_id: cohortId, user_id: userId, added_at: new Date().toISOString() });
     renderMembers(cohortId);
     populateAddUserDropdown(cohortId);

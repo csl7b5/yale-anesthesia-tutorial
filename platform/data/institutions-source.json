@@ -1,0 +1,1472 @@
+[
+  {
+    "canonical_name": "University of Alabama at Birmingham Marnix E. Heersink School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Alabama"
+  },
+  {
+    "canonical_name": "Frederick P. Whiddon College of Medicine at the University of South Alabama",
+    "kind": "md",
+    "country": "US",
+    "region": "Alabama"
+  },
+  {
+    "canonical_name": "University of Arizona College of Medicine – Tucson",
+    "kind": "md",
+    "country": "US",
+    "region": "Arizona"
+  },
+  {
+    "canonical_name": "The University of Arizona College of Medicine Phoenix",
+    "kind": "md",
+    "country": "US",
+    "region": "Arizona"
+  },
+  {
+    "canonical_name": "ASU John Shufeldt School of Medicine and Medical Engineering",
+    "kind": "md",
+    "country": "US",
+    "region": "Arizona"
+  },
+  {
+    "canonical_name": "Alice L. Walton School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Arkansas"
+  },
+  {
+    "canonical_name": "University of Arkansas for Medical Sciences College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Arkansas"
+  },
+  {
+    "canonical_name": "California Northstate University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "California University of Science and Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "Charles R. Drew University of Medicine and Science College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "Kaiser Permanente Bernard J. Tyson School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "Keck School of Medicine of University of Southern California",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "Loma Linda University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "Stanford University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "University of California, Davis School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "University of California, Irvine School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "David Geffen School of Medicine at UCLA",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "University of California, Riverside School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "University of California, San Diego School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "University of California, San Francisco School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "University of Colorado School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Colorado"
+  },
+  {
+    "canonical_name": "Frank H. Netter M.D. School of Medicine at Quinnipiac University",
+    "kind": "md",
+    "country": "US",
+    "region": "Connecticut"
+  },
+  {
+    "canonical_name": "University of Connecticut School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Connecticut"
+  },
+  {
+    "canonical_name": "Yale School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Connecticut"
+  },
+  {
+    "canonical_name": "George Washington University School of Medicine and Health Sciences",
+    "kind": "md",
+    "country": "US",
+    "region": "DC"
+  },
+  {
+    "canonical_name": "Georgetown University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "DC"
+  },
+  {
+    "canonical_name": "Howard University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "DC"
+  },
+  {
+    "canonical_name": "Charles E. Schmidt College of Medicine at Florida Atlantic University",
+    "kind": "md",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "Florida International University Herbert Wertheim College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "Florida State University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "Nova Southeastern University Dr Kiran C. Patel College of Allopathic Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "University of Central Florida College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "University of Florida College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "University of Miami Leonard M. Miller School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "USF Health Morsani College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "Emory University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Georgia"
+  },
+  {
+    "canonical_name": "Medical College of Georgia at Augusta University",
+    "kind": "md",
+    "country": "US",
+    "region": "Georgia"
+  },
+  {
+    "canonical_name": "Mercer University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Georgia"
+  },
+  {
+    "canonical_name": "Morehouse School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Georgia"
+  },
+  {
+    "canonical_name": "The University of Georgia School of Medicine in Athens",
+    "kind": "md",
+    "country": "US",
+    "region": "Georgia"
+  },
+  {
+    "canonical_name": "University of Hawaii, John A. Burns School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Hawaii"
+  },
+  {
+    "canonical_name": "Carle Illinois College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "Loyola University Chicago Stritch School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "Northwestern University Feinberg School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "Chicago Medical School of Rosalind Franklin University of Medicine and Science",
+    "kind": "md",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "Rush Medical College of Rush University Medical Center",
+    "kind": "md",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "Southern Illinois University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "University of Chicago Division of the Biological Sciences The Pritzker School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "University of Illinois College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "Indiana University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Indiana"
+  },
+  {
+    "canonical_name": "University of Iowa Roy J. and Lucille A. Carver College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Iowa"
+  },
+  {
+    "canonical_name": "University of Kansas School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Kansas"
+  },
+  {
+    "canonical_name": "University of Kentucky College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Kentucky"
+  },
+  {
+    "canonical_name": "University of Louisville School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Kentucky"
+  },
+  {
+    "canonical_name": "Louisiana State University School of Medicine in New Orleans",
+    "kind": "md",
+    "country": "US",
+    "region": "Louisiana"
+  },
+  {
+    "canonical_name": "Louisiana State University School of Medicine in Shreveport",
+    "kind": "md",
+    "country": "US",
+    "region": "Louisiana"
+  },
+  {
+    "canonical_name": "Tulane University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Louisiana"
+  },
+  {
+    "canonical_name": "Johns Hopkins University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Maryland"
+  },
+  {
+    "canonical_name": "Uniformed Services University of the Health Sciences F. Edward Hebert School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Maryland"
+  },
+  {
+    "canonical_name": "University of Maryland School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Maryland"
+  },
+  {
+    "canonical_name": "Boston University Aram V. Chobanian & Edward Avedisian School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Massachusetts"
+  },
+  {
+    "canonical_name": "Harvard Medical School",
+    "kind": "md",
+    "country": "US",
+    "region": "Massachusetts"
+  },
+  {
+    "canonical_name": "Tufts University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Massachusetts"
+  },
+  {
+    "canonical_name": "University of Massachusetts T.H. Chan School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Massachusetts"
+  },
+  {
+    "canonical_name": "Covenant HealthCare College of Medicine at Central Michigan University",
+    "kind": "md",
+    "country": "US",
+    "region": "Michigan"
+  },
+  {
+    "canonical_name": "Michigan State University College of Human Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Michigan"
+  },
+  {
+    "canonical_name": "University of Michigan Medical School",
+    "kind": "md",
+    "country": "US",
+    "region": "Michigan"
+  },
+  {
+    "canonical_name": "Oakland University William Beaumont School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Michigan"
+  },
+  {
+    "canonical_name": "Wayne State University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Michigan"
+  },
+  {
+    "canonical_name": "Western Michigan University Homer Stryker M.D. School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Michigan"
+  },
+  {
+    "canonical_name": "Mayo Clinic Alix School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Minnesota"
+  },
+  {
+    "canonical_name": "University of Minnesota Medical School",
+    "kind": "md",
+    "country": "US",
+    "region": "Minnesota"
+  },
+  {
+    "canonical_name": "University of Mississippi School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Mississippi"
+  },
+  {
+    "canonical_name": "Saint Louis University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Missouri"
+  },
+  {
+    "canonical_name": "University of Missouri-Columbia School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Missouri"
+  },
+  {
+    "canonical_name": "University of Missouri–Kansas City School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Missouri"
+  },
+  {
+    "canonical_name": "Washington University in St. Louis School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Missouri"
+  },
+  {
+    "canonical_name": "Creighton University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Nebraska"
+  },
+  {
+    "canonical_name": "University of Nebraska College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Nebraska"
+  },
+  {
+    "canonical_name": "Kirk Kerkorian School of Medicine at UNLV",
+    "kind": "md",
+    "country": "US",
+    "region": "Nevada"
+  },
+  {
+    "canonical_name": "University of Nevada, Reno School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Nevada"
+  },
+  {
+    "canonical_name": "Roseman University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Nevada"
+  },
+  {
+    "canonical_name": "Geisel School of Medicine at Dartmouth",
+    "kind": "md",
+    "country": "US",
+    "region": "New Hampshire"
+  },
+  {
+    "canonical_name": "Cooper Medical School of Rowan University",
+    "kind": "md",
+    "country": "US",
+    "region": "New Jersey"
+  },
+  {
+    "canonical_name": "Hackensack Meridian School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "New Jersey"
+  },
+  {
+    "canonical_name": "Rutgers New Jersey Medical School",
+    "kind": "md",
+    "country": "US",
+    "region": "New Jersey"
+  },
+  {
+    "canonical_name": "Rutgers Robert Wood Johnson Medical School",
+    "kind": "md",
+    "country": "US",
+    "region": "New Jersey"
+  },
+  {
+    "canonical_name": "University of New Mexico School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "New Mexico"
+  },
+  {
+    "canonical_name": "Albany Medical College",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Albert Einstein College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Columbia University Vagelos College of Physicians and Surgeons",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "CUNY School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Icahn School of Medicine at Mount Sinai",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Donald and Barbara Zucker School of Medicine at Hofstra/Northwell",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "New York Medical College",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "NYU Grossman School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "NYU Grossman Long Island School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Renaissance School of Medicine at Stony Brook University",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "State University of New York Upstate Medical University Alan and Marlene Norton College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "SUNY Downstate Health Sciences University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Jacobs School of Medicine and Biomedical Sciences, University at Buffalo",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "University of Rochester School of Medicine and Dentistry",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Weill Cornell Medical College",
+    "kind": "md",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "The Brody School of Medicine at East Carolina University",
+    "kind": "md",
+    "country": "US",
+    "region": "North Carolina"
+  },
+  {
+    "canonical_name": "Duke University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "North Carolina"
+  },
+  {
+    "canonical_name": "University of North Carolina School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "North Carolina"
+  },
+  {
+    "canonical_name": "Wake Forest School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "North Carolina"
+  },
+  {
+    "canonical_name": "Methodist University Cape Fear Valley Health School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "North Carolina"
+  },
+  {
+    "canonical_name": "University of North Dakota School of Medicine and Health Sciences",
+    "kind": "md",
+    "country": "US",
+    "region": "North Dakota"
+  },
+  {
+    "canonical_name": "Boonshoft School of Medicine at Wright State University",
+    "kind": "md",
+    "country": "US",
+    "region": "Ohio"
+  },
+  {
+    "canonical_name": "Case Western Reserve University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Ohio"
+  },
+  {
+    "canonical_name": "Northeast Ohio Medical University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Ohio"
+  },
+  {
+    "canonical_name": "The Ohio State University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Ohio"
+  },
+  {
+    "canonical_name": "University of Cincinnati College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Ohio"
+  },
+  {
+    "canonical_name": "University of Toledo College of Medicine and Life Sciences",
+    "kind": "md",
+    "country": "US",
+    "region": "Ohio"
+  },
+  {
+    "canonical_name": "University of Oklahoma College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Oklahoma"
+  },
+  {
+    "canonical_name": "Oregon Health & Science University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Oregon"
+  },
+  {
+    "canonical_name": "Geisinger Commonwealth School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Drexel University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Penn State University College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Perelman School of Medicine at the University of Pennsylvania",
+    "kind": "md",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Sidney Kimmel Medical College at Thomas Jefferson University",
+    "kind": "md",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Lewis Katz School of Medicine, Temple University",
+    "kind": "md",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "University of Pittsburgh School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Universidad Central del Caribe School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Puerto Rico"
+  },
+  {
+    "canonical_name": "Ponce Health Sciences University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Puerto Rico"
+  },
+  {
+    "canonical_name": "San Juan Bautista School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Puerto Rico"
+  },
+  {
+    "canonical_name": "University of Puerto Rico School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Puerto Rico"
+  },
+  {
+    "canonical_name": "The Warren Alpert Medical School at Brown University",
+    "kind": "md",
+    "country": "US",
+    "region": "Rhode Island"
+  },
+  {
+    "canonical_name": "Medical University of South Carolina College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "South Carolina"
+  },
+  {
+    "canonical_name": "University of South Carolina Kay and C. Edward Floyd, M.D. School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "South Carolina"
+  },
+  {
+    "canonical_name": "University of South Carolina School of Medicine Greenville",
+    "kind": "md",
+    "country": "US",
+    "region": "South Carolina"
+  },
+  {
+    "canonical_name": "University of South Dakota Sanford School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "South Dakota"
+  },
+  {
+    "canonical_name": "East Tennessee State University James H. Quillen College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Tennessee"
+  },
+  {
+    "canonical_name": "Meharry Medical College School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Tennessee"
+  },
+  {
+    "canonical_name": "Thomas F. Frist, Jr. College of Medicine at Belmont University",
+    "kind": "md",
+    "country": "US",
+    "region": "Tennessee"
+  },
+  {
+    "canonical_name": "University of Tennessee College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Tennessee"
+  },
+  {
+    "canonical_name": "Vanderbilt University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Tennessee"
+  },
+  {
+    "canonical_name": "Baylor College of Medicine School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "Texas A&M University Naresh K. Vashisht College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "Paul L. Foster School of Medicine Texas Tech University Health Sciences Center",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "Texas Tech University Health Sciences Center School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "University of Houston Tilman J. Fertitta Family College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "University of Texas Medical Branch John Sealy School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "McGovern Medical School at UTHealth Houston",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "The University of Texas at San Antonio Joe R. and Teresa Lozano Long School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "University of Texas Rio Grande Valley School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "University of Texas Southwestern Medical School",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "Dell Medical School at The University of Texas at Austin",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "Anne Burnett Marion School of Medicine at Texas Christian University",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "The University of Texas at Tyler School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "Spencer Fox Eccles School of Medicine at the University of Utah",
+    "kind": "md",
+    "country": "US",
+    "region": "Utah"
+  },
+  {
+    "canonical_name": "Robert Larner, M.D. College of Medicine at the University of Vermont",
+    "kind": "md",
+    "country": "US",
+    "region": "Vermont"
+  },
+  {
+    "canonical_name": "Eastern Virginia Medical School at Old Dominion University",
+    "kind": "md",
+    "country": "US",
+    "region": "Virginia"
+  },
+  {
+    "canonical_name": "University of Virginia School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Virginia"
+  },
+  {
+    "canonical_name": "Virginia Commonwealth University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Virginia"
+  },
+  {
+    "canonical_name": "Virginia Tech Carilion School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Virginia"
+  },
+  {
+    "canonical_name": "University of Washington School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Washington"
+  },
+  {
+    "canonical_name": "Washington State University Elson S. Floyd College of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "Washington"
+  },
+  {
+    "canonical_name": "Marshall University Joan C. Edwards School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "West Virginia"
+  },
+  {
+    "canonical_name": "West Virginia University School of Medicine",
+    "kind": "md",
+    "country": "US",
+    "region": "West Virginia"
+  },
+  {
+    "canonical_name": "Medical College of Wisconsin",
+    "kind": "md",
+    "country": "US",
+    "region": "Wisconsin"
+  },
+  {
+    "canonical_name": "University of Wisconsin School of Medicine and Public Health",
+    "kind": "md",
+    "country": "US",
+    "region": "Wisconsin"
+  },
+  {
+    "canonical_name": "Alabama College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Alabama"
+  },
+  {
+    "canonical_name": "A.T. Still University School of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Arizona"
+  },
+  {
+    "canonical_name": "Arizona College of Osteopathic Medicine of Midwestern University",
+    "kind": "do",
+    "country": "US",
+    "region": "Arizona"
+  },
+  {
+    "canonical_name": "The Valley College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Arizona"
+  },
+  {
+    "canonical_name": "Arkansas College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Arkansas"
+  },
+  {
+    "canonical_name": "California Health Sciences University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "Western University of Health Sciences College of Osteopathic Medicine of the Pacific",
+    "kind": "do",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "Touro University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "California"
+  },
+  {
+    "canonical_name": "Rocky Vista University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Colorado"
+  },
+  {
+    "canonical_name": "University of Northern Colorado College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Colorado"
+  },
+  {
+    "canonical_name": "Nova Southeastern University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "Orlando College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Florida"
+  },
+  {
+    "canonical_name": "PCOM South Georgia",
+    "kind": "do",
+    "country": "US",
+    "region": "Georgia"
+  },
+  {
+    "canonical_name": "Idaho College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Idaho"
+  },
+  {
+    "canonical_name": "Chicago College of Osteopathic Medicine of Midwestern University",
+    "kind": "do",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "Illinois College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Illinois"
+  },
+  {
+    "canonical_name": "Marian University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Indiana"
+  },
+  {
+    "canonical_name": "Des Moines University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Iowa"
+  },
+  {
+    "canonical_name": "Kansas City University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Kansas"
+  },
+  {
+    "canonical_name": "Kansas College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Kansas"
+  },
+  {
+    "canonical_name": "University of Pikeville – Kentucky College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Kentucky"
+  },
+  {
+    "canonical_name": "University of New England College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Maine"
+  },
+  {
+    "canonical_name": "Meritus School of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Maryland"
+  },
+  {
+    "canonical_name": "Michigan State University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Michigan"
+  },
+  {
+    "canonical_name": "William Carey University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Mississippi"
+  },
+  {
+    "canonical_name": "A.T. Still University of Health Sciences Kirksville College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Missouri"
+  },
+  {
+    "canonical_name": "Rocky Vista University Montana College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Montana"
+  },
+  {
+    "canonical_name": "Rowan University School of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "New Jersey"
+  },
+  {
+    "canonical_name": "Burrell College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "New Mexico"
+  },
+  {
+    "canonical_name": "D’Youville University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Touro College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "New York Institute of Technology College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "New York"
+  },
+  {
+    "canonical_name": "Campbell University Jerry M. Wallace School of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "North Carolina"
+  },
+  {
+    "canonical_name": "Ohio University Heritage College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Ohio"
+  },
+  {
+    "canonical_name": "Xavier University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Ohio"
+  },
+  {
+    "canonical_name": "Oklahoma State University Center for Health Sciences College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Oklahoma"
+  },
+  {
+    "canonical_name": "Indiana University of Pennsylvania College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Lake Erie College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Philadelphia College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Duquesne University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Pennsylvania"
+  },
+  {
+    "canonical_name": "Baptist Health Sciences University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Tennessee"
+  },
+  {
+    "canonical_name": "Lincoln Memorial University DeBusk College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Tennessee"
+  },
+  {
+    "canonical_name": "Sam Houston State University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "University of the Incarnate Word School of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "University of North Texas Health Science Center – Texas College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Texas"
+  },
+  {
+    "canonical_name": "Noorda College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Utah"
+  },
+  {
+    "canonical_name": "Liberty University College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Virginia"
+  },
+  {
+    "canonical_name": "Edward Via College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Virginia"
+  },
+  {
+    "canonical_name": "Pacific Northwest University of Health Sciences College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Washington"
+  },
+  {
+    "canonical_name": "West Virginia School of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "West Virginia"
+  },
+  {
+    "canonical_name": "Touro University Nevada College of Osteopathic Medicine",
+    "kind": "do",
+    "country": "US",
+    "region": "Nevada"
+  },
+  {
+    "canonical_name": "Yale Physician Associate Program",
+    "kind": "allied",
+    "country": "US",
+    "region": "Connecticut"
+  },
+  {
+    "canonical_name": "Yale School of Nursing",
+    "kind": "allied",
+    "country": "US",
+    "region": "Connecticut"
+  },
+  {
+    "canonical_name": "Yale School of Public Health",
+    "kind": "allied",
+    "country": "US",
+    "region": "Connecticut"
+  },
+  {
+    "canonical_name": "University of Alberta Faculty of Medicine and Dentistry",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Alberta"
+  },
+  {
+    "canonical_name": "University of Calgary Cumming School of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Alberta"
+  },
+  {
+    "canonical_name": "University of British Columbia Faculty of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "British Columbia"
+  },
+  {
+    "canonical_name": "University of Manitoba Max Rady College of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Manitoba"
+  },
+  {
+    "canonical_name": "Memorial University of Newfoundland Faculty of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Newfoundland and Labrador"
+  },
+  {
+    "canonical_name": "Dalhousie University Faculty of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Nova Scotia"
+  },
+  {
+    "canonical_name": "McMaster University Michael G. DeGroote School of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Ontario"
+  },
+  {
+    "canonical_name": "NOSM University",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Ontario"
+  },
+  {
+    "canonical_name": "Queen's University School of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Ontario"
+  },
+  {
+    "canonical_name": "University of Ottawa Faculty of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Ontario"
+  },
+  {
+    "canonical_name": "University of Toronto Temerty Faculty of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Ontario"
+  },
+  {
+    "canonical_name": "Western University Schulich School of Medicine & Dentistry",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Ontario"
+  },
+  {
+    "canonical_name": "McGill University Faculty of Medicine and Health Sciences",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Quebec"
+  },
+  {
+    "canonical_name": "Université de Montréal Faculté de médecine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Quebec"
+  },
+  {
+    "canonical_name": "Université Laval Faculté de médecine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Quebec"
+  },
+  {
+    "canonical_name": "Université de Sherbrooke Faculté de médecine et des sciences de la santé",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Quebec"
+  },
+  {
+    "canonical_name": "University of Saskatchewan College of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Saskatchewan"
+  },
+  {
+    "canonical_name": "Toronto Metropolitan University School of Medicine",
+    "kind": "canada_md",
+    "country": "CA",
+    "region": "Ontario"
+  },
+  {
+    "canonical_name": "St. George's University School of Medicine",
+    "kind": "caribbean",
+    "country": "GD",
+    "region": "Grenada"
+  },
+  {
+    "canonical_name": "Ross University School of Medicine",
+    "kind": "caribbean",
+    "country": "BB",
+    "region": "Barbados"
+  },
+  {
+    "canonical_name": "American University of the Caribbean School of Medicine",
+    "kind": "caribbean",
+    "country": "SX",
+    "region": "Sint Maarten"
+  },
+  {
+    "canonical_name": "Saba University School of Medicine",
+    "kind": "caribbean",
+    "country": "BQ",
+    "region": "Saba"
+  },
+  {
+    "canonical_name": "American University of Antigua College of Medicine",
+    "kind": "caribbean",
+    "country": "AG",
+    "region": "Antigua and Barbuda"
+  },
+  {
+    "canonical_name": "St. Matthew's University School of Medicine",
+    "kind": "caribbean",
+    "country": "KY",
+    "region": "Cayman Islands"
+  },
+  {
+    "canonical_name": "University of Medicine and Health Sciences",
+    "kind": "caribbean",
+    "country": "KN",
+    "region": "Saint Kitts and Nevis"
+  },
+  {
+    "canonical_name": "Medical University of the Americas",
+    "kind": "caribbean",
+    "country": "KN",
+    "region": "Nevis"
+  },
+  {
+    "canonical_name": "Trinity School of Medicine",
+    "kind": "caribbean",
+    "country": "VC",
+    "region": "Saint Vincent and the Grenadines"
+  },
+  {
+    "canonical_name": "Xavier University School of Medicine",
+    "kind": "caribbean",
+    "country": "AW",
+    "region": "Aruba"
+  }
+]

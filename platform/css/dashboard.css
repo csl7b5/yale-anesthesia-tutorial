@@ -286,3 +286,117 @@ body.auth-ready .dashboard-main {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+/* ── Institution picker ──────────────────────────────────── */
+
+.inst-picker {
+  position: relative;
+  width: 100%;
+}
+
+.inst-picker__search,
+.inst-picker__other {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.7rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.875rem;
+  color: #1c2738;
+  background: #f9fafb;
+}
+
+.inst-picker__search:focus,
+.inst-picker__other:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+}
+
+.inst-picker__search:disabled,
+.inst-picker__other:disabled {
+  color: #6b7280;
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.inst-picker__combo {
+  position: relative;
+}
+
+.inst-picker__list {
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.2rem);
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.inst-picker__option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.inst-picker__option:hover,
+.inst-picker__option.is-active {
+  background: rgba(13, 148, 136, 0.08);
+}
+
+.inst-picker__option-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1c2738;
+}
+
+.inst-picker__option-meta {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.inst-picker__option--other {
+  border-top: 1px solid #f3f4f6;
+  margin-top: 0.2rem;
+}
+
+.inst-picker__hint,
+.inst-picker__disabled-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  color: #9ca3af;
+  line-height: 1.35;
+}
+
+.inst-picker__other-wrap {
+  margin-top: 0.45rem;
+}
+
+.inst-picker__other-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 0.2rem;
+}
+
+.inst-scope-banner {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  color: #0f766e;
+  background: rgba(13, 148, 136, 0.08);
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+}

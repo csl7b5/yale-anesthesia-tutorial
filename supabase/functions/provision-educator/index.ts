@@ -166,7 +166,7 @@ Deno.serve(async (req: Request) => {
     const { data: reqRow, error: reqErr } = await service
       .from("educator_requests")
       .select(
-        "id, name, email, institution, role_title, use_case, message, status, provisioned_at, created_at",
+        "id, name, email, institution, institution_id, role_title, use_case, message, status, provisioned_at, created_at",
       )
       .eq("id", request_id)
       .single();
@@ -225,14 +225,24 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const inst = ((reqRow.institution as string) ?? "Yale").trim();
+    const inst = ((reqRow.institution as string) ?? "").trim();
+    let instId = (reqRow.institution_id as string | null) || null;
+    if (!instId) {
+      const { data: matched } = await service.rpc("match_institution", {
+        q: inst || null,
+        email: emailNorm,
+      });
+      instId = (matched as string | null) || null;
+    }
 
     const { error: upErr } = await service.from("profiles").upsert(
       {
         id: userId,
         role: "instructor",
         display_name: name || emailNorm.split("@")[0],
-        institution: inst || "Yale",
+        institution: inst || "",
+        institution_id: instId,
+        learner_scope: "institution",
       },
       { onConflict: "id" },
     );

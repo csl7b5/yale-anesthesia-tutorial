@@ -21,8 +21,16 @@
   async function getProfile() {
     const user = await getUser();
     if (!user) return null;
-    const { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
-    return data;
+    let { data, error } = await sb
+      .from('profiles')
+      .select('*, institutions(id, short_name, canonical_name)')
+      .eq('id', user.id)
+      .single();
+    if (error) {
+      const fallback = await sb.from('profiles').select('*').eq('id', user.id).single();
+      data = fallback.data;
+    }
+    return data || null;
   }
 
   async function getRole() {
@@ -42,7 +50,7 @@
   }
 
   /**
-   * @param {{ fullName?: string, school?: string, trainingLevel?: string }} [meta] — optional; stored in auth user metadata and copied to profiles by handle_new_user.
+   * @param {{ fullName?: string, school?: string, institutionId?: string, institutionOther?: string, trainingLevel?: string }} [meta]
    */
   async function signUpWithPassword(email, password, meta) {
     const dataPayload = {};
@@ -51,6 +59,12 @@
     }
     if (meta?.school && String(meta.school).trim()) {
       dataPayload.school = String(meta.school).trim();
+    }
+    if (meta?.institutionId && String(meta.institutionId).trim()) {
+      dataPayload.institution_id = String(meta.institutionId).trim();
+    }
+    if (meta?.institutionOther && String(meta.institutionOther).trim()) {
+      dataPayload.institution_other = String(meta.institutionOther).trim();
     }
     if (meta?.trainingLevel && String(meta.trainingLevel).trim()) {
       dataPayload.training_level = String(meta.trainingLevel).trim();
@@ -74,6 +88,50 @@
     return { data, error };
   }
 
+  async function listSchools() {
+    const { data, error } = await sb
+      .from('institutions')
+      .select('id, canonical_name, short_name')
+      .order('canonical_name');
+    if (error) {
+      console.warn('[SB] institutions:', error.message);
+      return [];
+    }
+    return (data || []).map((s) => ({
+      id: s.id,
+      name: s.canonical_name,
+      short_name: s.short_name || s.canonical_name,
+      slug: String(s.short_name || s.canonical_name)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-'),
+    }));
+  }
+
+  function fillSchoolSelect(selectEl, schools, selectedId, opts) {
+    if (!selectEl) return;
+    const blankLabel = opts?.blankLabel || 'Select your school…';
+    const includeBlank = opts?.includeBlank !== false;
+    const current = selectedId || selectEl.value || '';
+    selectEl.innerHTML = includeBlank ? `<option value="">${blankLabel}</option>` : '';
+    (schools || []).forEach((s) => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.short_name === s.name ? s.name : `${s.short_name} — ${s.name}`;
+      opt.dataset.slug = s.slug || '';
+      opt.dataset.name = s.name || '';
+      opt.dataset.shortName = s.short_name || '';
+      selectEl.appendChild(opt);
+    });
+    if (current && [...selectEl.options].some((o) => o.value === current)) {
+      selectEl.value = current;
+    }
+  }
+
+  function schoolLabel(school) {
+    if (!school) return '';
+    return school.short_name || school.name || '';
+  }
+
   async function signInWithPassword(email, password) {
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     return { data, error };
@@ -93,6 +151,9 @@
     signUpWithPassword,
     signInWithPassword,
     updateProfile,
+    listSchools,
+    fillSchoolSelect,
+    schoolLabel,
     signOut,
   };
 })();
