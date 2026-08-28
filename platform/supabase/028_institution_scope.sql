@@ -345,9 +345,11 @@ BEGIN
      AND NOT public.is_master_admin() THEN
     NEW.role := OLD.role;
     NEW.learner_scope := OLD.learner_scope;
-    -- Institution-scoped instructors cannot switch schools to peek at another roster
+    -- Institution-scoped instructors cannot switch schools to peek at another roster.
+    -- Allow a one-time fill when the catalog id was never linked.
     IF OLD.role IN ('instructor', 'admin')
-       AND coalesce(OLD.learner_scope, 'institution') = 'institution' THEN
+       AND coalesce(OLD.learner_scope, 'institution') = 'institution'
+       AND OLD.institution_id IS NOT NULL THEN
       NEW.institution_id := OLD.institution_id;
       NEW.institution_other := OLD.institution_other;
     END IF;

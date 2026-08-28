@@ -36,21 +36,49 @@
       instructorCtx = { profile: null, school: null, isAdmin: false };
       return instructorCtx;
     }
-    const { data: profile } = await window.SB.client
-      .from('profiles')
-      .select('id, role, display_name, institution, institution_id, institutions(id, short_name, canonical_name)')
-      .eq('id', session.user.id)
-      .single();
+
+    // Prefer the shared helper: it already falls back when the institutions
+    // embed is missing from the schema cache. The previous inline embed
+    // query failed silently and treated Stanford instructors as unschooled.
+    let profile = window.SB.getProfile
+      ? await window.SB.getProfile()
+      : (await window.SB.client.from('profiles').select('*').eq('id', session.user.id).single()).data;
+
+    if (profile && !profile.institution_id) {
+      const { data: filled } = await window.SB.client.rpc('ensure_own_institution_id');
+      if (filled) {
+        profile = window.SB.getProfile ? await window.SB.getProfile() : profile;
+        if (profile) profile.institution_id = profile.institution_id || filled;
+      }
+    }
+
+    let school = profile?.institutions || null;
+    if (!school && profile?.institution_id) {
+      const { data } = await window.SB.client
+        .from('institutions')
+        .select('id, short_name, canonical_name')
+        .eq('id', profile.institution_id)
+        .maybeSingle();
+      school = data || null;
+    }
+    if (!school && (profile?.institution || '').trim()) {
+      school = {
+        id: profile.institution_id || null,
+        short_name: profile.institution,
+        canonical_name: profile.institution,
+      };
+    }
+
     instructorCtx = {
       profile,
-      school: profile?.institutions || null,
+      school,
       isAdmin: profile?.role === 'admin',
     };
     return instructorCtx;
   }
 
   function schoolName(ctx) {
-    return ctx?.school?.short_name || ctx?.school?.canonical_name || '';
+    return ctx?.school?.short_name || ctx?.school?.canonical_name || ctx?.profile?.institution || '';
   }
 
   function paintSchoolBanner(el, ctx, kind) {
@@ -59,7 +87,11 @@
     if (!ctx?.profile?.institution_id) {
       el.hidden = false;
       el.classList.add('school-scope-banner--warn');
-      el.innerHTML = `<div>Set your <strong>school</strong> in Account Settings before creating cases. New cases stay at that school and can only be assigned to its students.</div>`;
+      if (name) {
+        el.innerHTML = `<div>Your affiliation is <strong>${escHtml(name)}</strong>, but it is not linked to the school catalog yet. Refresh this page after the latest school migration is applied. Affiliation cannot be changed in Account Settings.</div>`;
+      } else {
+        el.innerHTML = `<div>This instructor account is missing a school link. Ask an admin to attach your profile to a school. Affiliation cannot be changed in Account Settings.</div>`;
+      }
       return;
     }
     el.hidden = false;
@@ -351,7 +383,7 @@
     const ctx = await getInstructorContext();
     if (!editingMotifId) {
       if (!ctx.profile?.institution_id) {
-        alert('Set your school in Account Settings before creating a motif.');
+        alert('Your school is not linked to the catalog yet, so a motif cannot be created. Refresh after the school migration is applied, or ask an admin.');
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save Motif';
         return;
@@ -839,7 +871,7 @@
     if (note) {
       note.textContent = schoolName(ctx)
         ? `This case belongs to ${schoolName(ctx)}. Students at other schools cannot see it.`
-        : 'Set your school before publishing.';
+        : 'This case is not linked to a school yet.';
     }
     modal.showModal();
 
@@ -907,7 +939,7 @@
     }
     const ctx = await getInstructorContext();
     if (!ctx.profile?.institution_id) {
-      showStatus(qs('#gen-status'), 'Set your school in Account Settings before generating.', true);
+      showStatus(qs('#gen-status'), 'Your school is not linked to the catalog yet, so cases cannot be generated.', true);
       return;
     }
     const seed = {};
@@ -1082,7 +1114,7 @@
     qs('#btn-add-motif')?.addEventListener('click', async () => {
       const ctx = await getInstructorContext();
       if (!ctx.profile?.institution_id) {
-        alert('Set your school in Account Settings before creating a motif.');
+        alert('Your school is not linked to the catalog yet, so a motif cannot be created. Refresh after the school migration is applied, or ask an admin.');
         return;
       }
       openMotifEditor(null);
@@ -1115,7 +1147,7 @@
     qs('#btn-generate-case')?.addEventListener('click', async () => {
       const ctx = await getInstructorContext();
       if (!ctx.profile?.institution_id) {
-        alert('Set your school in Account Settings before generating cases.');
+        alert('Your school is not linked to the catalog yet, so cases cannot be generated. Refresh after the school migration is applied, or ask an admin.');
         return;
       }
       const wrap = qs('#generate-form-wrap');
