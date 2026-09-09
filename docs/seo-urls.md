@@ -7,7 +7,7 @@ Legacy mirror: `https://csl7b5.github.io/yale-anesthesia-tutorial/` (same deploy
 |-----|---------------------------|
 | `/` | Interactive anesthesia learning: virtual Pyxis, ventilator simulator, and meet the team. |
 | `/pyxis/` | Virtual anesthesia Pyxis — where controlled meds and OR supplies live, with student cheatsheets. |
-| `/teams/` | Meet the Yale anesthesia team — faculty, residents, students, and department connections. |
+| `/teams/` | Meet the Anesthesia Playground team — faculty, residents, students, and contributors. |
 | `/ventilator/` | Interactive ventilator simulator — VCV/PCV, scenarios, and monitor interpretation for students. |
 | `/platform/auth.html` | Sign in to Anesthesia Playground — student/instructor dashboards, debriefs, and progress. |
 | `/platform/student.html` | Student dashboard — scenario history, performance summary, account settings. *(Sign-in required)* |

@@ -155,7 +155,7 @@
     },
     diazepam: {
       review: mcq("Diazepam prolongs chloride conductance primarily via:", ["GABA-A receptor positive allosteric modulation", "NMDA receptor agonism", "Na channel blockade", "H1 antagonism"], 0, "GABA-A positive allosteric modulator."),
-      clinical: mcq("For intramuscular premedication, diazepam differs from midazolam because:", ["Diazepam has erratic IM absorption whereas midazolam is preferred IM", "Midazolam cannot cross the blood–brain barrier", "Diazepam is always shorter acting than midazolam", "IM diazepam is the gold standard at Yale"], 0, "Diazepam IM absorption is unreliable; midazolam is preferred when intramuscular sedation is needed.")
+      clinical: mcq("For intramuscular premedication, diazepam differs from midazolam because:", ["Diazepam has erratic IM absorption whereas midazolam is preferred IM", "Midazolam cannot cross the blood–brain barrier", "Diazepam is always shorter acting than midazolam", "IM diazepam is the preferred IM premedication"], 0, "Diazepam IM absorption is unreliable; midazolam is preferred when intramuscular sedation is needed.")
     },
     oxycodone: {
       review: mcq("Oxycodone's analgesic effect in this summary comes mainly from:", ["The parent compound as a full mu agonist (not primarily active metabolites)", "Only the noroxycodone metabolite", "Kappa agonism exclusively", "COX inhibition"], 0, "Analgesia comes mainly from oxycodone itself rather than metabolites."),

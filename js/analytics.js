@@ -1,5 +1,5 @@
 /**
- * analytics.js — Passive behavioral tracking for Yale Anesthesia Tutorial
+ * analytics.js — Passive behavioral tracking for Anesthesia Playground
  *
  * Requires the GA4 gtag snippet to be loaded before this script.
  * Replace G-XXXXXXXXXX in both HTML files with your Measurement ID.

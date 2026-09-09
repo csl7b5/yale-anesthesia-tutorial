@@ -64,11 +64,11 @@ body {
 }
 
 .site-nav__brand-logo {
-  width: 42px;
   height: 42px;
+  width: auto;
+  max-width: 108px;
   object-fit: contain;
   flex-shrink: 0;
-  border-radius: 6px;
 }
 
 .site-nav__tabs {
@@ -572,6 +572,8 @@ a.site-nav__tab--signin:visited {
   border-radius: var(--radius-sm);
   overflow: hidden;
   line-height: 0;
+  background: #0a0a0a;
+  padding: 0.4rem 0.55rem;
   box-shadow:
     0 0 0 1px rgba(13, 148, 136, 0.25),
     0 2px 8px rgba(18, 30, 45, 0.18),
@@ -592,7 +594,7 @@ a.site-nav__tab--signin:visited {
 /* Image defines the box size — width sets how big, height follows naturally */
 .cabinet-logo__img {
   display: block;
-  width: 10rem;
+  width: 8.5rem;
   height: auto;
 }
 
@@ -2431,6 +2433,14 @@ a.site-nav__tab--signin:visited {
   font-size: 0.68rem;
   color: rgba(88, 104, 122, 0.65);
   font-style: italic;
+}
+
+.disclaimer-widget__affiliation {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 /* ── Feedback widget (right side, mirrors disclaimer) ───────────────────── */
